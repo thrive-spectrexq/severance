@@ -1,7 +1,11 @@
 #include "core/events/Event.hpp"
 #include "core/events/EventBus.hpp"
 #include "core/events/EventTypes.hpp"
+#include "core/filesystem/FileEvent.hpp"
+#include "core/filesystem/FileMonitor.hpp"
 #include "core/logging/Logger.hpp"
+#include "core/network/ConnectionInfo.hpp"
+#include "core/network/NetworkManager.hpp"
 #include "core/process/ProcessInfo.hpp"
 #include "core/process/ProcessManager.hpp"
 #include "core/process/ProcessTree.hpp"
@@ -14,6 +18,8 @@
 using namespace severance::core::events;
 using namespace severance::utils;
 using namespace severance::core::process;
+using namespace severance::core::network;
+using namespace severance::core::filesystem;
 
 class TestEvent : public Event {
 public:
@@ -93,4 +99,29 @@ TEST_CASE("ProcessTree", "[ProcessTree]") {
 
   tree.Clear();
   REQUIRE(tree.GetRoots().empty() == true);
+}
+
+TEST_CASE("NetworkManager", "[NetworkManager]") {
+  NetworkManager manager;
+  auto connections = manager.GetActiveConnections();
+
+  REQUIRE(connections.size() == 3);
+  REQUIRE(connections[0].protocol == Protocol::TCP);
+  REQUIRE(connections[0].localPort == 8080);
+}
+
+TEST_CASE("FileMonitor", "[FileMonitor]") {
+  FileMonitor monitor;
+  auto events_before_start = monitor.GetRecentEvents();
+  REQUIRE(events_before_start.empty() == true);
+
+  monitor.Start("/tmp/severance_test");
+  auto events_after_start = monitor.GetRecentEvents();
+
+  REQUIRE(events_after_start.size() == 3);
+  REQUIRE(events_after_start[0].type == FileEventType::Created);
+
+  monitor.Stop();
+  auto events_after_stop = monitor.GetRecentEvents();
+  REQUIRE(events_after_stop.empty() == true);
 }

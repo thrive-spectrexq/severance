@@ -26,6 +26,8 @@ add_executable(severance
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
+    src/core/network/NetworkManager.cpp
+    src/core/filesystem/FileMonitor.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)
@@ -45,6 +47,8 @@ add_executable(severance_tests
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
+    src/core/network/NetworkManager.cpp
+    src/core/filesystem/FileMonitor.cpp
 )
 target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils)
 target_link_libraries(severance_tests PRIVATE

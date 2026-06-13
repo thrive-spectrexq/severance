@@ -1,6 +1,17 @@
-#ifndef SRC_CORE_FILESYSTEM_FILEEVENT_HPP
-#define SRC_CORE_FILESYSTEM_FILEEVENT_HPP
+#pragma once
 
-// TODO: Implement
+#include <cstdint>
+#include <string>
 
-#endif // SRC_CORE_FILESYSTEM_FILEEVENT_HPP
+namespace severance::core::filesystem {
+
+enum class FileEventType { Created, Modified, Deleted, Renamed, Unknown };
+
+struct FileEvent {
+  FileEventType type{FileEventType::Unknown};
+  std::string path;
+  std::string oldPath; // Only used for Renamed
+  uint64_t timestamp{0};
+};
+
+} // namespace severance::core::filesystem
