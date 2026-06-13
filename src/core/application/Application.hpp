@@ -1,6 +1,16 @@
-#ifndef SRC_CORE_APPLICATION_APPLICATION_HPP
-#define SRC_CORE_APPLICATION_APPLICATION_HPP
+#pragma once
 
-// TODO: Implement
+namespace severance::core::application {
 
-#endif // SRC_CORE_APPLICATION_APPLICATION_HPP
+class Application {
+public:
+  Application();
+  ~Application();
+
+  void Run();
+
+private:
+  bool m_Running;
+};
+
+} // namespace severance::core::application

@@ -1,6 +1,18 @@
-#ifndef SRC_CORE_EVENTS_EVENT_HPP
-#define SRC_CORE_EVENTS_EVENT_HPP
+#pragma once
 
-// TODO: Implement
+#include "EventTypes.hpp"
+#include <string>
 
-#endif // SRC_CORE_EVENTS_EVENT_HPP
+namespace severance::core::events {
+
+class Event {
+public:
+  virtual ~Event() = default;
+
+  virtual EventType GetType() const = 0;
+  virtual std::string GetName() const = 0;
+
+  bool handled = false;
+};
+
+} // namespace severance::core::events
