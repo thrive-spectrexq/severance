@@ -1,6 +1,19 @@
-#ifndef SRC_CORE_PROCESS_PROCESSMANAGER_HPP
-#define SRC_CORE_PROCESS_PROCESSMANAGER_HPP
+#pragma once
 
-// TODO: Implement
+#include "ProcessInfo.hpp"
+#include <vector>
 
-#endif // SRC_CORE_PROCESS_PROCESSMANAGER_HPP
+namespace severance::core::process {
+
+class ProcessManager {
+public:
+  ProcessManager() = default;
+  ~ProcessManager() = default;
+
+  ProcessManager(const ProcessManager &) = delete;
+  ProcessManager &operator=(const ProcessManager &) = delete;
+
+  std::vector<ProcessInfo> GetRunningProcesses();
+};
+
+} // namespace severance::core::process

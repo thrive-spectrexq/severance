@@ -2,6 +2,9 @@
 #include "core/events/EventBus.hpp"
 #include "core/events/EventTypes.hpp"
 #include "core/logging/Logger.hpp"
+#include "core/process/ProcessInfo.hpp"
+#include "core/process/ProcessManager.hpp"
+#include "core/process/ProcessTree.hpp"
 #include "utils/Config.hpp"
 #include "utils/ThreadPool.hpp"
 #include "utils/UUID.hpp"
@@ -10,6 +13,7 @@
 
 using namespace severance::core::events;
 using namespace severance::utils;
+using namespace severance::core::process;
 
 class TestEvent : public Event {
 public:
@@ -68,4 +72,25 @@ TEST_CASE("Config System", "[Config]") {
 
   REQUIRE(Config::GetInstance().Get("test_key") == "test_value");
   REQUIRE(Config::GetInstance().Get("invalid_key", "default") == "default");
+}
+
+TEST_CASE("ProcessManager", "[ProcessManager]") {
+  ProcessManager manager;
+  auto processes = manager.GetRunningProcesses();
+
+  REQUIRE(processes.size() == 3);
+  REQUIRE(processes[0].pid == 1);
+  REQUIRE(processes[0].name == "systemd");
+}
+
+TEST_CASE("ProcessTree", "[ProcessTree]") {
+  ProcessTree tree;
+  tree.AddProcess(ProcessInfo{1, 0, "init", "root", 1024, 0.1});
+
+  auto roots = tree.GetRoots();
+  REQUIRE(roots.size() == 1);
+  REQUIRE(roots[0]->info.pid == 1);
+
+  tree.Clear();
+  REQUIRE(tree.GetRoots().empty() == true);
 }
