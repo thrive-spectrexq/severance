@@ -17,6 +17,11 @@ add_executable(severance
     src/core/events/EventBus.cpp
     src/core/application/Application.cpp
     src/gui/windows/MainWindow.cpp
+    src/gui/dashboard/DashboardView.cpp
+    src/gui/widgets/CpuWidget.cpp
+    src/gui/widgets/MemoryWidget.cpp
+    src/gui/widgets/NetworkWidget.cpp
+    src/gui/widgets/StatusBarWidget.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)

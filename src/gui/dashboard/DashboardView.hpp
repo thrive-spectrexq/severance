@@ -1,6 +1,13 @@
-#ifndef SRC_GUI_DASHBOARD_DASHBOARDVIEW_HPP
-#define SRC_GUI_DASHBOARD_DASHBOARDVIEW_HPP
+#pragma once
 
-// TODO: Implement
+#include <QWidget>
 
-#endif // SRC_GUI_DASHBOARD_DASHBOARDVIEW_HPP
+namespace severance::gui::dashboard {
+
+class DashboardView : public QWidget {
+  Q_OBJECT
+public:
+  explicit DashboardView(QWidget *parent = nullptr);
+};
+
+} // namespace severance::gui::dashboard
