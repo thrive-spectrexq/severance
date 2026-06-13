@@ -1,6 +1,14 @@
-#ifndef SRC_CORE_SANDBOX_ISOLATIONPOLICY_HPP
-#define SRC_CORE_SANDBOX_ISOLATIONPOLICY_HPP
+#pragma once
 
-// TODO: Implement
+#include <cstdint>
 
-#endif // SRC_CORE_SANDBOX_ISOLATIONPOLICY_HPP
+namespace severance::core::sandbox {
+
+struct IsolationPolicy {
+  bool allowNetworkAccess{false};
+  bool allowFileSystemWrite{false};
+  uint64_t maxMemoryBytes{0}; // 0 implies no limit
+  double maxCpuPercent{100.0};
+};
+
+} // namespace severance::core::sandbox

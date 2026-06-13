@@ -28,6 +28,9 @@ add_executable(severance
     src/core/process/ProcessManager.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
+    src/core/plugins/PluginManager.cpp
+    src/core/plugins/PluginLoader.cpp
+    src/core/sandbox/SandboxManager.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)
@@ -49,6 +52,9 @@ add_executable(severance_tests
     src/core/process/ProcessManager.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
+    src/core/plugins/PluginManager.cpp
+    src/core/plugins/PluginLoader.cpp
+    src/core/sandbox/SandboxManager.cpp
 )
 target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils)
 target_link_libraries(severance_tests PRIVATE
