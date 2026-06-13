@@ -22,6 +22,9 @@ add_executable(severance
     src/gui/widgets/MemoryWidget.cpp
     src/gui/widgets/NetworkWidget.cpp
     src/gui/widgets/StatusBarWidget.cpp
+    src/utils/ThreadPool.cpp
+    src/utils/UUID.cpp
+    src/utils/Config.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)
@@ -37,6 +40,9 @@ add_executable(severance_tests
     tests/unit/dummy_test.cpp
     src/core/logging/Logger.cpp
     src/core/events/EventBus.cpp
+    src/utils/ThreadPool.cpp
+    src/utils/UUID.cpp
+    src/utils/Config.cpp
 )
 target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils)
 target_link_libraries(severance_tests PRIVATE
