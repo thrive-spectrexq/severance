@@ -1,0 +1,6 @@
+#ifndef SRC_CORE_EVENTS_EVENT_HPP
+#define SRC_CORE_EVENTS_EVENT_HPP
+
+// TODO: Implement
+
+#endif // SRC_CORE_EVENTS_EVENT_HPP

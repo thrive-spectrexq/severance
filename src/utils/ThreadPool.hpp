@@ -1,0 +1,6 @@
+#ifndef SRC_UTILS_THREADPOOL_HPP
+#define SRC_UTILS_THREADPOOL_HPP
+
+// TODO: Implement
+
+#endif // SRC_UTILS_THREADPOOL_HPP
