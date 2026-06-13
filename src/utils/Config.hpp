@@ -1,0 +1,6 @@
+#ifndef SRC_UTILS_CONFIG_HPP
+#define SRC_UTILS_CONFIG_HPP
+
+// TODO: Implement
+
+#endif // SRC_UTILS_CONFIG_HPP
