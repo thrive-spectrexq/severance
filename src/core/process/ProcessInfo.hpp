@@ -1,6 +1,17 @@
-#ifndef SRC_CORE_PROCESS_PROCESSINFO_HPP
-#define SRC_CORE_PROCESS_PROCESSINFO_HPP
+#pragma once
 
-// TODO: Implement
+#include <cstdint>
+#include <string>
 
-#endif // SRC_CORE_PROCESS_PROCESSINFO_HPP
+namespace severance::core::process {
+
+struct ProcessInfo {
+  uint32_t pid{0};
+  uint32_t ppid{0};
+  std::string name;
+  std::string user;
+  uint64_t memoryUsageBytes{0};
+  double cpuUsagePercent{0.0};
+};
+
+} // namespace severance::core::process
