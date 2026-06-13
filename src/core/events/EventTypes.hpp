@@ -1,6 +1,17 @@
-#ifndef SRC_CORE_EVENTS_EVENTTYPES_HPP
-#define SRC_CORE_EVENTS_EVENTTYPES_HPP
+#pragma once
 
-// TODO: Implement
+namespace severance::core::events {
 
-#endif // SRC_CORE_EVENTS_EVENTTYPES_HPP
+enum class EventType {
+  None = 0,
+  ProcessCreated,
+  ProcessTerminated,
+  NetworkConnectionOpened,
+  NetworkConnectionClosed,
+  FileCreated,
+  FileModified,
+  FileDeleted,
+  AppQuit
+};
+
+} // namespace severance::core::events

@@ -1,6 +1,15 @@
-#ifndef SRC_GUI_WINDOWS_MAINWINDOW_HPP
-#define SRC_GUI_WINDOWS_MAINWINDOW_HPP
+#pragma once
 
-// TODO: Implement
+#include <QMainWindow>
 
-#endif // SRC_GUI_WINDOWS_MAINWINDOW_HPP
+namespace severance::gui::windows {
+
+class MainWindow : public QMainWindow {
+  Q_OBJECT
+
+public:
+  explicit MainWindow(QWidget *parent = nullptr);
+  ~MainWindow();
+};
+
+} // namespace severance::gui::windows

@@ -1,0 +1,9 @@
+{
+  "name": "severance",
+  "version": "0.1.0",
+  "dependencies": [
+    "spdlog",
+    "catch2",
+    "qtbase"
+  ]
+}
