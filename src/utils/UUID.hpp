@@ -1,6 +1,12 @@
-#ifndef SRC_UTILS_UUID_HPP
-#define SRC_UTILS_UUID_HPP
+#pragma once
 
-// TODO: Implement
+#include <string>
 
-#endif // SRC_UTILS_UUID_HPP
+namespace severance::utils {
+
+class UUID {
+public:
+  static std::string Generate();
+};
+
+} // namespace severance::utils
