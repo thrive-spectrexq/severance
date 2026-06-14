@@ -125,3 +125,40 @@ TEST_CASE("FileMonitor", "[FileMonitor]") {
   auto events_after_stop = monitor.GetRecentEvents();
   REQUIRE(events_after_stop.empty() == true);
 }
+
+#include "core/plugins/PluginManager.hpp"
+#include "core/sandbox/SandboxManager.hpp"
+
+using namespace severance::core::plugins;
+using namespace severance::core::sandbox;
+
+TEST_CASE("PluginManager", "[PluginManager]") {
+  PluginManager manager;
+
+  REQUIRE(manager.GetActivePlugins().empty() == true);
+
+  // Test stub load function doesn't crash
+  manager.LoadPlugins("/tmp/fake_plugins");
+  REQUIRE(manager.GetActivePlugins().empty() == true);
+}
+
+TEST_CASE("SandboxManager", "[SandboxManager]") {
+  SandboxManager manager;
+
+  SandboxProfile profile;
+  profile.name = "TestProfile";
+  profile.executablePath = "/usr/bin/echo";
+  profile.policy.allowNetworkAccess = false;
+
+  REQUIRE(manager.GetActiveProfiles().empty() == true);
+
+  bool launched = manager.LaunchProfile(profile);
+  REQUIRE(launched == true);
+
+  auto profiles = manager.GetActiveProfiles();
+  REQUIRE(profiles.size() == 1);
+  REQUIRE(profiles[0].name == "TestProfile");
+
+  manager.TerminateAll();
+  REQUIRE(manager.GetActiveProfiles().empty() == true);
+}

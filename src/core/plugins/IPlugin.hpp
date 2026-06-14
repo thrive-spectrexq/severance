@@ -1,6 +1,18 @@
-#ifndef SRC_CORE_PLUGINS_IPLUGIN_HPP
-#define SRC_CORE_PLUGINS_IPLUGIN_HPP
+#pragma once
 
-// TODO: Implement
+#include <string>
 
-#endif // SRC_CORE_PLUGINS_IPLUGIN_HPP
+namespace severance::core::plugins {
+
+class IPlugin {
+public:
+  virtual ~IPlugin() = default;
+
+  virtual std::string GetName() const = 0;
+  virtual std::string GetVersion() const = 0;
+
+  virtual bool Initialize() = 0;
+  virtual void Shutdown() = 0;
+};
+
+} // namespace severance::core::plugins

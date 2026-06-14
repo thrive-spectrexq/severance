@@ -1,6 +1,14 @@
-#ifndef SRC_CORE_SANDBOX_SANDBOXPROFILE_HPP
-#define SRC_CORE_SANDBOX_SANDBOXPROFILE_HPP
+#pragma once
 
-// TODO: Implement
+#include "IsolationPolicy.hpp"
+#include <string>
 
-#endif // SRC_CORE_SANDBOX_SANDBOXPROFILE_HPP
+namespace severance::core::sandbox {
+
+struct SandboxProfile {
+  std::string name;
+  IsolationPolicy policy;
+  std::string executablePath;
+};
+
+} // namespace severance::core::sandbox
