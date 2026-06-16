@@ -573,4 +573,4 @@ The long-term vision includes a tool serious enough for security researchers con
 **What did that process write?**
 **Why is memory climbing and not coming back down?**
 
-Severance answers these questions without ceremony.
+Severance answers these questions.
