@@ -1,6 +1,6 @@
 # Severance
 
-> A desktop application for visualizing, monitoring, and isolating system activity — with a clean, precise interface built.
+> A desktop application for visualizing, monitoring, and isolating system activity.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)
