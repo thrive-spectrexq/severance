@@ -9,6 +9,7 @@
 namespace severance::gui::isolation_view {
 
 IsolationView::IsolationView(QWidget *parent) : QWidget(parent) {
+  m_SandboxManager = std::make_unique<core::sandbox::SandboxManager>();
   setupUI();
 }
 
@@ -55,8 +56,8 @@ void IsolationView::setupUI() {
   layout->addWidget(subheader);
 
   m_ActiveSandboxesTable = new QTableWidget(this);
-  m_ActiveSandboxesTable->setColumnCount(3);
-  m_ActiveSandboxesTable->setHorizontalHeaderLabels({"Profile Name", "Executable", "Status"});
+  m_ActiveSandboxesTable->setColumnCount(4);
+  m_ActiveSandboxesTable->setHorizontalHeaderLabels({"Profile Name", "Executable", "Status", "Action"});
   m_ActiveSandboxesTable->horizontalHeader()->setStretchLastSection(true);
   m_ActiveSandboxesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_ActiveSandboxesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -73,16 +74,40 @@ void IsolationView::onLaunchClicked() {
   core::sandbox::SandboxProfile profile;
   profile.name = "Custom Sandbox " + std::to_string(m_ActiveSandboxesTable->rowCount() + 1);
   profile.executablePath = path.toStdString();
-  profile.networkIsolation = true;
-  profile.filesystemIsolation = true;
+  profile.policy.allowNetworkAccess = false;
+  profile.policy.allowFileSystemWrite = false;
 
-  core::sandbox::SandboxManager mgr;
-  if (mgr.LaunchProfile(profile)) {
+  if (m_SandboxManager->LaunchProfile(profile)) {
     int row = m_ActiveSandboxesTable->rowCount();
     m_ActiveSandboxesTable->insertRow(row);
     m_ActiveSandboxesTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(profile.name)));
     m_ActiveSandboxesTable->setItem(row, 1, new QTableWidgetItem(path));
     m_ActiveSandboxesTable->setItem(row, 2, new QTableWidgetItem("Running"));
+
+    auto* termBtn = new QPushButton("Terminate", this);
+    termBtn->setStyleSheet("background-color: #DA3633; color: white; border-radius: 4px;");
+    connect(termBtn, &QPushButton::clicked, this, [this, row]() {
+      onTerminateClicked(row);
+    });
+    m_ActiveSandboxesTable->setCellWidget(row, 3, termBtn);
+  }
+}
+
+void IsolationView::onTerminateClicked(int row) {
+  if (row >= 0 && row < m_ActiveSandboxesTable->rowCount()) {
+    m_SandboxManager->TerminateSandbox(row);
+    m_ActiveSandboxesTable->removeRow(row);
+    
+    // We must re-bind the lambda row indices for remaining rows
+    for (int i = row; i < m_ActiveSandboxesTable->rowCount(); ++i) {
+        auto* btn = qobject_cast<QPushButton*>(m_ActiveSandboxesTable->cellWidget(i, 3));
+        if (btn) {
+            btn->disconnect();
+            connect(btn, &QPushButton::clicked, this, [this, i]() {
+                onTerminateClicked(i);
+            });
+        }
+    }
   }
 }
 
