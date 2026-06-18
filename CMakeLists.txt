@@ -23,6 +23,7 @@ add_executable(severance
     src/gui/theme/Theme.cpp
     src/gui/search/SearchOverlay.cpp
     src/gui/network_view/NetworkView.cpp
+    src/gui/file_view/FileView.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
@@ -30,6 +31,7 @@ add_executable(severance
     src/core/metrics/WindowsMetricsProvider.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
+    src/core/filesystem/EtwMonitor.cpp
     src/core/plugins/PluginManager.cpp
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp

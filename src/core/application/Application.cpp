@@ -3,6 +3,8 @@
 #include "events/EventTypes.hpp"
 #include "store/EventStore.hpp"
 #include "logging/Logger.hpp"
+#include "filesystem/EtwMonitor.hpp"
+#include "events/FileActivityEvent.hpp"
 #include <iostream>
 
 namespace severance::core::application {
@@ -14,6 +16,12 @@ Application::Application() : m_Running(true) {
   // Initialize Event Store
   store::EventStore::GetInstance().Initialize();
 
+  // ETW Monitoring
+  filesystem::EtwMonitor::GetInstance().SetCallback([](const filesystem::FileEvent& fe) {
+    events::EventBus::GetInstance().Publish(std::make_shared<events::FileActivityEvent>(fe));
+  });
+  filesystem::EtwMonitor::GetInstance().Start();
+
   // Subscribe Event Store to all events
   auto eventCallback = [](std::shared_ptr<events::Event> e) {
     store::EventStore::GetInstance().RecordEvent(e);
@@ -24,6 +32,7 @@ Application::Application() : m_Running(true) {
   auto& bus = events::EventBus::GetInstance();
   bus.Subscribe(events::EventType::ProcessCreated, eventCallback);
   bus.Subscribe(events::EventType::ProcessTerminated, eventCallback);
+  bus.Subscribe(events::EventType::FileModified, eventCallback);
   bus.Subscribe(events::EventType::AppQuit, eventCallback);
 
   // Example subscribe to app quit event
@@ -37,6 +46,7 @@ Application::Application() : m_Running(true) {
 
 Application::~Application() { 
   SEV_CORE_INFO("Application shutting down."); 
+  filesystem::EtwMonitor::GetInstance().Stop();
   store::EventStore::GetInstance().Shutdown();
 }
 

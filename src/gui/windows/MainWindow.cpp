@@ -2,6 +2,7 @@
 #include "gui/dashboard/DashboardView.hpp"
 #include "gui/process_view/ProcessView.hpp"
 #include "gui/network_view/NetworkView.hpp"
+#include "gui/file_view/FileView.hpp"
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
@@ -166,19 +167,18 @@ void MainWindow::setupViews() {
   m_DashboardView = new dashboard::DashboardView(this);
   m_ProcessView = new process_view::ProcessView(this);
   m_NetworkView = new network_view::NetworkView(this);
+  m_FileView = new file_view::FileView(this);
   auto* timelineView = new QLabel("Timeline View (Coming Soon)", this);
-  auto* filesView = new QLabel("Files View (Coming Soon)", this);
   auto* isolationView = new QLabel("Isolation View (Coming Soon)", this);
 
   timelineView->setAlignment(Qt::AlignCenter);
-  filesView->setAlignment(Qt::AlignCenter);
   isolationView->setAlignment(Qt::AlignCenter);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
   m_ViewStack->addWidget(timelineView);    // Index 2
   m_ViewStack->addWidget(m_NetworkView);   // Index 3
-  m_ViewStack->addWidget(filesView);       // Index 4
+  m_ViewStack->addWidget(m_FileView);      // Index 4
   m_ViewStack->addWidget(isolationView);   // Index 5
 }
 
