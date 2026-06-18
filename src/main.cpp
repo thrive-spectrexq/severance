@@ -1,5 +1,6 @@
 #include "core/application/Application.hpp"
 #include "gui/windows/MainWindow.hpp"
+#include "gui/theme/Theme.hpp"
 #include <QApplication>
 
 int main(int argc, char *argv[]) {
@@ -7,6 +8,8 @@ int main(int argc, char *argv[]) {
 
   severance::core::application::Application app;
   app.Run();
+
+  severance::gui::theme::ApplyDarkTheme(&qtApp);
 
   severance::gui::windows::MainWindow mainWindow;
   mainWindow.show();

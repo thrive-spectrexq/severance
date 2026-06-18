@@ -1,6 +1,19 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QStackedWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QStatusBar>
+#include <QShortcut>
+#include <vector>
+#include <memory>
+
+namespace severance::gui::search { class SearchOverlay; }
+
+namespace severance::gui::dashboard { class DashboardView; }
+namespace severance::gui::process_view { class ProcessView; }
 
 namespace severance::gui::windows {
 
@@ -10,6 +23,49 @@ class MainWindow : public QMainWindow {
 public:
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
+
+private slots:
+  void onSidebarButtonClicked(int index);
+  void onSearchTriggered();
+  void onCommandPaletteTriggered();
+
+private:
+  void setupSidebar();
+  void setupViews();
+  void setupStatusBar();
+  void setupShortcuts();
+  void setActiveView(int index);
+
+  // Sidebar
+  QWidget* m_Sidebar{nullptr};
+  QVBoxLayout* m_SidebarLayout{nullptr};
+  std::vector<QPushButton*> m_SidebarButtons;
+  int m_ActiveViewIndex{0};
+
+  // Central content
+  QStackedWidget* m_ViewStack{nullptr};
+
+  // Views
+  dashboard::DashboardView* m_DashboardView{nullptr};
+  process_view::ProcessView* m_ProcessView{nullptr};
+  // Future: TimelineView, NetworkView, FileView, IsolationView
+
+  // Search
+  search::SearchOverlay* m_SearchOverlay{nullptr};
+
+  // Status bar widgets
+  QLabel* m_StatusCpu{nullptr};
+  QLabel* m_StatusMem{nullptr};
+  QLabel* m_StatusProcessCount{nullptr};
+  QLabel* m_StatusRecording{nullptr};
+
+  // Sidebar button labels and icons
+  struct ViewInfo {
+    QString name;
+    QString icon;     // Unicode fallback, will use SVG later
+    QString shortcut;
+  };
+  std::vector<ViewInfo> m_ViewInfos;
 };
 
 } // namespace severance::gui::windows

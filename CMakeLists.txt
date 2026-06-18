@@ -18,14 +18,15 @@ add_executable(severance
     src/core/application/Application.cpp
     src/gui/windows/MainWindow.cpp
     src/gui/dashboard/DashboardView.cpp
-    src/gui/widgets/CpuWidget.cpp
-    src/gui/widgets/MemoryWidget.cpp
-    src/gui/widgets/NetworkWidget.cpp
-    src/gui/widgets/StatusBarWidget.cpp
+    src/gui/process_view/ProcessView.cpp
+    src/gui/process_view/ProcessTreeModel.cpp
+    src/gui/theme/Theme.cpp
+    src/gui/search/SearchOverlay.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
+    src/core/metrics/WindowsMetricsProvider.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
     src/core/plugins/PluginManager.cpp
