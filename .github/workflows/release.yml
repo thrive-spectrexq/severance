@@ -1,1 +1,67 @@
-# TODO: Implement
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags, e.g., v1.0.0, v0.2.0-dev
+
+env:
+  # Enable vcpkg binary caching via GitHub Actions cache
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  release-windows:
+    name: Build Windows Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        vcpkgJsonGlob: 'vcpkg.json'
+
+    - name: Configure CMake
+      run: >
+        cmake -B build -S . 
+        -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" 
+        -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build Application
+      run: cmake --build build --config Release
+
+    - name: Deploy Qt Dependencies (windeployqt)
+      shell: pwsh
+      run: |
+        $WindeployqtPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\tools\qt6\bin\windeployqt.exe"
+        if (Test-Path $WindeployqtPath) {
+          Write-Host "Running windeployqt..."
+          & $WindeployqtPath --release --compiler-runtime build\Release\severance.exe
+        } else {
+          Write-Host "Warning: windeployqt not found at $WindeployqtPath"
+        }
+        
+    - name: Prepare Artifact Package
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path dist
+        Copy-Item -Path build\Release\* -Destination dist\ -Recurse -Force
+        Compress-Archive -Path dist\* -DestinationPath severance-windows-x64.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: severance-windows-x64.zip
+        generate_release_notes: true
