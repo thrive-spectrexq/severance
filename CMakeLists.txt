@@ -32,6 +32,7 @@ add_executable(severance
     src/core/plugins/PluginManager.cpp
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
+    src/core/store/EventStore.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)
@@ -40,6 +41,7 @@ target_link_libraries(severance PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
+    Qt6::Sql
 )
 
 enable_testing()
