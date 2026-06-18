@@ -1,8 +1,16 @@
 #pragma once
 
 #include "IPlugin.hpp"
-#include <memory>
+#include <string>
 #include <vector>
+#include <memory>
+#include <filesystem>
+
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 namespace severance::core::plugins {
 
@@ -11,16 +19,23 @@ public:
   PluginManager() = default;
   ~PluginManager();
 
-  PluginManager(const PluginManager &) = delete;
-  PluginManager &operator=(const PluginManager &) = delete;
-
   void LoadPlugins(const std::string &directory);
   void UnloadAll();
 
-  std::vector<std::shared_ptr<IPlugin>> GetActivePlugins() const;
+  std::vector<IPlugin*> GetActivePlugins() const;
 
 private:
-  std::vector<std::shared_ptr<IPlugin>> m_Plugins;
+  struct PluginContext {
+    IPlugin* plugin{nullptr};
+#if defined(_WIN32)
+    HMODULE handle{nullptr};
+#else
+    void* handle{nullptr};
+#endif
+  };
+
+  std::vector<PluginContext> m_LoadedPlugins;
+  std::unique_ptr<::severance::plugins::IPluginAPI> m_ApiProxy;
 };
 
 } // namespace severance::core::plugins

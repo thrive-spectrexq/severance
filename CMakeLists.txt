@@ -80,3 +80,6 @@ target_link_libraries(severance_tests PRIVATE
     Catch2::Catch2WithMain
 )
 add_test(NAME dummy_test COMMAND severance_tests)
+
+# Include plugins subdirectory
+add_subdirectory(plugins)
