@@ -1,7 +1,9 @@
 #include "ProcessView.hpp"
 #include "ProcessTreeModel.hpp"
+#include "ProcessDetailPanel.hpp"
 #include "core/process/ProcessManager.hpp"
 #include <QVBoxLayout>
+#include <QSplitter>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMenu>
@@ -135,7 +137,14 @@ void ProcessView::setupUI() {
     }
   });
 
-  mainLayout->addWidget(m_TreeView, 1);
+  auto* splitter = new QSplitter(Qt::Horizontal, this);
+  splitter->addWidget(m_TreeView);
+
+  m_DetailPanel = new ProcessDetailPanel(this);
+  splitter->addWidget(m_DetailPanel);
+  splitter->setSizes({800, 400}); // Default sizes
+
+  mainLayout->addWidget(splitter, 1);
 }
 
 void ProcessView::setupToolbar() {
@@ -204,8 +213,7 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
 
   auto propertiesAction = menu.addAction("Properties");
   connect(propertiesAction, &QAction::triggered, this, [this, info]() {
-    // Will show detail panel in future
-    Q_UNUSED(info);
+    m_DetailPanel->LoadProcess(info.pid);
   });
 
   menu.exec(m_TreeView->viewport()->mapToGlobal(pos));
@@ -214,8 +222,7 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
 void ProcessView::onProcessDoubleClicked(const QModelIndex &index) {
   auto sourceIndex = m_ProxyModel->mapToSource(index);
   auto info = m_Model->getProcessInfo(sourceIndex);
-  // Will open detail panel in future
-  Q_UNUSED(info);
+  m_DetailPanel->LoadProcess(info.pid);
 }
 
 } // namespace severance::gui::process_view

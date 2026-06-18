@@ -11,6 +11,7 @@
 namespace severance::gui::process_view {
 
 class ProcessTreeModel; // forward declaration
+class ProcessDetailPanel; // forward declaration
 
 class ProcessView : public QWidget {
   Q_OBJECT
@@ -40,6 +41,9 @@ private:
   // Model
   ProcessTreeModel* m_Model{nullptr};
   QSortFilterProxyModel* m_ProxyModel{nullptr};
+
+  // Detail Panel
+  ProcessDetailPanel* m_DetailPanel{nullptr};
 
   // Refresh timer
   QTimer* m_RefreshTimer{nullptr};

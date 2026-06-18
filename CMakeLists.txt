@@ -20,6 +20,7 @@ add_executable(severance
     src/gui/dashboard/DashboardView.cpp
     src/gui/process_view/ProcessView.cpp
     src/gui/process_view/ProcessTreeModel.cpp
+    src/gui/process_view/ProcessDetailPanel.cpp
     src/gui/theme/Theme.cpp
     src/gui/search/SearchOverlay.cpp
     src/gui/network_view/NetworkView.cpp
@@ -32,6 +33,7 @@ add_executable(severance
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
     src/core/filesystem/EtwMonitor.cpp
+    src/core/correlation/CorrelationEngine.cpp
     src/core/plugins/PluginManager.cpp
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
