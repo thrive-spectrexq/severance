@@ -1,6 +1,7 @@
 {
   "name": "severance",
   "version": "0.1.0",
+  "builtin-baseline": "46c9f8d8398360278222d335c28bceb776ebb61f",
   "dependencies": [
     "spdlog",
     "catch2",
