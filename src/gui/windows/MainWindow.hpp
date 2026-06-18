@@ -7,6 +7,8 @@
 #include <QVBoxLayout>
 #include <QStatusBar>
 #include <QShortcut>
+#include <QSystemTrayIcon>
+#include <QMenu>
 #include <vector>
 #include <memory>
 
@@ -37,7 +39,11 @@ private:
   void setupViews();
   void setupStatusBar();
   void setupShortcuts();
+  void setupSystemTray();
   void setActiveView(int index);
+
+public slots:
+  void showSystemNotification(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information);
 
   // Sidebar
   QWidget* m_Sidebar{nullptr};
@@ -66,6 +72,10 @@ private:
   QLabel* m_StatusMem{nullptr};
   QLabel* m_StatusProcessCount{nullptr};
   QLabel* m_StatusRecording{nullptr};
+
+  // System Tray
+  QSystemTrayIcon* m_TrayIcon{nullptr};
+  QMenu* m_TrayMenu{nullptr};
 
   // Sidebar button labels and icons
   struct ViewInfo {

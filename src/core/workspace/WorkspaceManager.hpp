@@ -22,7 +22,7 @@ public:
   }
 
   void LoadProfiles(const std::string& directory);
-  void SaveProfile(const WorkspaceProfile& profile);
+  void SaveProfile(const WorkspaceProfile& profile, const std::string& directory);
   
   std::vector<WorkspaceProfile> GetAvailableProfiles() const;
   WorkspaceProfile GetActiveProfile() const;

@@ -35,10 +35,33 @@ bool SessionManager::IsRecording() const {
   return m_IsRecording;
 }
 
+#include <fstream>
+#include <filesystem>
+
 std::string SessionManager::ExportSession(const std::string& exportPath) {
   SEV_CORE_INFO("Exporting session to: {}", exportPath);
-  // Real implementation will copy sqlite db, bundle it, compress it
-  return exportPath + "/session_" + m_CurrentSession.sessionId + ".sev";
+  
+  if (!std::filesystem::exists(exportPath)) {
+      std::filesystem::create_directories(exportPath);
+  }
+
+  std::string fullPath = exportPath + "/session_" + m_CurrentSession.sessionId + ".json";
+  std::ofstream file(fullPath);
+  if (file.is_open()) {
+      file << "{\n";
+      file << "  \"sessionId\": \"" << m_CurrentSession.sessionId << "\",\n";
+      file << "  \"name\": \"" << m_CurrentSession.name << "\",\n";
+      file << "  \"description\": \"" << m_CurrentSession.description << "\",\n";
+      file << "  \"startTime\": " << m_CurrentSession.startTime << ",\n";
+      file << "  \"endTime\": " << m_CurrentSession.endTime << ",\n";
+      file << "  \"eventCount\": " << m_CurrentSession.eventCount << "\n";
+      file << "}\n";
+      file.close();
+      SEV_CORE_INFO("Session metadata saved to: {}", fullPath);
+  } else {
+      SEV_CORE_ERROR("Failed to write session file.");
+  }
+  return fullPath;
 }
 
 } // namespace severance::core::session

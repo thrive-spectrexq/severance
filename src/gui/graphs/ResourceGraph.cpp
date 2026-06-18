@@ -7,6 +7,15 @@ namespace severance::gui::graphs {
 
 ResourceGraph::ResourceGraph(QWidget *parent) : QWidget(parent) {
   setMinimumHeight(100);
+  
+  // Seed with 0s
+  for (size_t i = 0; i < m_MaxPoints; ++i) {
+      m_Data.push_back(0.0);
+  }
+
+  m_Timer = new QTimer(this);
+  connect(m_Timer, &QTimer::timeout, this, &ResourceGraph::updateData);
+  m_Timer->start(1000); // 1 Hz update
 }
 
 void ResourceGraph::addDataPoint(double value) {
@@ -18,8 +27,15 @@ void ResourceGraph::addDataPoint(double value) {
 }
 
 void ResourceGraph::clear() {
-  m_Data.clear();
+  std::fill(m_Data.begin(), m_Data.end(), 0.0);
   update();
+}
+
+void ResourceGraph::updateData() {
+  // Simulate live data for demonstration (e.g. 20-80% usage)
+  // In a real scenario, this would query System/Process stats
+  double randomValue = 20.0 + (rand() % 60);
+  addDataPoint(randomValue);
 }
 
 void ResourceGraph::paintEvent(QPaintEvent *event) {
@@ -51,6 +67,15 @@ void ResourceGraph::paintEvent(QPaintEvent *event) {
       path.lineTo(x, y);
     }
   }
+
+  // Fill area under the curve
+  QPainterPath fillPath = path;
+  fillPath.lineTo(width(), height());
+  fillPath.lineTo(0, height());
+  
+  QColor fillColor("#58A6FF");
+  fillColor.setAlpha(40);
+  painter.fillPath(fillPath, fillColor);
 
   painter.setPen(QPen(QColor("#58A6FF"), 2));
   painter.drawPath(path);

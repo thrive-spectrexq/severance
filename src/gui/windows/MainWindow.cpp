@@ -9,6 +9,8 @@
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
 #include "gui/ai_panel/AiPanel.hpp"
+#include "core/application/Application.hpp"
+#include "core/notifications/NotificationManager.hpp"
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QSplitter>
@@ -75,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   setupStatusBar();
   setupShortcuts();
+  setupSystemTray();
 
   // Setup Search Overlay and Command Palette
   m_SearchOverlay = new search::SearchOverlay(this);
@@ -288,6 +291,67 @@ void MainWindow::onSearchTriggered() {
 void MainWindow::onCommandPaletteTriggered() {
   // For now, Command Palette is just Search Overlay but we could pre-fill with "> "
   m_SearchOverlay->showOverlay();
+}
+
+void MainWindow::setupSystemTray() {
+  if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+      return;
+  }
+
+  m_TrayIcon = new QSystemTrayIcon(this);
+  
+  // Create a placeholder icon if we don't have a real one
+  QPixmap pixmap(32, 32);
+  pixmap.fill(QColor("#238636"));
+  QIcon icon(pixmap);
+  m_TrayIcon->setIcon(icon);
+  
+  m_TrayMenu = new QMenu(this);
+  QAction* restoreAction = new QAction("Restore", this);
+  connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
+  m_TrayMenu->addAction(restoreAction);
+  
+  m_TrayMenu->addSeparator();
+  
+  QAction* quitAction = new QAction("Quit", this);
+  connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+  m_TrayMenu->addAction(quitAction);
+  
+  m_TrayIcon->setContextMenu(m_TrayMenu);
+  m_TrayIcon->show();
+
+  // Handle click on tray icon/notification
+  connect(m_TrayIcon, &QSystemTrayIcon::messageClicked, this, [this]() {
+      this->showNormal();
+      this->raise();
+      this->activateWindow();
+  });
+
+  // Bind core NotificationManager to trigger system tray
+  core::notifications::NotificationManager::GetInstance().RegisterCallback(
+    [this](const core::notifications::Notification& n) {
+      // Map severity to tray icon
+      QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information;
+      if (n.severity == core::notifications::NotificationSeverity::Warning) {
+          icon = QSystemTrayIcon::Warning;
+      } else if (n.severity == core::notifications::NotificationSeverity::Error || 
+                 n.severity == core::notifications::NotificationSeverity::Critical) {
+          icon = QSystemTrayIcon::Critical;
+      }
+      
+      // We must call UI updates on the main thread, so we use QMetaObject::invokeMethod
+      QMetaObject::invokeMethod(this, "showSystemNotification", Qt::QueuedConnection,
+          Q_ARG(QString, QString::fromStdString(n.title)),
+          Q_ARG(QString, QString::fromStdString(n.message)),
+          Q_ARG(QSystemTrayIcon::MessageIcon, icon)
+      );
+  });
+}
+
+void MainWindow::showSystemNotification(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon) {
+  if (m_TrayIcon && m_TrayIcon->isVisible()) {
+      m_TrayIcon->showMessage(title, message, icon, 5000); // 5 second timeout
+  }
 }
 
 } // namespace severance::gui::windows
