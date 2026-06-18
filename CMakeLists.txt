@@ -26,7 +26,10 @@ add_executable(severance
     src/gui/network_view/NetworkView.cpp
     src/gui/file_view/FileView.cpp
     src/gui/timeline/TimelineView.cpp
+    src/gui/isolation_view/IsolationView.cpp
     src/gui/ai_panel/AiPanel.cpp
+    src/gui/graphs/ResourceGraph.cpp
+    src/gui/widgets/StatusIndicator.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
@@ -41,6 +44,9 @@ add_executable(severance
     src/core/sandbox/SandboxManager.cpp
     src/core/store/EventStore.cpp
     src/core/ai/AiEngine.cpp
+    src/core/workspace/WorkspaceManager.cpp
+    src/core/notifications/NotificationManager.cpp
+    src/core/session/SessionManager.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)

@@ -4,6 +4,7 @@
 #include "gui/network_view/NetworkView.hpp"
 #include "gui/file_view/FileView.hpp"
 #include "gui/timeline/TimelineView.hpp"
+#include "gui/isolation_view/IsolationView.hpp"
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
@@ -193,9 +194,7 @@ void MainWindow::setupViews() {
   m_NetworkView = new network_view::NetworkView(this);
   m_FileView = new file_view::FileView(this);
   auto* timelineView = new timeline::TimelineView(this);
-  auto* isolationView = new QLabel("Isolation View (Coming Soon)", this);
-
-  isolationView->setAlignment(Qt::AlignCenter);
+  auto* isolationView = new isolation_view::IsolationView(this);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
