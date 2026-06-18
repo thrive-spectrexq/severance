@@ -20,6 +20,9 @@ public:
   explicit ProcessView(QWidget *parent = nullptr);
   ~ProcessView() = default;
 
+signals:
+  void analyzeProcessRequested(uint32_t pid, const QString& processName, const QString& context);
+
 private slots:
   void onRefreshTimer();
   void onSearchTextChanged(const QString &text);

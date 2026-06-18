@@ -26,6 +26,7 @@ add_executable(severance
     src/gui/network_view/NetworkView.cpp
     src/gui/file_view/FileView.cpp
     src/gui/timeline/TimelineView.cpp
+    src/gui/ai_panel/AiPanel.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
@@ -39,6 +40,7 @@ add_executable(severance
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
     src/core/store/EventStore.cpp
+    src/core/ai/AiEngine.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils)
@@ -48,6 +50,7 @@ target_link_libraries(severance PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Sql
+    Qt6::Network
 )
 
 enable_testing()

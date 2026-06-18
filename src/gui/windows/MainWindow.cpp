@@ -7,8 +7,10 @@
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
+#include "gui/ai_panel/AiPanel.hpp"
 #include <QApplication>
 #include <QHBoxLayout>
+#include <QSplitter>
 #include <QShortcut>
 #include <QKeySequence>
 #include <QFrame>
@@ -48,7 +50,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   mainLayout->addWidget(separator);
 
   setupViews();
-  mainLayout->addWidget(m_ViewStack, 1); // stretch=1, takes remaining space
+  
+  auto* contentSplitter = new QSplitter(Qt::Horizontal, centralWidget);
+  contentSplitter->addWidget(m_ViewStack);
+  
+  m_AiPanel = new ai_panel::AiPanel(contentSplitter);
+  m_AiPanel->hide(); // Hidden by default
+  contentSplitter->addWidget(m_AiPanel);
+  
+  // Set initial sizes to give ViewStack more space if AI Panel is shown
+  contentSplitter->setSizes({800, 300});
+
+  connect(m_ProcessView, &process_view::ProcessView::analyzeProcessRequested, this, [this](uint32_t pid, const QString& name, const QString& context) {
+    if (!m_AiPanel->isVisible()) {
+      m_AiPanel->show();
+    }
+    m_AiPanel->startAnalysis(pid, name, context);
+  });
+
+  mainLayout->addWidget(contentSplitter, 1); // stretch=1, takes remaining space
 
   setCentralWidget(centralWidget);
 
@@ -73,6 +93,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   }});
   registry.registerCommand({"cmd.palette", "Show Command Palette", "Show the command palette", "Ctrl+Shift+P", [this]() {
     onCommandPaletteTriggered();
+  }});
+  registry.registerCommand({"view.toggle_ai", "Toggle AI Insights", "Show or hide the AI Insights panel", "Ctrl+I", [this]() {
+    m_AiPanel->setVisible(!m_AiPanel->isVisible());
   }});
 
   // Start on Dashboard

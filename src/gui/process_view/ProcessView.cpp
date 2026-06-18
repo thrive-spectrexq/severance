@@ -141,6 +141,11 @@ void ProcessView::setupUI() {
   splitter->addWidget(m_TreeView);
 
   m_DetailPanel = new ProcessDetailPanel(this);
+  connect(m_DetailPanel, &ProcessDetailPanel::analyzeProcessRequested, this, [this](uint32_t pid, const QString& name) {
+    // Generate context string
+    QString context = "Context not implemented yet in the UI."; 
+    emit analyzeProcessRequested(pid, name, context);
+  });
   splitter->addWidget(m_DetailPanel);
   splitter->setSizes({800, 400}); // Default sizes
 

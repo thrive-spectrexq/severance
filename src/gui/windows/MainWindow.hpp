@@ -16,6 +16,7 @@ namespace severance::gui::dashboard { class DashboardView; }
 namespace severance::gui::process_view { class ProcessView; }
 namespace severance::gui::network_view { class NetworkView; }
 namespace severance::gui::file_view { class FileView; }
+namespace severance::gui::ai_panel { class AiPanel; }
 
 namespace severance::gui::windows {
 
@@ -56,6 +57,9 @@ private:
 
   // Search
   search::SearchOverlay* m_SearchOverlay{nullptr};
+
+  // AI Panel
+  ai_panel::AiPanel* m_AiPanel{nullptr};
 
   // Status bar widgets
   QLabel* m_StatusCpu{nullptr};

@@ -31,6 +31,14 @@ void ProcessDetailPanel::setupUI() {
   headerLayout->addWidget(m_PidLabel);
   headerLayout->addStretch();
   
+  m_AiAnalyzeBtn = new QPushButton("✨ Analyze with AI", this);
+  m_AiAnalyzeBtn->setStyleSheet("background-color: #238636; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;");
+  m_AiAnalyzeBtn->hide(); // Hide until process loaded
+  connect(m_AiAnalyzeBtn, &QPushButton::clicked, this, [this]() {
+    emit analyzeProcessRequested(m_CurrentPid, m_TitleLabel->text());
+  });
+  headerLayout->addWidget(m_AiAnalyzeBtn);
+
   layout->addLayout(headerLayout);
 
   // Tabs
@@ -68,18 +76,22 @@ void ProcessDetailPanel::setupUI() {
 }
 
 void ProcessDetailPanel::Clear() {
+  m_CurrentPid = 0;
   m_TitleLabel->setText("Select a process");
   m_PidLabel->setText("");
+  m_AiAnalyzeBtn->hide();
   m_OverviewContent->setText("Overview details will go here...");
   m_FilesTable->setRowCount(0);
   m_NetworkTable->setRowCount(0);
 }
 
 void ProcessDetailPanel::LoadProcess(uint32_t pid) {
+  m_CurrentPid = pid;
   auto profile = CorrelationEngine::GetInstance().GetProcessProfile(pid);
 
   m_TitleLabel->setText(QString::fromStdString(profile.name));
   m_PidLabel->setText(QString("PID: %1").arg(pid));
+  m_AiAnalyzeBtn->show();
 
   // Populate Files
   m_FilesTable->setUpdatesEnabled(false);
