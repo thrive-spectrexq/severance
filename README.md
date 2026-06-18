@@ -510,22 +510,22 @@ cd build; ctest --output-on-failure
 
 ### Phase 2 — Daily Driver *(in progress)*
 
-- [ ] Process Explorer with full tree view and process tagging
-- [ ] System Dashboard with GPU and thermal monitoring
-- [ ] Global Search (`Ctrl+K`) across all domains
-- [ ] Command Palette (`Ctrl+Shift+P`)
+- [x] Process Explorer with full tree view and process tagging
+- [x] System Dashboard with GPU and thermal monitoring
+- [x] Global Search (`Ctrl+K`) across all domains
+- [x] Command Palette (`Ctrl+Shift+P`)
 - [ ] Activity Timeline with zoom and per-type filtering
-- [ ] Thread pool for async event processing
-- [ ] SQLite-backed event store for persistence
+- [x] Thread pool for async event processing
+- [x] SQLite-backed event store for persistence
 - [ ] Workspace Profiles
 
-### Phase 3 — Deep Monitoring
+### Phase 3 — Deep Monitoring *(in progress)*
 
-- [ ] Network Monitor with live connection table and per-process graphs
-- [ ] File Activity Monitor with diff view
-- [ ] Cross-Event Correlation Engine with visual graph
+- [x] Network Monitor with live connection table and per-process graphs
+- [x] File Activity Monitor with diff view
+- [x] Cross-Event Correlation Engine with visual graph
 - [ ] Advanced GPU-accelerated graph widgets (Qt RHI)
-- [ ] ETW integration for kernel-level tracing
+- [x] ETW integration for kernel-level tracing
 - [ ] Smart Notifications with pattern-based detection
 
 ### Phase 4 — Intelligence

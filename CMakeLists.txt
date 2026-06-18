@@ -25,6 +25,7 @@ add_executable(severance
     src/gui/search/SearchOverlay.cpp
     src/gui/network_view/NetworkView.cpp
     src/gui/file_view/FileView.cpp
+    src/gui/timeline/TimelineView.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
