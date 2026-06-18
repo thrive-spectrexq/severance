@@ -14,6 +14,7 @@ namespace severance::gui::search { class SearchOverlay; }
 
 namespace severance::gui::dashboard { class DashboardView; }
 namespace severance::gui::process_view { class ProcessView; }
+namespace severance::gui::network_view { class NetworkView; }
 
 namespace severance::gui::windows {
 
@@ -48,7 +49,8 @@ private:
   // Views
   dashboard::DashboardView* m_DashboardView{nullptr};
   process_view::ProcessView* m_ProcessView{nullptr};
-  // Future: TimelineView, NetworkView, FileView, IsolationView
+  network_view::NetworkView* m_NetworkView{nullptr};
+  // Future: TimelineView, FileView, IsolationView
 
   // Search
   search::SearchOverlay* m_SearchOverlay{nullptr};

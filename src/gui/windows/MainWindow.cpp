@@ -1,6 +1,7 @@
 #include "MainWindow.hpp"
 #include "gui/dashboard/DashboardView.hpp"
 #include "gui/process_view/ProcessView.hpp"
+#include "gui/network_view/NetworkView.hpp"
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
@@ -162,32 +163,23 @@ void MainWindow::setupViews() {
   m_ViewStack = new QStackedWidget(this);
   m_ViewStack->setStyleSheet("background-color: #0D1117;");
 
-  // Dashboard (index 0)
   m_DashboardView = new dashboard::DashboardView(this);
-  m_ViewStack->addWidget(m_DashboardView);
-
-  // Process Explorer (index 1)
   m_ProcessView = new process_view::ProcessView(this);
-  m_ViewStack->addWidget(m_ProcessView);
+  m_NetworkView = new network_view::NetworkView(this);
+  auto* timelineView = new QLabel("Timeline View (Coming Soon)", this);
+  auto* filesView = new QLabel("Files View (Coming Soon)", this);
+  auto* isolationView = new QLabel("Isolation View (Coming Soon)", this);
 
-  // Placeholder views for Timeline, Network, Files, Isolation
-  for (int i = 2; i < static_cast<int>(m_ViewInfos.size()); ++i) {
-    auto placeholder = new QWidget(this);
-    auto layout = new QVBoxLayout(placeholder);
-    layout->setAlignment(Qt::AlignCenter);
+  timelineView->setAlignment(Qt::AlignCenter);
+  filesView->setAlignment(Qt::AlignCenter);
+  isolationView->setAlignment(Qt::AlignCenter);
 
-    auto label = new QLabel(m_ViewInfos[i].name, placeholder);
-    label->setStyleSheet("font-size: 24px; font-weight: 600; color: #6E7681;");
-    label->setAlignment(Qt::AlignCenter);
-    layout->addWidget(label);
-
-    auto subtitle = new QLabel("Coming in Phase 3", placeholder);
-    subtitle->setStyleSheet("font-size: 14px; color: #30363D;");
-    subtitle->setAlignment(Qt::AlignCenter);
-    layout->addWidget(subtitle);
-
-    m_ViewStack->addWidget(placeholder);
-  }
+  m_ViewStack->addWidget(m_DashboardView); // Index 0
+  m_ViewStack->addWidget(m_ProcessView);   // Index 1
+  m_ViewStack->addWidget(timelineView);    // Index 2
+  m_ViewStack->addWidget(m_NetworkView);   // Index 3
+  m_ViewStack->addWidget(filesView);       // Index 4
+  m_ViewStack->addWidget(isolationView);   // Index 5
 }
 
 void MainWindow::setupStatusBar() {

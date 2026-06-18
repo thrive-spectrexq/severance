@@ -22,6 +22,7 @@ add_executable(severance
     src/gui/process_view/ProcessTreeModel.cpp
     src/gui/theme/Theme.cpp
     src/gui/search/SearchOverlay.cpp
+    src/gui/network_view/NetworkView.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
