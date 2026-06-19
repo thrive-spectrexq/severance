@@ -530,61 +530,6 @@ cd build; ctest --output-on-failure
 
 ## Roadmap
 
-### Phase 1 — Foundation *(complete)*
-
-- [x] Core framework skeleton
-- [x] Event bus
-- [x] Main window shell
-- [x] Dashboard layout
-- [x] Logging infrastructure
-- [x] Theme system (dark, light, high-contrast)
-
-### Phase 2 — Daily Driver *(in progress)*
-
-- [x] Process Explorer with full tree view and process tagging
-- [x] System Dashboard with GPU and thermal monitoring
-- [x] Global Search (`Ctrl+K`) across all domains
-- [x] Command Palette (`Ctrl+Shift+P`)
-- [x] Activity Timeline with zoom and per-type filtering
-- [x] Thread pool for async event processing
-- [x] SQLite-backed event store for persistence
-- [x] Workspace Profiles
-
-### Phase 3 — Deep Monitoring *(Completed)*
-
-- [x] Network Monitor with live connection table and per-process graphs
-- [x] File Activity Monitor with diff view
-- [x] Cross-Event Correlation Engine with visual graph
-- [x] Advanced GPU-accelerated graph widgets (Qt RHI / QOpenGLWidget)
-- [x] ETW integration for kernel-level tracing
-- [x] Smart Notifications with pattern-based detection
-
-### Phase 4 — Intelligence *(Completed)*
-
-- [x] AI Insights Module (local LLM via llama.cpp / Ollama)
-- [x] Natural language system queries
-- [x] Anomaly explanation engine
-- [x] Baseline recording and comparison
-
-### Phase 5 — Ecosystem
-
-- [x] Plugin SDK (public API + full documentation)
-- [x] Dynamic module loading at runtime
-- [ ] Plugin Marketplace (in-app browser and installer)
-- [ ] Plugin sandboxing and declared permission model
-
-### Phase 6 — Isolation and Control *(Completed)*
-
-- [x] Sandbox engine via Job Objects and Restricted Tokens
-- [x] Isolation Profiles with enforcement
-- [x] Security analysis tooling
-- [x] Behavioral heuristics via `security_plugin`
-
-### Phase 7 — Record and Report *(Completed)*
-
-- [x] Session Recording and Playback (via Telemetry Reports)
-- [x] Exportable Telemetry Reports (JSON, Markdown)
-- [x] Incident annotation and session sharing
 
 ### Future — Cross-Platform Expansion
 
