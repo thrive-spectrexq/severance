@@ -78,6 +78,8 @@ target_include_directories(severance_tests PRIVATE src src/core src/gui src/util
 target_link_libraries(severance_tests PRIVATE
     spdlog::spdlog
     Catch2::Catch2WithMain
+    Qt6::Core
+    Qt6::Network
 )
 add_test(NAME dummy_test COMMAND severance_tests)
 

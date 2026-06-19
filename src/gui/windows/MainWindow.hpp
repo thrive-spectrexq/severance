@@ -45,6 +45,7 @@ private:
 public slots:
   void showSystemNotification(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information);
 
+private:
   // Sidebar
   QWidget* m_Sidebar{nullptr};
   QVBoxLayout* m_SidebarLayout{nullptr};
