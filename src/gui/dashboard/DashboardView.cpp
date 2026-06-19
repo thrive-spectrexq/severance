@@ -6,6 +6,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QFrame>
+#include <QString>
 
 #ifdef _WIN32
 #include "core/metrics/WindowsMetricsProvider.hpp"

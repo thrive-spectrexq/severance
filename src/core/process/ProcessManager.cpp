@@ -12,6 +12,7 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include "utils/ScopedHandle.hpp"
 
 namespace severance::core::process {
 
@@ -19,21 +20,19 @@ namespace severance::core::process {
 
 // Helper: get username for a process
 static std::string GetProcessUser(HANDLE hProcess) {
-  HANDLE hToken = nullptr;
-  if (!OpenProcessToken(hProcess, TOKEN_QUERY, &hToken)) {
+  utils::ScopedHandle hToken;
+  if (!OpenProcessToken(hProcess, TOKEN_QUERY, hToken.GetAddressOf())) {
     return "";
   }
 
   DWORD tokenInfoLen = 0;
   GetTokenInformation(hToken, TokenUser, nullptr, 0, &tokenInfoLen);
   if (tokenInfoLen == 0) {
-    CloseHandle(hToken);
     return "";
   }
 
   std::vector<BYTE> buffer(tokenInfoLen);
   if (!GetTokenInformation(hToken, TokenUser, buffer.data(), tokenInfoLen, &tokenInfoLen)) {
-    CloseHandle(hToken);
     return "";
   }
 
@@ -46,13 +45,11 @@ static std::string GetProcessUser(HANDLE hProcess) {
   SID_NAME_USE sidType;
 
   if (LookupAccountSidA(nullptr, tokenUser->User.Sid, name, &nameLen, domain, &domainLen, &sidType)) {
-    CloseHandle(hToken);
     // Return "DOMAIN\User" or just "User"
     std::string user = name;
     return user;
   }
 
-  CloseHandle(hToken);
   return "";
 }
 
@@ -129,8 +126,8 @@ static double ComputeCpuPercent(HANDLE hProcess, uint32_t pid) {
 std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
   std::vector<ProcessInfo> processes;
 
-  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if (snapshot == INVALID_HANDLE_VALUE) {
+  utils::ScopedHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
+  if (!snapshot.IsValid()) {
     SEV_CORE_ERROR("Failed to create process snapshot");
     return processes;
   }
@@ -139,7 +136,6 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
   pe.dwSize = sizeof(PROCESSENTRY32W);
 
   if (!Process32FirstW(snapshot, &pe)) {
-    CloseHandle(snapshot);
     return processes;
   }
 
@@ -165,11 +161,11 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
 
     // Open process for detailed info (skip PID 0)
     if (info.pid != 0) {
-      HANDLE hProcess = OpenProcess(
+      utils::ScopedHandle hProcess(OpenProcess(
         PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ,
-        FALSE, info.pid);
+        FALSE, info.pid));
 
-      if (hProcess) {
+      if (hProcess.IsValid()) {
         // Memory info
         PROCESS_MEMORY_COUNTERS_EX pmc;
         if (GetProcessMemoryInfo(hProcess, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) {
@@ -191,8 +187,6 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
         if (GetProcessHandleCount(hProcess, &handleCount)) {
           info.handleCount = handleCount;
         }
-
-        CloseHandle(hProcess);
       }
     }
 
@@ -200,8 +194,6 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
     processes.push_back(std::move(info));
 
   } while (Process32NextW(snapshot, &pe));
-
-  CloseHandle(snapshot);
 
   // Clean up old CPU data for dead processes
   for (auto it = s_PrevCpuTimes.begin(); it != s_PrevCpuTimes.end(); ) {
@@ -216,14 +208,13 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
 }
 
 bool ProcessManager::KillProcess(uint32_t pid) {
-  HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-  if (!hProcess) {
+  utils::ScopedHandle hProcess(OpenProcess(PROCESS_TERMINATE, FALSE, pid));
+  if (!hProcess.IsValid()) {
     SEV_CORE_ERROR("Failed to open process {} for termination", pid);
     return false;
   }
 
   BOOL result = TerminateProcess(hProcess, 1);
-  CloseHandle(hProcess);
 
   if (result) {
     SEV_CORE_INFO("Terminated process {}", pid);

@@ -15,6 +15,7 @@
 #endif
 #include <windows.h>
 #include <psapi.h>
+#include <stdint.h>
 
 /* ─── System Info ──────────────────────────────────────────────────── */
 

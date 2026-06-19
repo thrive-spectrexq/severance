@@ -16,8 +16,8 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   SEV_CORE_INFO("Launching sandbox profile: {} ({})", profile.name, profile.executablePath);
 
 #if defined(_WIN32)
-  HANDLE hJob = CreateJobObjectW(NULL, NULL);
-  if (!hJob) {
+  utils::ScopedHandle hJob(CreateJobObjectW(NULL, NULL));
+  if (!hJob.IsValid()) {
     SEV_CORE_ERROR("Failed to create Job Object. Error: {}", GetLastError());
     return false;
   }
@@ -33,7 +33,6 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
 
   if (!SetInformationJobObject(hJob, JobObjectExtendedLimitInformation, &jeli, sizeof(jeli))) {
     SEV_CORE_ERROR("Failed to set Job limits. Error: {}", GetLastError());
-    CloseHandle(hJob);
     return false;
   }
 
@@ -47,11 +46,11 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   }
 
   // Token Integrity
-  HANDLE hToken = NULL;
-  HANDLE hNewToken = NULL;
+  utils::ScopedHandle hToken;
+  utils::ScopedHandle hNewToken;
   if (!profile.policy.allowFileSystemWrite) {
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, &hToken)) {
-      if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityImpersonation, TokenPrimary, &hNewToken)) {
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, hToken.GetAddressOf())) {
+      if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityImpersonation, TokenPrimary, hNewToken.GetAddressOf())) {
         PSID pIntegritySid = NULL;
         if (ConvertStringSidToSidW(L"S-1-16-4096", &pIntegritySid)) { // Low Integrity
           TOKEN_MANDATORY_LABEL tml = {0};
@@ -72,7 +71,7 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   bool success = false;
   DWORD creationFlags = CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB;
 
-  if (hNewToken) {
+  if (hNewToken.IsValid()) {
     // Note: CreateProcessAsUserW often requires SeAssignPrimaryTokenPrivilege which normal users don't have.
     success = CreateProcessAsUserW(hNewToken, wExePath.c_str(), NULL, NULL, NULL, FALSE, creationFlags, NULL, NULL, &si, &pi);
     if (!success) {
@@ -84,31 +83,28 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
     success = CreateProcessW(wExePath.c_str(), NULL, NULL, NULL, FALSE, creationFlags, NULL, NULL, &si, &pi);
   }
 
-  if (hNewToken) CloseHandle(hNewToken);
-  if (hToken) CloseHandle(hToken);
+  // Tokens automatically closed when hNewToken/hToken go out of scope
 
   if (!success) {
     SEV_CORE_ERROR("Failed to create process. Error: {}", GetLastError());
-    CloseHandle(hJob);
     return false;
   }
+
+  utils::ScopedHandle hPiProcess(pi.hProcess);
+  utils::ScopedHandle hPiThread(pi.hThread);
 
   if (!AssignProcessToJobObject(hJob, pi.hProcess)) {
     SEV_CORE_ERROR("Failed to assign process to Job. Error: {}", GetLastError());
     TerminateProcess(pi.hProcess, 1);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    CloseHandle(hJob);
     return false;
   }
 
   ResumeThread(pi.hThread);
-  CloseHandle(pi.hThread);
 
   ActiveSandbox ctx;
   ctx.profile = profile;
-  ctx.hProcess = pi.hProcess;
-  ctx.hJob = hJob;
+  ctx.hProcess = std::move(hPiProcess);
+  ctx.hJob = std::move(hJob);
   m_ActiveSandboxes.push_back(ctx);
 
   return true;
@@ -122,12 +118,11 @@ void SandboxManager::TerminateSandbox(size_t index) {
   if (index >= m_ActiveSandboxes.size()) return;
   auto& ctx = m_ActiveSandboxes[index];
 #if defined(_WIN32)
-  if (ctx.hProcess) {
+  if (ctx.hProcess.IsValid()) {
     TerminateProcess(ctx.hProcess, 0);
-    CloseHandle(ctx.hProcess);
   }
-  if (ctx.hJob) CloseHandle(ctx.hJob);
 #endif
+  // Handles will be automatically closed when ctx is destroyed via erase
   m_ActiveSandboxes.erase(m_ActiveSandboxes.begin() + index);
 }
 
@@ -135,13 +130,12 @@ void SandboxManager::TerminateAll() {
   SEV_CORE_INFO("Terminating all active sandboxes.");
 #if defined(_WIN32)
   for (auto& ctx : m_ActiveSandboxes) {
-    if (ctx.hProcess) {
+    if (ctx.hProcess.IsValid()) {
       TerminateProcess(ctx.hProcess, 0);
-      CloseHandle(ctx.hProcess);
     }
-    if (ctx.hJob) CloseHandle(ctx.hJob);
   }
 #endif
+  // Handles will be automatically closed when the vector is cleared
   m_ActiveSandboxes.clear();
 }
 

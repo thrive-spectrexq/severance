@@ -6,6 +6,7 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#include "utils/ScopedHandle.hpp"
 #endif
 
 namespace severance::core::sandbox {
@@ -28,8 +29,8 @@ private:
   struct ActiveSandbox {
     SandboxProfile profile;
 #if defined(_WIN32)
-    HANDLE hProcess{nullptr};
-    HANDLE hJob{nullptr};
+    utils::ScopedHandle hProcess;
+    utils::ScopedHandle hJob;
 #else
     void* hProcess{nullptr};
     void* hJob{nullptr};
