@@ -32,6 +32,7 @@ add_executable(severance
     src/gui/timeline/TimelineView.cpp
     src/gui/timeline/TimelineHistogram.cpp
     src/gui/isolation_view/IsolationView.cpp
+    src/gui/session_view/SessionView.cpp
     src/gui/ai_panel/AiPanel.cpp
     src/gui/graphs/ResourceGraph.cpp
     src/gui/graphs/OpenGLResourceGraph.cpp

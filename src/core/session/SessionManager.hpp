@@ -1,8 +1,19 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <memory>
+
+namespace severance::core::events {
+  class Event;
+}
 
 namespace severance::core::session {
+
+struct SessionAnnotation {
+  uint64_t timestamp;
+  std::string note;
+};
 
 struct SessionInfo {
   std::string sessionId;
@@ -27,11 +38,17 @@ public:
   void StopRecording();
   bool IsRecording() const;
 
+  void AddAnnotation(const std::string& note);
+  void OnEventReceived(std::shared_ptr<events::Event> event);
+
   std::string ExportSession(const std::string& exportPath);
+  std::string ExportMarkdown(const std::string& exportPath);
 
 private:
   bool m_IsRecording{false};
   SessionInfo m_CurrentSession;
+  std::vector<std::shared_ptr<events::Event>> m_RecordedEvents;
+  std::vector<SessionAnnotation> m_Annotations;
 };
 
 } // namespace severance::core::session

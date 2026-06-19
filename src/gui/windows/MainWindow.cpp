@@ -5,6 +5,7 @@
 #include "gui/file_view/FileView.hpp"
 #include "gui/timeline/TimelineView.hpp"
 #include "gui/isolation_view/IsolationView.hpp"
+#include "gui/session_view/SessionView.hpp"
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
@@ -38,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     {"Network",    "N", "Ctrl+4"},
     {"Files",      "F", "Ctrl+5"},
     {"Isolation",  "I", "Ctrl+6"},
+    {"Sessions",   "S", "Ctrl+7"},
   };
 
   // Build the central layout: sidebar | content
@@ -202,6 +204,7 @@ void MainWindow::setupViews() {
   m_FileView = new file_view::FileView(this);
   auto* timelineView = new timeline::TimelineView(this);
   auto* isolationView = new isolation_view::IsolationView(this);
+  auto* sessionView = new session_view::SessionView(this);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
@@ -209,6 +212,7 @@ void MainWindow::setupViews() {
   m_ViewStack->addWidget(m_NetworkView);   // Index 3
   m_ViewStack->addWidget(m_FileView);      // Index 4
   m_ViewStack->addWidget(isolationView);   // Index 5
+  m_ViewStack->addWidget(sessionView);     // Index 6
 }
 
 void MainWindow::setupStatusBar() {
