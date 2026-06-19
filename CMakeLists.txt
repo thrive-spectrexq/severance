@@ -95,5 +95,6 @@ target_link_libraries(severance_tests PRIVATE
 )
 add_test(NAME dummy_test COMMAND severance_tests)
 
-# Include plugins subdirectory
-add_subdirectory(plugins)
+# Subdirectories for plugins
+add_subdirectory(plugins/sample_plugin)
+add_subdirectory(plugins/security_plugin)

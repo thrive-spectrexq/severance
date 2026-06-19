@@ -1,6 +1,8 @@
 #include "PluginManager.hpp"
 #include "logging/Logger.hpp"
+#include "core/notifications/NotificationManager.hpp"
 #include <filesystem>
+#include <chrono>
 
 namespace severance::core::plugins {
 
@@ -15,6 +17,18 @@ public:
   }
   void LogError(const char* message) override {
     SEV_CORE_ERROR("[Plugin] {}", message);
+  }
+
+  void EmitHeuristicAlert(const char* title, const char* message, int severity) override {
+    notifications::Notification n;
+    n.id = "plugin_heuristic";
+    n.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
+    n.severity = static_cast<notifications::NotificationSeverity>(severity);
+    n.title = title ? title : "Plugin Alert";
+    n.message = message ? message : "";
+    n.source = "Plugin Engine";
+    notifications::NotificationManager::GetInstance().EmitNotification(n);
   }
 };
 

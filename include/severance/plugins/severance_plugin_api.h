@@ -50,11 +50,13 @@ typedef struct SevPluginAPI {
     void (*log_warning)(const char* message);
     void (*log_error)(const char* message);
 
+    /* Security Heuristics */
+    void (*emit_heuristic_alert)(const char* title, const char* message, int severity);
+
     /* Reserved for future expansion — do not access */
     void (*_reserved1)(void);
     void (*_reserved2)(void);
     void (*_reserved3)(void);
-    void (*_reserved4)(void);
 } SevPluginAPI;
 
 /* ─── Plugin Metadata ──────────────────────────────────────────────── */

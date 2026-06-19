@@ -5,6 +5,8 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QLineEdit>
+#include <QComboBox>
+#include <QSpinBox>
 #include <memory>
 #include "core/sandbox/SandboxManager.hpp"
 
@@ -20,6 +22,7 @@ public:
 private slots:
   void onLaunchClicked();
   void onTerminateClicked(int row);
+  void onActiveSandboxClicked(int row, int column);
 
 private:
   void setupUI();
@@ -27,9 +30,17 @@ private:
   QLineEdit* m_ExecutablePath{nullptr};
   QPushButton* m_BrowseBtn{nullptr};
   QPushButton* m_LaunchBtn{nullptr};
+  QComboBox* m_ProfileCombo{nullptr};
+  QSpinBox* m_MemSpin{nullptr};
+  QSpinBox* m_CpuSpin{nullptr};
   QTableWidget* m_ActiveSandboxesTable{nullptr};
 
   std::unique_ptr<core::sandbox::SandboxManager> m_SandboxManager;
+
+  // Security Analysis Pane
+  QWidget* m_AnalysisPane{nullptr};
+  QLabel*  m_AnalysisTitle{nullptr};
+  QLabel*  m_AnalysisDetails{nullptr};
 };
 
 } // namespace severance::gui::isolation_view

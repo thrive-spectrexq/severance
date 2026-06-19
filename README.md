@@ -573,12 +573,12 @@ cd build; ctest --output-on-failure
 - [ ] Plugin Marketplace (in-app browser and installer)
 - [ ] Plugin sandboxing and declared permission model
 
-### Phase 6 — Isolation and Control
+### Phase 6 — Isolation and Control *(Completed)*
 
-- [ ] Sandbox engine via Job Objects and Restricted Tokens
-- [ ] Isolation Profiles with enforcement
-- [ ] Security analysis tooling
-- [ ] Behavioral heuristics via `security_plugin`
+- [x] Sandbox engine via Job Objects and Restricted Tokens
+- [x] Isolation Profiles with enforcement
+- [x] Security analysis tooling
+- [x] Behavioral heuristics via `security_plugin`
 
 ### Phase 7 — Record and Report
 

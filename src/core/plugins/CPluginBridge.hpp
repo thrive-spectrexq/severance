@@ -75,10 +75,10 @@ public:
     m_HostApi.log_info    = &CPluginBridge::LogInfoTrampoline;
     m_HostApi.log_warning = &CPluginBridge::LogWarningTrampoline;
     m_HostApi.log_error   = &CPluginBridge::LogErrorTrampoline;
+    m_HostApi.emit_heuristic_alert = &CPluginBridge::EmitHeuristicAlertTrampoline;
     m_HostApi._reserved1  = nullptr;
     m_HostApi._reserved2  = nullptr;
     m_HostApi._reserved3  = nullptr;
-    m_HostApi._reserved4  = nullptr;
 
     // Keep a reference to the C++ API for this bridge instance
     m_CppApi = api;
@@ -121,6 +121,9 @@ private:
   }
   static void LogErrorTrampoline(const char* message) {
     if (s_CurrentAPI) s_CurrentAPI->LogError(message);
+  }
+  static void EmitHeuristicAlertTrampoline(const char* title, const char* message, int severity) {
+    if (s_CurrentAPI) s_CurrentAPI->EmitHeuristicAlert(title, message, severity);
   }
 };
 

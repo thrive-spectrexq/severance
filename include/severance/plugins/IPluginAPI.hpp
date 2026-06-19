@@ -14,6 +14,9 @@ public:
   virtual void LogWarning(const char* message) = 0;
   virtual void LogError(const char* message) = 0;
 
+  // Security heuristics
+  virtual void EmitHeuristicAlert(const char* title, const char* message, int severity) = 0;
+
   // Future expansion:
   // virtual void SubscribeToEvent(EventType type, EventCallback cb) = 0;
   // virtual void PublishEvent(const Event& event) = 0;
