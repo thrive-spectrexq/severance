@@ -30,6 +30,7 @@ add_executable(severance
     src/gui/network_view/NetworkView.cpp
     src/gui/file_view/FileView.cpp
     src/gui/timeline/TimelineView.cpp
+    src/gui/timeline/TimelineHistogram.cpp
     src/gui/isolation_view/IsolationView.cpp
     src/gui/ai_panel/AiPanel.cpp
     src/gui/graphs/ResourceGraph.cpp

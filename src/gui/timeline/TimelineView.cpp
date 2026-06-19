@@ -8,6 +8,7 @@
 #include <QHeaderView>
 #include <QTimer>
 #include <QDateTime>
+#include <QPushButton>
 
 namespace severance::gui::timeline {
 
@@ -18,14 +19,6 @@ TimelineView::TimelineView(QWidget* parent) : QWidget(parent) {
   connect(timer, &QTimer::timeout, this, &TimelineView::processPendingEvents);
   timer->start(200); // UI update interval
 
-  core::events::EventBus::GetInstance().Subscribe(
-      core::events::EventType::None, // Subscribe to all? EventBus doesn't support wildcard yet. 
-      // We will subscribe to all individual events.
-      [this](std::shared_ptr<core::events::Event> e) {
-        appendEvent(e);
-      });
-  
-  // Register specifically for events since EventBus doesn't have wildcard
   auto cb = [this](std::shared_ptr<core::events::Event> e) { appendEvent(e); };
   auto& bus = core::events::EventBus::GetInstance();
   bus.Subscribe(core::events::EventType::ProcessCreated, cb);
@@ -47,16 +40,45 @@ void TimelineView::setupUI() {
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
 
+  // Histogram
+  m_Histogram = new TimelineHistogram(this);
+  connect(m_Histogram, &TimelineHistogram::timeRangeSelected, this, &TimelineView::onTimeRangeSelected);
+  layout->addWidget(m_Histogram);
+
   // Top Bar
   auto* topBar = new QHBoxLayout();
   
-  m_EventTypeFilter = new QComboBox(this);
-  m_EventTypeFilter->addItem("All Events", 0);
-  m_EventTypeFilter->addItem("Process Activity", 1);
-  m_EventTypeFilter->addItem("Network Activity", 2);
-  m_EventTypeFilter->addItem("File Activity", 3);
-  connect(m_EventTypeFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TimelineView::onEventTypeFilterChanged);
-  topBar->addWidget(m_EventTypeFilter);
+  auto createFilterBtn = [this](const QString& text) {
+    auto btn = new QPushButton(text, this);
+    btn->setCheckable(true);
+    btn->setChecked(true); // Default all on
+    btn->setStyleSheet(R"(
+      QPushButton {
+        background-color: #21262D;
+        border: 1px solid #30363D;
+        border-radius: 4px;
+        color: #8B949E;
+        padding: 4px 12px;
+      }
+      QPushButton:hover { background-color: #30363D; }
+      QPushButton:checked {
+        background-color: #1F3A5F;
+        border-color: #58A6FF;
+        color: #58A6FF;
+      }
+    )");
+    connect(btn, &QPushButton::toggled, this, &TimelineView::onFilterToggled);
+    return btn;
+  };
+
+  m_FilterProcess = createFilterBtn("Process");
+  m_FilterNetwork = createFilterBtn("Network");
+  m_FilterFile = createFilterBtn("File");
+
+  topBar->addWidget(m_FilterProcess);
+  topBar->addWidget(m_FilterNetwork);
+  topBar->addWidget(m_FilterFile);
+  topBar->addSpacing(20);
 
   m_SearchBox = new QLineEdit(this);
   m_SearchBox->setPlaceholderText("Filter events by keyword...");
@@ -69,11 +91,12 @@ void TimelineView::setupUI() {
 
   // Table
   m_Table = new QTableWidget(this);
-  m_Table->setColumnCount(3);
-  m_Table->setHorizontalHeaderLabels({"Timestamp", "Type", "Details"});
+  m_Table->setColumnCount(4); // Added hidden timestamp column for filtering
+  m_Table->setHorizontalHeaderLabels({"Timestamp", "Type", "Details", "TS_MS"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   m_Table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+  m_Table->setColumnHidden(3, true); // Hide raw timestamp MS
   m_Table->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_Table->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_Table->verticalHeader()->setVisible(false);
@@ -97,7 +120,9 @@ QString TimelineView::getEventTypeName(core::events::EventType type) {
 }
 
 QString TimelineView::formatEventPayload(std::shared_ptr<core::events::Event> event) {
-  if (event->GetType() == core::events::EventType::FileModified) {
+  if (event->GetType() == core::events::EventType::FileModified ||
+      event->GetType() == core::events::EventType::FileCreated ||
+      event->GetType() == core::events::EventType::FileDeleted) {
     auto fae = std::static_pointer_cast<core::events::FileActivityEvent>(event);
     if (fae) {
       return QString("PID: %1 [%2] %3 %4")
@@ -107,13 +132,14 @@ QString TimelineView::formatEventPayload(std::shared_ptr<core::events::Event> ev
         .arg(QString::fromStdString(fae->fileEvent.filePath));
     }
   }
-  // Fallback
   return QString::fromStdString(event->GetName());
 }
 
 void TimelineView::loadInitialEvents() {
   auto events = core::store::EventStore::GetInstance().GetRecentEvents(100);
   m_Table->setUpdatesEnabled(false);
+  std::vector<uint64_t> timestamps;
+  
   for (const auto& ev : events) {
     int row = m_Table->rowCount();
     m_Table->insertRow(row);
@@ -124,8 +150,12 @@ void TimelineView::loadInitialEvents() {
     m_Table->setItem(row, 0, new QTableWidgetItem(timeStr));
     m_Table->setItem(row, 1, new QTableWidgetItem(getEventTypeName(static_cast<core::events::EventType>(ev.eventType))));
     m_Table->setItem(row, 2, new QTableWidgetItem(ev.payloadJson));
+    m_Table->setItem(row, 3, new QTableWidgetItem(QString::number(ev.timestamp)));
+    
+    timestamps.push_back(ev.timestamp);
   }
   m_Table->setUpdatesEnabled(true);
+  m_Histogram->setEvents(timestamps);
 }
 
 void TimelineView::appendEvent(std::shared_ptr<core::events::Event> event) {
@@ -145,58 +175,81 @@ void TimelineView::processPendingEvents() {
     m_PendingEvents.clear();
   }
 
-  QString filter = m_SearchBox->text().toLower();
-  int typeFilterIdx = m_EventTypeFilter->currentIndex();
-
   m_Table->setUpdatesEnabled(false);
 
   for (const auto& ev : toProcess) {
     QString typeStr = getEventTypeName(ev->GetType());
     QString detailsStr = formatEventPayload(ev);
+    uint64_t ts = ev->GetTimestamp();
 
-    // Apply filters
-    if (typeFilterIdx == 1) { // Process
-      if (ev->GetType() != core::events::EventType::ProcessCreated && 
-          ev->GetType() != core::events::EventType::ProcessTerminated) continue;
-    } else if (typeFilterIdx == 2) { // Network
-      if (ev->GetType() != core::events::EventType::NetworkConnectionOpened && 
-          ev->GetType() != core::events::EventType::NetworkConnectionClosed) continue;
-    } else if (typeFilterIdx == 3) { // File
-      if (ev->GetType() != core::events::EventType::FileCreated && 
-          ev->GetType() != core::events::EventType::FileModified &&
-          ev->GetType() != core::events::EventType::FileDeleted) continue;
-    }
+    m_Histogram->addEvent(ts);
 
-    if (!filter.isEmpty()) {
-      if (!typeStr.toLower().contains(filter) && !detailsStr.toLower().contains(filter)) {
-        continue;
-      }
-    }
-
-    m_Table->insertRow(0); // Insert at top (newest first)
+    m_Table->insertRow(0); // Insert at top
     
-    QDateTime dt = QDateTime::currentDateTime();
+    QDateTime dt = QDateTime::fromMSecsSinceEpoch(ts);
     QString timeStr = dt.toString("HH:mm:ss.zzz");
     
     m_Table->setItem(0, 0, new QTableWidgetItem(timeStr));
     m_Table->setItem(0, 1, new QTableWidgetItem(typeStr));
     m_Table->setItem(0, 2, new QTableWidgetItem(detailsStr));
+    m_Table->setItem(0, 3, new QTableWidgetItem(QString::number(ts)));
 
     if (m_Table->rowCount() > m_MaxRows) {
       m_Table->removeRow(m_MaxRows);
     }
   }
 
+  updateTableVisibility();
   m_Table->setUpdatesEnabled(true);
 }
 
-void TimelineView::onSearchTextChanged(const QString& text) {
-  // Clearing and re-fetching from EventStore is better, but requires implementing full filtering in DB.
-  // For now, we rely on live filtering of new events.
+void TimelineView::updateTableVisibility() {
+  QString filter = m_SearchBox->text().toLower();
+  bool showProcess = m_FilterProcess->isChecked();
+  bool showNetwork = m_FilterNetwork->isChecked();
+  bool showFile = m_FilterFile->isChecked();
+
+  for (int i = 0; i < m_Table->rowCount(); ++i) {
+    bool visible = true;
+    
+    // Type filtering
+    QString typeStr = m_Table->item(i, 1)->text();
+    if (!showProcess && typeStr.startsWith("Process")) visible = false;
+    if (!showNetwork && typeStr.startsWith("Network")) visible = false;
+    if (!showFile && typeStr.startsWith("File")) visible = false;
+    
+    // Time filtering
+    if (visible && m_FilterStartMS > 0 && m_FilterEndMS > 0) {
+        uint64_t ts = m_Table->item(i, 3)->text().toULongLong();
+        if (ts < m_FilterStartMS || ts > m_FilterEndMS) {
+            visible = false;
+        }
+    }
+
+    // Text filtering
+    if (visible && !filter.isEmpty()) {
+      QString detailsStr = m_Table->item(i, 2)->text();
+      if (!typeStr.toLower().contains(filter) && !detailsStr.toLower().contains(filter)) {
+        visible = false;
+      }
+    }
+
+    m_Table->setRowHidden(i, !visible);
+  }
 }
 
-void TimelineView::onEventTypeFilterChanged(int index) {
-  // Same as search
+void TimelineView::onSearchTextChanged(const QString& text) {
+  updateTableVisibility();
+}
+
+void TimelineView::onFilterToggled() {
+  updateTableVisibility();
+}
+
+void TimelineView::onTimeRangeSelected(uint64_t startMS, uint64_t endMS) {
+  m_FilterStartMS = startMS;
+  m_FilterEndMS = endMS;
+  updateTableVisibility();
 }
 
 } // namespace severance::gui::timeline

@@ -73,6 +73,12 @@ private:
   QLabel* m_StatusMem{nullptr};
   QLabel* m_StatusProcessCount{nullptr};
   QLabel* m_StatusRecording{nullptr};
+  QPushButton* m_WorkspaceBtn{nullptr};
+  QMenu* m_WorkspaceMenu{nullptr};
+
+  void updateWorkspaceMenu();
+  void onSaveWorkspace();
+  void onSwitchWorkspace(const QString& name);
 
   // System Tray
   QSystemTrayIcon* m_TrayIcon{nullptr};

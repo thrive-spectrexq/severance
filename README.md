@@ -545,10 +545,10 @@ cd build; ctest --output-on-failure
 - [x] System Dashboard with GPU and thermal monitoring
 - [x] Global Search (`Ctrl+K`) across all domains
 - [x] Command Palette (`Ctrl+Shift+P`)
-- [ ] Activity Timeline with zoom and per-type filtering
+- [x] Activity Timeline with zoom and per-type filtering
 - [x] Thread pool for async event processing
 - [x] SQLite-backed event store for persistence
-- [ ] Workspace Profiles
+- [x] Workspace Profiles
 
 ### Phase 3 — Deep Monitoring *(in progress)*
 
@@ -568,8 +568,8 @@ cd build; ctest --output-on-failure
 
 ### Phase 5 — Ecosystem
 
-- [ ] Plugin SDK (public API + full documentation)
-- [ ] Dynamic module loading at runtime
+- [x] Plugin SDK (public API + full documentation)
+- [x] Dynamic module loading at runtime
 - [ ] Plugin Marketplace (in-app browser and installer)
 - [ ] Plugin sandboxing and declared permission model
 

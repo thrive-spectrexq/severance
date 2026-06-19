@@ -7,7 +7,7 @@
 #include <vector>
 #include <mutex>
 #include <memory>
-#include "core/events/Event.hpp"
+#include "TimelineHistogram.hpp"
 
 namespace severance::gui::timeline {
 
@@ -22,7 +22,8 @@ public:
 
 private slots:
   void onSearchTextChanged(const QString& text);
-  void onEventTypeFilterChanged(int index);
+  void onFilterToggled();
+  void onTimeRangeSelected(uint64_t startMS, uint64_t endMS);
   void processPendingEvents();
 
 private:
@@ -30,15 +31,23 @@ private:
   void loadInitialEvents();
   QString formatEventPayload(std::shared_ptr<core::events::Event> event);
   QString getEventTypeName(core::events::EventType type);
+  void updateTableVisibility();
 
   QTableWidget* m_Table{nullptr};
   QLineEdit* m_SearchBox{nullptr};
-  QComboBox* m_EventTypeFilter{nullptr};
+  
+  QPushButton* m_FilterProcess{nullptr};
+  QPushButton* m_FilterNetwork{nullptr};
+  QPushButton* m_FilterFile{nullptr};
+
+  TimelineHistogram* m_Histogram{nullptr};
 
   std::vector<std::shared_ptr<core::events::Event>> m_PendingEvents;
   std::mutex m_EventsMutex;
 
   int m_MaxRows{5000};
+  uint64_t m_FilterStartMS{0};
+  uint64_t m_FilterEndMS{0};
 };
 
 } // namespace severance::gui::timeline

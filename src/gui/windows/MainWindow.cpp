@@ -11,6 +11,7 @@
 #include "gui/ai_panel/AiPanel.hpp"
 #include "core/application/Application.hpp"
 #include "core/notifications/NotificationManager.hpp"
+#include "core/workspace/WorkspaceManager.hpp"
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QSplitter>
@@ -18,6 +19,9 @@
 #include <QKeySequence>
 #include <QFrame>
 #include <QSizePolicy>
+#include <QInputDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace severance::gui::windows {
 
@@ -232,9 +236,105 @@ void MainWindow::setupStatusBar() {
   m_StatusRecording->setVisible(false); // Hidden until recording starts
   bar->addPermanentWidget(m_StatusRecording);
 
+  // Workspace Menu
+  m_WorkspaceBtn = new QPushButton("Workspace: Default");
+  m_WorkspaceBtn->setStyleSheet(R"(
+    QPushButton {
+      background-color: transparent;
+      border: none;
+      color: #58A6FF;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 8px;
+    }
+    QPushButton:hover { background-color: #21262D; }
+    QPushButton::menu-indicator { image: none; }
+  )");
+  
+  m_WorkspaceMenu = new QMenu(this);
+  m_WorkspaceMenu->setStyleSheet(R"(
+    QMenu { background-color: #161B22; border: 1px solid #30363D; color: #E6EDF3; }
+    QMenu::item:selected { background-color: #1F3A5F; }
+  )");
+  m_WorkspaceBtn->setMenu(m_WorkspaceMenu);
+  bar->addPermanentWidget(m_WorkspaceBtn);
+
   auto version = new QLabel("v0.2.0-dev");
   version->setStyleSheet("color: #6E7681; font-size: 11px; padding: 0 8px;");
   bar->addPermanentWidget(version);
+
+  // Load existing workspaces
+  core::workspace::WorkspaceManager::GetInstance().LoadProfiles("workspaces");
+  updateWorkspaceMenu();
+}
+
+void MainWindow::updateWorkspaceMenu() {
+  m_WorkspaceMenu->clear();
+  
+  auto profiles = core::workspace::WorkspaceManager::GetInstance().GetAvailableProfiles();
+  auto active = core::workspace::WorkspaceManager::GetInstance().GetActiveProfile();
+  
+  m_WorkspaceBtn->setText("Workspace: " + QString::fromStdString(active.name));
+
+  for (const auto& p : profiles) {
+    QAction* act = m_WorkspaceMenu->addAction(QString::fromStdString(p.name));
+    act->setCheckable(true);
+    act->setChecked(p.name == active.name);
+    connect(act, &QAction::triggered, this, [this, name = p.name]() {
+      onSwitchWorkspace(QString::fromStdString(name));
+    });
+  }
+
+  m_WorkspaceMenu->addSeparator();
+  QAction* saveAct = m_WorkspaceMenu->addAction("Save Current Workspace As...");
+  connect(saveAct, &QAction::triggered, this, &MainWindow::onSaveWorkspace);
+}
+
+void MainWindow::onSaveWorkspace() {
+  bool ok;
+  QString text = QInputDialog::getText(this, "Save Workspace",
+                                       "Workspace Name:", QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    QJsonObject obj;
+    obj["active_view_index"] = m_ActiveViewIndex;
+    
+    // Convert to JSON string
+    QJsonDocument doc(obj);
+    QString jsonStr = doc.toJson(QJsonDocument::Compact);
+
+    core::workspace::WorkspaceProfile profile;
+    profile.name = text.toStdString();
+    profile.description = "User saved workspace";
+    profile.layoutJson = jsonStr.toStdString();
+
+    auto& wm = core::workspace::WorkspaceManager::GetInstance();
+    wm.SaveProfile(profile, "workspaces");
+    wm.SetActiveProfile(profile.name);
+    
+    // Reload UI
+    wm.LoadProfiles("workspaces");
+    updateWorkspaceMenu();
+  }
+}
+
+void MainWindow::onSwitchWorkspace(const QString& name) {
+  auto& wm = core::workspace::WorkspaceManager::GetInstance();
+  wm.SetActiveProfile(name.toStdString());
+  
+  auto profile = wm.GetActiveProfile();
+  
+  // Parse JSON and apply state
+  QJsonDocument doc = QJsonDocument::fromJson(QByteArray::fromStdString(profile.layoutJson));
+  if (doc.isObject()) {
+    QJsonObject obj = doc.object();
+    if (obj.contains("active_view_index")) {
+      int viewIdx = obj["active_view_index"].toInt();
+      setActiveView(viewIdx);
+    }
+  }
+  
+  updateWorkspaceMenu();
 }
 
 void MainWindow::setupShortcuts() {
