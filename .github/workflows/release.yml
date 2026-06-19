@@ -57,7 +57,16 @@ jobs:
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path dist
+        New-Item -ItemType Directory -Force -Path dist\plugins
+        # Copy the main application and Qt dependencies
         Copy-Item -Path build\Release\* -Destination dist\ -Recurse -Force
+        # Copy plugin DLLs (both C and C++ plugins)
+        Get-ChildItem -Path build -Recurse -Filter "*.dll" | Where-Object {
+          $_.DirectoryName -match "plugins"
+        } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination dist\plugins\ -Force
+          Write-Host "Copied plugin: $($_.Name)"
+        }
         Compress-Archive -Path dist\* -DestinationPath severance-windows-x64.zip
 
     - name: Create GitHub Release

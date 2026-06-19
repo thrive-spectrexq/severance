@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
-project(severance VERSION 0.1.0 LANGUAGES CXX)
+project(severance VERSION 0.1.0 LANGUAGES C CXX)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,9 +51,10 @@ add_executable(severance
     src/core/workspace/WorkspaceManager.cpp
     src/core/notifications/NotificationManager.cpp
     src/core/session/SessionManager.cpp
+    src/platform/windows/sev_platform_win32.c
 )
 
-target_include_directories(severance PRIVATE src src/core src/gui src/utils)
+target_include_directories(severance PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(severance PRIVATE
     spdlog::spdlog
     Qt6::Core
@@ -57,6 +62,7 @@ target_link_libraries(severance PRIVATE
     Qt6::Widgets
     Qt6::Sql
     Qt6::Network
+    psapi
 )
 
 enable_testing()
@@ -74,7 +80,7 @@ add_executable(severance_tests
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
 )
-target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils)
+target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(severance_tests PRIVATE
     spdlog::spdlog
     Catch2::Catch2WithMain

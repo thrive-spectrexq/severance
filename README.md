@@ -4,6 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)
+![C](https://img.shields.io/badge/C-17-blue.svg)
 ![Qt](https://img.shields.io/badge/Qt-6-green.svg)
 ![Build](https://img.shields.io/github/actions/workflow/status/thrive-spectrexq/severance/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D4.svg)
@@ -18,7 +19,7 @@ Most system tools scatter the picture across a dozen utilities. Task Manager sho
 
 Severance brings it all together. Processes, network connections, filesystem events, resource consumption, and sandboxed execution environments — all in one application, all linked through a cross-domain correlation engine. Click a suspicious network connection and immediately see the process that opened it, the files it read before doing so, and the parent that spawned it. No context switching. No lost threads.
 
-Built on C++23 and Qt 6. Designed for developers, security researchers, and power users who want a single tool they can open every morning and leave running all day.
+Built on C++23 and C17 with Qt 6. The core application uses modern C++23. The plugin SDK and platform abstraction layer expose a stable C17 ABI, making plugins writable in C or any language with C FFI. Designed for developers, security researchers, and power users who want a single tool they can open every morning and leave running all day.
 
 > **Current focus: Windows.** Linux and macOS support are planned for future releases.
 
@@ -45,8 +46,8 @@ Each module observes one domain cleanly. The correlation engine links events acr
 
 ## Core Principles
 
-**Modern C++**
-C++23 throughout. RAII everywhere. Smart pointers only — no raw ownership. Strong type safety. STL-first design.
+**Modern C++ with a Stable C ABI**
+C++23 throughout the core. RAII everywhere. Smart pointers only — no raw ownership. Strong type safety. STL-first design. The plugin SDK and platform layer expose a C17 ABI boundary — no C++ types cross the plugin interface. This means plugins can be written in C, Rust, Zig, or any language with C FFI support.
 
 **Performance**
 Low memory footprint. Native execution with no runtime overhead. Multi-threaded event processing. Efficient data structures built for high-frequency system events. Sub-100ms response to every interaction.
@@ -55,7 +56,7 @@ Low memory footprint. Native execution with no runtime overhead. Multi-threaded 
 Global search, command palette, and Vim-style optional bindings. Every action reachable without a mouse.
 
 **Extensibility**
-Plugin architecture with a public SDK. Event-driven communication via a central event bus. Dynamic module loading at runtime. Clean separation between core and extensions.
+Dual-language plugin architecture with both C++ and C SDKs. Event-driven communication via a central event bus. Dynamic module loading at runtime. Clean separation between core and extensions. C plugins use a pure C ABI — no C++ compiler required to build one.
 
 **Intelligence**
 Optional local AI integration for anomaly explanation, behavioral summarization, and natural-language system queries — 100% private, nothing leaves your machine.
@@ -240,7 +241,18 @@ Useful for incident post-mortems, demonstrations, security research, and sharing
 
 ### Plugin System
 
-Extend Severance without touching core code. The plugin SDK exposes the full event model, UI injection points, and data export hooks.
+Extend Severance without touching core code. Two SDKs — pick the one that fits your language:
+
+**C++ Plugin SDK** (`IPlugin` interface):
+- Full C++ class-based interface
+- Implement `IPlugin`, export `CreatePlugin()`
+- Access to the `IPluginAPI` proxy for logging and events
+
+**C Plugin SDK** (`severance_plugin_api.h`):
+- Pure C17 header — no C++ compiler needed
+- Implement 5 exported functions: `sev_plugin_create`, `sev_plugin_destroy`, `sev_plugin_get_info`, `sev_plugin_initialize`, `sev_plugin_shutdown`
+- Receive a `SevPluginAPI` function-pointer table from the host
+- Compatible with any language that can produce a DLL with C exports (Rust, Zig, Go, etc.)
 
 **SDK surface area:**
 - Event subscription and emission via the Event Bus
@@ -253,14 +265,16 @@ Extend Severance without touching core code. The plugin SDK exposes the full eve
 
 **Bundled plugins:**
 
-| Plugin | Purpose |
-|---|---|
-| `network_plugin` | Deep traffic analysis, anomaly alerting, per-connection bandwidth tracking |
-| `filesystem_plugin` | Extended file event attribution and bulk-write pattern detection |
-| `security_plugin` | Behavioral heuristics: process hollowing indicators, unusual parentage, suspicious write patterns |
-| `graph_plugin` | Custom visualization widgets for the dashboard and timeline |
-| `export_plugin` | Structured telemetry report generation (JSON, CSV, Markdown) |
-| `process_scanner` | Heuristic process classification and risk scoring |
+| Plugin | Language | Purpose |
+|---|---|---|
+| `sample_plugin` | C++ | Reference C++ plugin demonstrating the IPlugin interface |
+| `sample_c_plugin` | C | Reference C plugin demonstrating the C Plugin SDK |
+| `network_plugin` | C++ | Deep traffic analysis, anomaly alerting, per-connection bandwidth tracking |
+| `filesystem_plugin` | C++ | Extended file event attribution and bulk-write pattern detection |
+| `security_plugin` | C++ | Behavioral heuristics: process hollowing indicators, unusual parentage, suspicious write patterns |
+| `graph_plugin` | C++ | Custom visualization widgets for the dashboard and timeline |
+| `export_plugin` | C++ | Structured telemetry report generation (JSON, CSV, Markdown) |
+| `process_scanner` | C++ | Heuristic process classification and risk scoring |
 
 Community plugins install from the in-app Plugin Marketplace without restarting.
 
@@ -270,30 +284,38 @@ Community plugins install from the in-app Plugin Marketplace without restarting.
 
 ```
 +-------------------------------------------------------------------------+
-|                             GUI Layer                                   |
+|                             GUI Layer (C++)                             |
 |-------------------------------------------------------------------------|
 | Dashboard | Process Explorer | Timeline | Network | Files | Isolation   |
 | Global Search | Command Palette | AI Insights Panel                    |
 +-------------------------------------------------------------------------+
-|                            Event Bus                                    |
+|                            Event Bus (C++)                              |
 |              All modules communicate here — and only here               |
 +-------------------------------------------------------------------------+
-|                          Core Services                                  |
+|                          Core Services (C++)                            |
 |-------------------------------------------------------------------------|
 | Process Manager    | Network Manager  | File Monitor  | Sandbox Manager |
 | Plugin Manager     | Session Recorder | Correlation Engine              |
 | AI Engine          | Notification Mgr | Thread Pool                     |
 | Event Store (SQLite)                  | Workspace Manager               |
 +-------------------------------------------------------------------------+
-|                       Windows Platform Layer                            |
+|                        C ABI Plugin Bridge                              |
 |-------------------------------------------------------------------------|
-| ETW (Event Tracing for Windows)    | WFP (Windows Filtering Platform)  |
-| Job Objects / Restricted Tokens    | PDH (Performance Data Helper)     |
-| WMI / COM                          | NVML / DXGI (GPU)                 |
+| CPluginBridge: wraps C plugins → IPlugin C++ interface                  |
+| severance_plugin_api.h: stable C17 ABI for plugin development           |
++-------------------------------------------------------------------------+
+|                    Windows Platform Layer (C/C++)                        |
+|-------------------------------------------------------------------------|
+| sev_platform.h (C17)               | ETW (Event Tracing for Windows)   |
+| WFP (Windows Filtering Platform)   | PDH (Performance Data Helper)     |
+| Job Objects / Restricted Tokens    | WMI / COM                         |
+| NVML / DXGI (GPU)                                                       |
 +-------------------------------------------------------------------------+
 ```
 
 The GUI layer communicates exclusively through the Event Bus. Core services never reach into the interface directly. The platform layer exposes Windows-native APIs through stable internal interfaces — when Linux and macOS support is added, the same core and UI code will work unchanged.
+
+The C ABI Plugin Bridge sits between the core and any C-based plugin. It translates the host's C++ `IPluginAPI` into a C function-pointer table (`SevPluginAPI`) and wraps C plugin instances in a `CPluginBridge` adapter that implements the `IPlugin` C++ interface. From the PluginManager's perspective, C and C++ plugins are indistinguishable.
 
 ---
 
@@ -301,10 +323,11 @@ The GUI layer communicates exclusively through the Event Bus. Core services neve
 
 | Component | Technology |
 |---|---|
-| Language | C++23 |
+| Languages | C++23 (core, GUI), C17 (plugin SDK, platform layer) |
 | GUI Framework | Qt 6.5+ |
-| Build System | CMake 3.28+ |
+| Build System | CMake 3.28+ (multi-language: C + CXX) |
 | Package Manager | vcpkg |
+| Plugin SDK | C++ (`IPlugin` interface) + C17 (`severance_plugin_api.h`) |
 | Event Store | SQLite (via SQLiteCpp) |
 | AI Engine | llama.cpp (GGUF models) |
 | Logging | spdlog |
@@ -365,7 +388,10 @@ severance/
 │       ├── core/
 │       ├── gui/
 │       ├── plugins/
+│       │   ├── IPluginAPI.hpp           # C++ plugin API interface
+│       │   └── severance_plugin_api.h   # C17 plugin SDK (stable ABI)
 │       ├── platform/
+│       │   └── sev_platform.h           # C17 platform abstraction
 │       └── utils/
 │
 ├── src/
@@ -402,6 +428,7 @@ severance/
 │   │
 │   ├── platform/
 │   │   └── windows/
+│   │       ├── sev_platform_win32.c     # C17 platform implementation
 │   │       ├── etw/
 │   │       ├── wfp/
 │   │       ├── gpu/
@@ -410,6 +437,8 @@ severance/
 │   └── utils/
 │
 ├── plugins/
+│   ├── sample_plugin/                   # Reference C++ plugin
+│   ├── sample_c_plugin/                 # Reference C plugin
 │   ├── network_plugin/
 │   ├── filesystem_plugin/
 │   ├── security_plugin/
@@ -442,11 +471,13 @@ severance/
 ### Requirements
 
 - **Windows 10 21H2 or later** (Windows 11 recommended)
-- C++23-capable compiler: MSVC 2022 (17.8+)
+- C++23 and C17 capable compiler: MSVC 2022 (17.8+)
 - Qt 6.5 or later
 - CMake 3.28 or later
 - Git
 - vcpkg
+
+> **Note:** All builds run through GitHub Actions. Local builds are optional — see the CI workflow for the canonical build configuration.
 
 ---
 

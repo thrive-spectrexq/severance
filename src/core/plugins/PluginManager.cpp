@@ -41,40 +41,85 @@ void PluginManager::LoadPlugins(const std::string &directory) {
         continue;
       }
 
+      // ── Try C++ plugin first (CreatePlugin export) ──
       auto createFunc = reinterpret_cast<CreatePluginFunc>(GetProcAddress(handle, "CreatePlugin"));
-      if (!createFunc) {
-        SEV_CORE_ERROR("Plugin missing CreatePlugin export: {}", pathStr);
-        FreeLibrary(handle);
+      if (createFunc) {
+        IPlugin* pluginInstance = createFunc();
+        if (pluginInstance && pluginInstance->Initialize(m_ApiProxy.get())) {
+          SEV_CORE_INFO("Loaded C++ plugin: {} v{}", pluginInstance->GetName(), pluginInstance->GetVersion());
+          m_LoadedPlugins.push_back({pluginInstance, false, handle});
+        } else {
+          SEV_CORE_ERROR("C++ plugin failed to initialize: {}", pathStr);
+          if (pluginInstance) delete pluginInstance;
+          FreeLibrary(handle);
+        }
         continue;
       }
+
+      // ── Try C plugin (sev_plugin_create export) ──
+      auto cCreateFn   = reinterpret_cast<SevPluginCreateFunc>(GetProcAddress(handle, "sev_plugin_create"));
+      auto cDestroyFn  = reinterpret_cast<SevPluginDestroyFunc>(GetProcAddress(handle, "sev_plugin_destroy"));
+      auto cGetInfoFn  = reinterpret_cast<SevPluginGetInfoFunc>(GetProcAddress(handle, "sev_plugin_get_info"));
+      auto cInitFn     = reinterpret_cast<SevPluginInitializeFunc>(GetProcAddress(handle, "sev_plugin_initialize"));
+      auto cShutdownFn = reinterpret_cast<SevPluginShutdownFunc>(GetProcAddress(handle, "sev_plugin_shutdown"));
+
+      if (cCreateFn && cDestroyFn && cGetInfoFn && cInitFn && cShutdownFn) {
+        // Wrap the C plugin in the bridge adapter
+        auto* bridge = new CPluginBridge(cCreateFn, cDestroyFn, cGetInfoFn, cInitFn, cShutdownFn);
+        if (bridge->Initialize(m_ApiProxy.get())) {
+          SEV_CORE_INFO("Loaded C plugin: {} v{}", bridge->GetName(), bridge->GetVersion());
+          m_LoadedPlugins.push_back({bridge, true, handle});
+        } else {
+          SEV_CORE_ERROR("C plugin failed to initialize: {}", pathStr);
+          delete bridge;
+          FreeLibrary(handle);
+        }
+      } else {
+        SEV_CORE_WARN("DLL has no recognized plugin exports: {}", pathStr);
+        FreeLibrary(handle);
+      }
+
 #else
       void* handle = dlopen(pathStr.c_str(), RTLD_NOW);
       if (!handle) {
         SEV_CORE_ERROR("Failed to load plugin SO: {}", pathStr);
         continue;
       }
+
+      // ── Try C++ plugin first ──
       auto createFunc = reinterpret_cast<CreatePluginFunc>(dlsym(handle, "CreatePlugin"));
-      if (!createFunc) {
-        dlclose(handle);
+      if (createFunc) {
+        IPlugin* pluginInstance = createFunc();
+        if (pluginInstance && pluginInstance->Initialize(m_ApiProxy.get())) {
+          SEV_CORE_INFO("Loaded C++ plugin: {} v{}", pluginInstance->GetName(), pluginInstance->GetVersion());
+          m_LoadedPlugins.push_back({pluginInstance, false, handle});
+        } else {
+          if (pluginInstance) delete pluginInstance;
+          dlclose(handle);
+        }
         continue;
       }
-#endif
 
-      IPlugin* pluginInstance = createFunc();
-      if (pluginInstance && pluginInstance->Initialize(m_ApiProxy.get())) {
-        SEV_CORE_INFO("Successfully loaded plugin: {} v{}", pluginInstance->GetName(), pluginInstance->GetVersion());
-        m_LoadedPlugins.push_back({pluginInstance, handle});
-      } else {
-        SEV_CORE_ERROR("Plugin failed to initialize: {}", pathStr);
-        if (pluginInstance) {
-          delete pluginInstance;
+      // ── Try C plugin ──
+      auto cCreateFn   = reinterpret_cast<SevPluginCreateFunc>(dlsym(handle, "sev_plugin_create"));
+      auto cDestroyFn  = reinterpret_cast<SevPluginDestroyFunc>(dlsym(handle, "sev_plugin_destroy"));
+      auto cGetInfoFn  = reinterpret_cast<SevPluginGetInfoFunc>(dlsym(handle, "sev_plugin_get_info"));
+      auto cInitFn     = reinterpret_cast<SevPluginInitializeFunc>(dlsym(handle, "sev_plugin_initialize"));
+      auto cShutdownFn = reinterpret_cast<SevPluginShutdownFunc>(dlsym(handle, "sev_plugin_shutdown"));
+
+      if (cCreateFn && cDestroyFn && cGetInfoFn && cInitFn && cShutdownFn) {
+        auto* bridge = new CPluginBridge(cCreateFn, cDestroyFn, cGetInfoFn, cInitFn, cShutdownFn);
+        if (bridge->Initialize(m_ApiProxy.get())) {
+          SEV_CORE_INFO("Loaded C plugin: {} v{}", bridge->GetName(), bridge->GetVersion());
+          m_LoadedPlugins.push_back({bridge, true, handle});
+        } else {
+          delete bridge;
+          dlclose(handle);
         }
-#if defined(_WIN32)
-        FreeLibrary(handle);
-#else
+      } else {
         dlclose(handle);
-#endif
       }
+#endif
     }
   }
 }

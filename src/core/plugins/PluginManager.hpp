@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IPlugin.hpp"
+#include "CPluginBridge.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -16,7 +17,7 @@ namespace severance::core::plugins {
 
 class PluginManager {
 public:
-  PluginManager() = default;
+  PluginManager();
   ~PluginManager();
 
   void LoadPlugins(const std::string &directory);
@@ -27,6 +28,7 @@ public:
 private:
   struct PluginContext {
     IPlugin* plugin{nullptr};
+    bool     ownedByCBridge{false}; // true if wrapped in CPluginBridge
 #if defined(_WIN32)
     HMODULE handle{nullptr};
 #else
