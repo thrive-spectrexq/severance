@@ -1,6 +1,7 @@
 #include "RuleEngine.hpp"
 #include "NotificationManager.hpp"
 #include "core/events/FileActivityEvent.hpp"
+#include "core/ai/AiEngine.hpp"
 #include "utils/UUID.hpp"
 #include <iostream>
 
@@ -93,6 +94,9 @@ void RuleEngine::CheckRansomwarePattern(const std::shared_ptr<events::Event>& ev
       n.source = "RuleEngine";
       
       NotificationManager::GetInstance().EmitNotification(n);
+
+      // Request AI Explanation
+      ai::AiEngine::GetInstance().explainAnomaly(QString::fromStdString(n.message));
     }
   }
 }

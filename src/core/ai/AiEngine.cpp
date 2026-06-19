@@ -6,6 +6,10 @@
 #include <QJsonParseError>
 #include <spdlog/spdlog.h>
 
+#ifdef _WIN32
+#include "core/metrics/WindowsMetricsProvider.hpp"
+#endif
+
 namespace severance::core::ai {
 
 AiEngine::AiEngine() : m_NetworkManager(std::make_unique<QNetworkAccessManager>(this)) {
@@ -109,6 +113,28 @@ void AiEngine::explainAnomaly(const QString& anomalyData) {
     "Please explain the following system anomaly in simple terms and suggest "
     "possible causes or mitigations:\n\n%1"
   ).arg(anomalyData);
+
+  queryStreaming(prompt);
+}
+
+void AiEngine::systemQuery(const QString& question) {
+  QString context = "System Metrics Context:\n";
+#ifdef _WIN32
+  core::metrics::WindowsMetricsProvider provider;
+  auto snapshot = provider.GetSnapshot();
+  context += QString("CPU Usage: %1%\n").arg(snapshot.cpu.globalUsagePercent);
+  context += QString("Memory Usage: %1 GB / %2 GB\n").arg(snapshot.memory.usedBytes / 1073741824.0).arg(snapshot.memory.totalBytes / 1073741824.0);
+  context += QString("Network: %1 Kbps Recv, %2 Kbps Sent\n").arg(snapshot.network.totalBytesReceivedPerSec * 8.0 / 1000.0).arg(snapshot.network.totalBytesSentPerSec * 8.0 / 1000.0);
+#else
+  context += "Metrics not available on this platform.\n";
+#endif
+
+  QString prompt = QString(
+    "You are Severance AI, a system monitoring assistant.\n"
+    "Based on the following live system metrics, please answer the user's question.\n\n"
+    "%1\n\n"
+    "User Question: %2"
+  ).arg(context).arg(question);
 
   queryStreaming(prompt);
 }

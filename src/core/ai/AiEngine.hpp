@@ -29,6 +29,7 @@ public:
   QNetworkReply* queryStreaming(const QString& prompt);
 
   // High level contextual queries
+  void systemQuery(const QString& question);
   void analyzeProcess(int pid, const QString& processName, const QString& activityContext);
   void explainAnomaly(const QString& anomalyData);
 

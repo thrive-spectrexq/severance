@@ -41,6 +41,7 @@ add_executable(severance
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
     src/core/metrics/WindowsMetricsProvider.cpp
+    src/core/metrics/BaselineManager.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
     src/core/filesystem/EtwMonitor.cpp

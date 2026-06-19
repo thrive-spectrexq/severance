@@ -559,12 +559,12 @@ cd build; ctest --output-on-failure
 - [x] ETW integration for kernel-level tracing
 - [x] Smart Notifications with pattern-based detection
 
-### Phase 4 — Intelligence
+### Phase 4 — Intelligence *(Completed)*
 
-- [ ] AI Insights Module (local LLM via llama.cpp)
-- [ ] Natural language system queries
-- [ ] Anomaly explanation engine
-- [ ] Baseline recording and comparison
+- [x] AI Insights Module (local LLM via llama.cpp / Ollama)
+- [x] Natural language system queries
+- [x] Anomaly explanation engine
+- [x] Baseline recording and comparison
 
 ### Phase 5 — Ecosystem
 

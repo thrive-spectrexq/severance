@@ -75,7 +75,7 @@ void AiPanel::onSubmit() {
   appendUserMessage(text);
   appendAiMessage("", true); // Start new AI block
 
-  core::ai::AiEngine::GetInstance().queryStreaming(text);
+  core::ai::AiEngine::GetInstance().systemQuery(text);
 }
 
 void AiPanel::onChunkReceived(const QString& chunk) {

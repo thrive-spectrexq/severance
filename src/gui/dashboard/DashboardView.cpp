@@ -135,16 +135,16 @@ void DashboardView::onRefreshTimer() {
 
 void DashboardView::updateDashboard(const core::metrics::SystemMetricsSnapshot& snapshot) {
   // Update CPU
-  m_CpuValueLabel->setText(QString::number(static_cast<int>(snapshot.cpuUsagePercent)) + "%");
-  m_CpuGraph->addDataPoint(snapshot.cpuUsagePercent);
+  m_CpuValueLabel->setText(QString::number(static_cast<int>(snapshot.cpu.globalUsagePercent)) + "%");
+  m_CpuGraph->addDataPoint(snapshot.cpu.globalUsagePercent);
   
-  if (!snapshot.cpuName.empty()) {
-      m_CpuNameLabel->setText(QString::fromStdString(snapshot.cpuName));
+  if (!snapshot.cpu.processorName.empty()) {
+      m_CpuNameLabel->setText(QString::fromStdString(snapshot.cpu.processorName));
   }
 
   // Update Memory
-  double memUsedGB = snapshot.memoryUsedBytes / (1024.0 * 1024.0 * 1024.0);
-  double memTotalGB = snapshot.memoryTotalBytes / (1024.0 * 1024.0 * 1024.0);
+  double memUsedGB = snapshot.memory.usedBytes / (1024.0 * 1024.0 * 1024.0);
+  double memTotalGB = snapshot.memory.totalBytes / (1024.0 * 1024.0 * 1024.0);
   m_MemValueLabel->setText(QString::number(memUsedGB, 'f', 1) + " GB");
   m_MemTotalLabel->setText(QString("/ %1 GB").arg(QString::number(memTotalGB, 'f', 1)));
   
@@ -152,8 +152,8 @@ void DashboardView::updateDashboard(const core::metrics::SystemMetricsSnapshot& 
   m_MemGraph->addDataPoint(memPercent);
 
   // Update Network (assuming bps)
-  double recvKbps = snapshot.networkBytesReceivedSec * 8.0 / 1000.0;
-  double sentKbps = snapshot.networkBytesSentSec * 8.0 / 1000.0;
+  double recvKbps = snapshot.network.totalBytesReceivedPerSec * 8.0 / 1000.0;
+  double sentKbps = snapshot.network.totalBytesSentPerSec * 8.0 / 1000.0;
   
   m_NetRecvLabel->setText(QString::fromUtf8("↓ %1 Kbps").arg(QString::number(recvKbps, 'f', 1)));
   m_NetSentLabel->setText(QString::fromUtf8("↑ %1 Kbps").arg(QString::number(sentKbps, 'f', 1)));
