@@ -46,7 +46,6 @@ SystemMetricsSnapshot WindowsMetricsProvider::GetCurrentMetrics() {
   SystemMetricsSnapshot snapshot;
   snapshot.timestampEpochMs = GetCurrentTimeMs();
 
-#ifdef _WIN32
   UpdateCpuMetrics(snapshot.cpu);
   UpdateMemoryMetrics(snapshot.memory);
   UpdateNetworkMetrics(snapshot.network);
@@ -54,12 +53,11 @@ SystemMetricsSnapshot WindowsMetricsProvider::GetCurrentMetrics() {
   UpdateGpuMetrics(snapshot.gpus);
   
   m_LastTickCount = GetTickCount64();
-#endif
 
   return snapshot;
 }
 
-#ifdef _WIN32
+
 void WindowsMetricsProvider::UpdateCpuMetrics(CpuMetrics& cpu) {
   cpu.processorName = m_ProcessorName;
 
@@ -155,6 +153,6 @@ void WindowsMetricsProvider::UpdateGpuMetrics(std::vector<GpuMetrics>& gpus) {
   // DXGI required for GPU metrics. Skipping for minimal initial impl.
 }
 
-#endif
+#endif // _WIN32
 
 } // namespace severance::core::metrics

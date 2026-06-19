@@ -149,7 +149,5 @@ void EtwMonitor::ProcessEvent(PEVENT_RECORD pEventRecord) {
 namespace severance::core::filesystem {
 bool EtwMonitor::Start() { return false; }
 void EtwMonitor::Stop() {}
-void EtwMonitor::ProcessEvent(void*) {}
-void EtwMonitor::EventRecordCallback(void*) {}
 }
 #endif

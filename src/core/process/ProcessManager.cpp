@@ -135,10 +135,10 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
     return processes;
   }
 
-  PROCESSENTRY32 pe;
-  pe.dwSize = sizeof(PROCESSENTRY32);
+  PROCESSENTRY32W pe;
+  pe.dwSize = sizeof(PROCESSENTRY32W);
 
-  if (!Process32First(snapshot, &pe)) {
+  if (!Process32FirstW(snapshot, &pe)) {
     CloseHandle(snapshot);
     return processes;
   }
@@ -150,7 +150,15 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
     ProcessInfo info;
     info.pid = pe.th32ProcessID;
     info.ppid = pe.th32ParentProcessID;
-    info.name = pe.szExeFile;
+
+    // Convert WCHAR name to std::string (narrow)
+    int nameLen = WideCharToMultiByte(CP_UTF8, 0, pe.szExeFile, -1, nullptr, 0, nullptr, nullptr);
+    if (nameLen > 0) {
+      std::string narrowName(nameLen - 1, '\0');
+      WideCharToMultiByte(CP_UTF8, 0, pe.szExeFile, -1, narrowName.data(), nameLen, nullptr, nullptr);
+      info.name = std::move(narrowName);
+    }
+
     info.threadCount = pe.cntThreads;
 
     alivePids.push_back(info.pid);
@@ -191,7 +199,7 @@ std::vector<ProcessInfo> ProcessManager::GetRunningProcesses() {
     info.status = ProcessInfo::Status::Running;
     processes.push_back(std::move(info));
 
-  } while (Process32Next(snapshot, &pe));
+  } while (Process32NextW(snapshot, &pe));
 
   CloseHandle(snapshot);
 

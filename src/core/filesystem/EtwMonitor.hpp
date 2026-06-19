@@ -5,8 +5,13 @@
 #include <functional>
 #include <atomic>
 
-// Forward declare Windows types to avoid bringing windows.h everywhere
+#ifdef _WIN32
+#include <windows.h>
+#include <evntrace.h>
+#else
+// Forward declare for non-Windows platforms
 typedef uint64_t TRACEHANDLE;
+#endif
 
 namespace severance::core::filesystem {
 
@@ -40,8 +45,10 @@ private:
   EtwMonitor(const EtwMonitor&) = delete;
   EtwMonitor& operator=(const EtwMonitor&) = delete;
 
+#ifdef _WIN32
   static void WINAPI EventRecordCallback(struct _EVENT_RECORD* pEventRecord);
   void ProcessEvent(struct _EVENT_RECORD* pEventRecord);
+#endif
 
   TRACEHANDLE m_SessionHandle{0};
   TRACEHANDLE m_TraceHandle{0};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ConnectionInfo.hpp"
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -7,25 +8,11 @@
 
 namespace severance::core::network {
 
+// ConnectionProtocol mirrors Protocol from ConnectionInfo.hpp
+// Used by the GUI layer (with QString fields)
 enum class ConnectionProtocol {
   TCP,
   UDP
-};
-
-enum class ConnectionState {
-  UNKNOWN = 0,
-  CLOSED,
-  LISTEN,
-  SYN_SENT,
-  SYN_RCVD,
-  ESTABLISHED,
-  FIN_WAIT1,
-  FIN_WAIT2,
-  CLOSE_WAIT,
-  CLOSING,
-  LAST_ACK,
-  TIME_WAIT,
-  DELETE_TCB
 };
 
 struct NetworkConnection {
