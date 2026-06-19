@@ -6,6 +6,7 @@
 #include "filesystem/EtwMonitor.hpp"
 #include "events/FileActivityEvent.hpp"
 #include "correlation/CorrelationEngine.hpp"
+#include "notifications/RuleEngine.hpp"
 #include <iostream>
 
 namespace severance::core::application {
@@ -25,6 +26,10 @@ Application::Application() : m_Running(true) {
 
   // Correlation Engine
   correlation::CorrelationEngine::GetInstance().Initialize();
+
+  // Rule Engine (Smart Notifications)
+  m_RuleEngine = std::make_unique<notifications::RuleEngine>();
+  m_RuleEngine->Start();
 
   // Subscribe Event Store to all events
   auto eventCallback = [](std::shared_ptr<events::Event> e) {
@@ -50,6 +55,7 @@ Application::Application() : m_Running(true) {
 
 Application::~Application() { 
   SEV_CORE_INFO("Application shutting down."); 
+  m_RuleEngine->Stop();
   correlation::CorrelationEngine::GetInstance().Shutdown();
   filesystem::EtwMonitor::GetInstance().Stop();
   store::EventStore::GetInstance().Shutdown();

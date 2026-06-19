@@ -550,14 +550,14 @@ cd build; ctest --output-on-failure
 - [x] SQLite-backed event store for persistence
 - [x] Workspace Profiles
 
-### Phase 3 — Deep Monitoring *(in progress)*
+### Phase 3 — Deep Monitoring *(Completed)*
 
 - [x] Network Monitor with live connection table and per-process graphs
 - [x] File Activity Monitor with diff view
 - [x] Cross-Event Correlation Engine with visual graph
-- [ ] Advanced GPU-accelerated graph widgets (Qt RHI)
+- [x] Advanced GPU-accelerated graph widgets (Qt RHI / QOpenGLWidget)
 - [x] ETW integration for kernel-level tracing
-- [ ] Smart Notifications with pattern-based detection
+- [x] Smart Notifications with pattern-based detection
 
 ### Phase 4 — Intelligence
 

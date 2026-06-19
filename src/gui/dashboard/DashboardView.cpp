@@ -1,49 +1,36 @@
 #include "DashboardView.hpp"
-#include "core/metrics/WindowsMetricsProvider.hpp"
+#include "gui/graphs/OpenGLResourceGraph.hpp"
+#include "gui/theme/Theme.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QLabel>
 #include <QFrame>
+
+#ifdef _WIN32
+#include "core/metrics/WindowsMetricsProvider.hpp"
+#endif
 
 namespace severance::gui::dashboard {
 
-static QString FormatBytes(uint64_t bytes) {
-  const double kb = bytes / 1024.0;
-  const double mb = kb / 1024.0;
-  const double gb = mb / 1024.0;
+static QFrame* createCard(const QString& title, QWidget* parent) {
+  auto* card = new QFrame(parent);
+  card->setObjectName("dashboardCard");
+  card->setStyleSheet(R"(
+    QFrame#dashboardCard {
+      background-color: #161B22;
+      border: 1px solid #30363D;
+      border-radius: 8px;
+    }
+  )");
 
-  if (gb >= 1.0) return QString::number(gb, 'f', 1) + " GB";
-  if (mb >= 1.0) return QString::number(mb, 'f', 1) + " MB";
-  if (kb >= 1.0) return QString::number(kb, 'f', 0) + " KB";
-  return QString::number(bytes) + " B";
-}
-
-static QString FormatSpeed(uint64_t bytesPerSec) {
-  const double kb = bytesPerSec / 1024.0;
-  const double mb = kb / 1024.0;
-  const double gb = mb / 1024.0;
-
-  if (gb >= 1.0) return QString::number(gb, 'f', 1) + " GB/s";
-  if (mb >= 1.0) return QString::number(mb, 'f', 1) + " MB/s";
-  if (kb >= 1.0) return QString::number(kb, 'f', 0) + " KB/s";
-  return QString::number(bytesPerSec) + " B/s";
-}
-
-static QFrame* CreateCard(QWidget* parent, const QString& title, QWidget** outContent) {
-  auto card = new QFrame(parent);
-  card->setProperty("class", "card");
-  
-  auto layout = new QVBoxLayout(card);
+  auto* layout = new QVBoxLayout(card);
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(8);
 
-  auto titleLabel = new QLabel(title, card);
-  titleLabel->setProperty("class", "cardTitle");
+  auto* titleLabel = new QLabel(title, card);
+  titleLabel->setStyleSheet("color: #8B949E; font-size: 12px; font-weight: 600; text-transform: uppercase;");
   layout->addWidget(titleLabel);
-
-  auto content = new QWidget(card);
-  layout->addWidget(content, 1);
-  *outContent = content;
 
   return card;
 }
@@ -59,92 +46,117 @@ DashboardView::DashboardView(QWidget *parent) : QWidget(parent) {
 
   m_RefreshTimer = new QTimer(this);
   connect(m_RefreshTimer, &QTimer::timeout, this, &DashboardView::onRefreshTimer);
-  m_RefreshTimer->start(1000); // 1 second updates
+  m_RefreshTimer->start(1000); // 1s refresh
 }
 
 DashboardView::~DashboardView() = default;
 
 void DashboardView::setupUI() {
-  auto mainLayout = new QVBoxLayout(this);
+  auto* mainLayout = new QVBoxLayout(this);
   mainLayout->setContentsMargins(24, 24, 24, 24);
-  mainLayout->setSpacing(24);
+  mainLayout->setSpacing(16);
 
-  auto title = new QLabel("System Dashboard", this);
-  title->setStyleSheet("font-size: 24px; font-weight: 600; color: #E6EDF3;");
-  mainLayout->addWidget(title);
+  // Top Section: Title
+  auto* headerLabel = new QLabel("System Overview", this);
+  headerLabel->setStyleSheet("color: #E6EDF3; font-size: 24px; font-weight: 700;");
+  mainLayout->addWidget(headerLabel);
 
-  auto grid = new QGridLayout();
-  grid->setSpacing(20);
+  // Cards Grid
+  auto* grid = new QGridLayout();
+  grid->setSpacing(16);
 
   // CPU Card
-  QWidget* cpuContent;
-  auto cpuCard = CreateCard(this, "CPU", &cpuContent);
-  auto cpuLayout = new QVBoxLayout(cpuContent);
-  cpuLayout->setContentsMargins(0,0,0,0);
-  m_CpuValueLabel = new QLabel("0.0%", cpuContent);
-  m_CpuValueLabel->setProperty("class", "cardValue");
-  cpuLayout->addWidget(m_CpuValueLabel);
-  m_CpuNameLabel = new QLabel("Processor", cpuContent);
-  m_CpuNameLabel->setProperty("class", "cardUnit");
-  cpuLayout->addWidget(m_CpuNameLabel);
-  cpuLayout->addStretch();
+  auto* cpuCard = createCard("CPU Usage", this);
+  auto* cpuLayout = qobject_cast<QVBoxLayout*>(cpuCard->layout());
+  
+  auto* cpuHeader = new QHBoxLayout();
+  m_CpuValueLabel = new QLabel("--%", cpuCard);
+  m_CpuValueLabel->setStyleSheet("color: #E6EDF3; font-size: 32px; font-weight: 300;");
+  m_CpuNameLabel = new QLabel("Processor", cpuCard);
+  m_CpuNameLabel->setStyleSheet("color: #8B949E; font-size: 12px;");
+  
+  cpuHeader->addWidget(m_CpuValueLabel);
+  cpuHeader->addStretch();
+  cpuHeader->addWidget(m_CpuNameLabel, 0, Qt::AlignBottom);
+  cpuLayout->addLayout(cpuHeader);
+  
+  m_CpuGraph = new graphs::OpenGLResourceGraph(cpuCard);
+  cpuLayout->addWidget(m_CpuGraph);
+  
   grid->addWidget(cpuCard, 0, 0);
 
   // Memory Card
-  QWidget* memContent;
-  auto memCard = CreateCard(this, "Memory", &memContent);
-  auto memLayout = new QVBoxLayout(memContent);
-  memLayout->setContentsMargins(0,0,0,0);
-  m_MemValueLabel = new QLabel("0.0 GB", memContent);
-  m_MemValueLabel->setProperty("class", "cardValue");
-  memLayout->addWidget(m_MemValueLabel);
-  m_MemTotalLabel = new QLabel("of 0.0 GB", memContent);
-  m_MemTotalLabel->setProperty("class", "cardUnit");
-  memLayout->addWidget(m_MemTotalLabel);
-  memLayout->addStretch();
+  auto* memCard = createCard("Memory", this);
+  auto* memLayout = qobject_cast<QVBoxLayout*>(memCard->layout());
+  
+  auto* memHeader = new QHBoxLayout();
+  m_MemValueLabel = new QLabel("-- GB", memCard);
+  m_MemValueLabel->setStyleSheet("color: #E6EDF3; font-size: 32px; font-weight: 300;");
+  m_MemTotalLabel = new QLabel("/ -- GB", memCard);
+  m_MemTotalLabel->setStyleSheet("color: #8B949E; font-size: 16px; padding-bottom: 6px;");
+  
+  memHeader->addWidget(m_MemValueLabel);
+  memHeader->addWidget(m_MemTotalLabel, 0, Qt::AlignBottom);
+  memHeader->addStretch();
+  memLayout->addLayout(memHeader);
+  
+  m_MemGraph = new graphs::OpenGLResourceGraph(memCard);
+  memLayout->addWidget(m_MemGraph);
+  
   grid->addWidget(memCard, 0, 1);
 
   // Network Card
-  QWidget* netContent;
-  auto netCard = CreateCard(this, "Network", &netContent);
-  auto netLayout = new QVBoxLayout(netContent);
-  netLayout->setContentsMargins(0,0,0,0);
-  m_NetRecvLabel = new QLabel("↓ 0 B/s", netContent);
-  m_NetRecvLabel->setProperty("class", "cardValue");
-  m_NetRecvLabel->setStyleSheet("color: #3FB950;"); // Green
+  auto* netCard = createCard("Network Activity", this);
+  auto* netLayout = qobject_cast<QVBoxLayout*>(netCard->layout());
+  
+  m_NetRecvLabel = new QLabel(QString::fromUtf8("↓ 0 Kbps"), netCard);
+  m_NetRecvLabel->setStyleSheet("color: #3FB950; font-size: 20px; font-weight: 600;");
+  m_NetSentLabel = new QLabel(QString::fromUtf8("↑ 0 Kbps"), netCard);
+  m_NetSentLabel->setStyleSheet("color: #58A6FF; font-size: 20px; font-weight: 600;");
+  
+  netLayout->addSpacing(16);
   netLayout->addWidget(m_NetRecvLabel);
-  m_NetSentLabel = new QLabel("↑ 0 B/s", netContent);
-  m_NetSentLabel->setProperty("class", "cardValue");
-  m_NetSentLabel->setStyleSheet("color: #58A6FF;"); // Blue
   netLayout->addWidget(m_NetSentLabel);
   netLayout->addStretch();
-  grid->addWidget(netCard, 0, 2);
+  
+  grid->addWidget(netCard, 1, 0);
 
-  grid->setColumnStretch(0, 1);
-  grid->setColumnStretch(1, 1);
-  grid->setColumnStretch(2, 1);
-
+  // Add grid to main
   mainLayout->addLayout(grid);
-  mainLayout->addStretch(); // push cards to top
+  mainLayout->addStretch();
 }
 
 void DashboardView::onRefreshTimer() {
   if (m_MetricsProvider) {
-    updateDashboard(m_MetricsProvider->GetCurrentMetrics());
+    auto snapshot = m_MetricsProvider->GetSnapshot();
+    updateDashboard(snapshot);
   }
 }
 
 void DashboardView::updateDashboard(const core::metrics::SystemMetricsSnapshot& snapshot) {
-  m_CpuValueLabel->setText(QString::number(snapshot.cpu.globalUsagePercent, 'f', 1) + "%");
-  if (!snapshot.cpu.processorName.empty()) {
-    m_CpuNameLabel->setText(QString::fromStdString(snapshot.cpu.processorName));
+  // Update CPU
+  m_CpuValueLabel->setText(QString::number(static_cast<int>(snapshot.cpuUsagePercent)) + "%");
+  m_CpuGraph->addDataPoint(snapshot.cpuUsagePercent);
+  
+  if (!snapshot.cpuName.empty()) {
+      m_CpuNameLabel->setText(QString::fromStdString(snapshot.cpuName));
   }
 
-  m_MemValueLabel->setText(FormatBytes(snapshot.memory.usedBytes));
-  m_MemTotalLabel->setText("of " + FormatBytes(snapshot.memory.totalBytes));
+  // Update Memory
+  double memUsedGB = snapshot.memoryUsedBytes / (1024.0 * 1024.0 * 1024.0);
+  double memTotalGB = snapshot.memoryTotalBytes / (1024.0 * 1024.0 * 1024.0);
+  m_MemValueLabel->setText(QString::number(memUsedGB, 'f', 1) + " GB");
+  m_MemTotalLabel->setText(QString("/ %1 GB").arg(QString::number(memTotalGB, 'f', 1)));
+  
+  double memPercent = (memTotalGB > 0) ? (memUsedGB / memTotalGB) * 100.0 : 0.0;
+  m_MemGraph->addDataPoint(memPercent);
 
-  m_NetRecvLabel->setText("↓ " + FormatSpeed(snapshot.network.totalBytesReceivedPerSec));
-  m_NetSentLabel->setText("↑ " + FormatSpeed(snapshot.network.totalBytesSentPerSec));
+  // Update Network (assuming bps)
+  double recvKbps = snapshot.networkBytesReceivedSec * 8.0 / 1000.0;
+  double sentKbps = snapshot.networkBytesSentSec * 8.0 / 1000.0;
+  
+  m_NetRecvLabel->setText(QString::fromUtf8("↓ %1 Kbps").arg(QString::number(recvKbps, 'f', 1)));
+  m_NetSentLabel->setText(QString::fromUtf8("↑ %1 Kbps").arg(QString::number(sentKbps, 'f', 1)));
 }
 
 } // namespace severance::gui::dashboard

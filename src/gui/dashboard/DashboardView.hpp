@@ -10,6 +10,10 @@ namespace severance::core::metrics {
   class MetricsProvider;
 }
 
+namespace severance::gui::graphs {
+  class OpenGLResourceGraph;
+}
+
 namespace severance::gui::dashboard {
 
 class DashboardView : public QWidget {
@@ -29,10 +33,12 @@ private:
   // CPU Card
   QLabel* m_CpuValueLabel{nullptr};
   QLabel* m_CpuNameLabel{nullptr};
+  graphs::OpenGLResourceGraph* m_CpuGraph{nullptr};
 
   // Memory Card
   QLabel* m_MemValueLabel{nullptr};
   QLabel* m_MemTotalLabel{nullptr};
+  graphs::OpenGLResourceGraph* m_MemGraph{nullptr};
 
   // Network Card
   QLabel* m_NetRecvLabel{nullptr};

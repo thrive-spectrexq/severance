@@ -34,6 +34,7 @@ add_executable(severance
     src/gui/isolation_view/IsolationView.cpp
     src/gui/ai_panel/AiPanel.cpp
     src/gui/graphs/ResourceGraph.cpp
+    src/gui/graphs/OpenGLResourceGraph.cpp
     src/gui/widgets/StatusIndicator.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
@@ -51,6 +52,7 @@ add_executable(severance
     src/core/ai/AiEngine.cpp
     src/core/workspace/WorkspaceManager.cpp
     src/core/notifications/NotificationManager.cpp
+    src/core/notifications/RuleEngine.cpp
     src/core/session/SessionManager.cpp
     src/platform/windows/sev_platform_win32.c
 )
@@ -63,6 +65,8 @@ target_link_libraries(severance PRIVATE
     Qt6::Widgets
     Qt6::Sql
     Qt6::Network
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
     psapi
 )
 
