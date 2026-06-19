@@ -15,21 +15,14 @@ namespace severance::gui::dashboard {
 
 static QFrame* createCard(const QString& title, QWidget* parent) {
   auto* card = new QFrame(parent);
-  card->setObjectName("dashboardCard");
-  card->setStyleSheet(R"(
-    QFrame#dashboardCard {
-      background-color: #161B22;
-      border: 1px solid #30363D;
-      border-radius: 8px;
-    }
-  )");
+  card->setProperty("cssClass", "card");
 
   auto* layout = new QVBoxLayout(card);
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(8);
 
   auto* titleLabel = new QLabel(title, card);
-  titleLabel->setStyleSheet("color: #8B949E; font-size: 12px; font-weight: 600; text-transform: uppercase;");
+  titleLabel->setProperty("cssClass", "cardTitle");
   layout->addWidget(titleLabel);
 
   return card;
@@ -58,7 +51,7 @@ void DashboardView::setupUI() {
 
   // Top Section: Title
   auto* headerLabel = new QLabel("System Overview", this);
-  headerLabel->setStyleSheet("color: #E6EDF3; font-size: 24px; font-weight: 700;");
+  headerLabel->setProperty("cssClass", "heading");
   mainLayout->addWidget(headerLabel);
 
   // Cards Grid
@@ -71,9 +64,9 @@ void DashboardView::setupUI() {
   
   auto* cpuHeader = new QHBoxLayout();
   m_CpuValueLabel = new QLabel("--%", cpuCard);
-  m_CpuValueLabel->setStyleSheet("color: #E6EDF3; font-size: 32px; font-weight: 300;");
+  m_CpuValueLabel->setProperty("cssClass", "cardValue");
   m_CpuNameLabel = new QLabel("Processor", cpuCard);
-  m_CpuNameLabel->setStyleSheet("color: #8B949E; font-size: 12px;");
+  m_CpuNameLabel->setProperty("cssClass", "cardUnit");
   
   cpuHeader->addWidget(m_CpuValueLabel);
   cpuHeader->addStretch();
@@ -91,9 +84,9 @@ void DashboardView::setupUI() {
   
   auto* memHeader = new QHBoxLayout();
   m_MemValueLabel = new QLabel("-- GB", memCard);
-  m_MemValueLabel->setStyleSheet("color: #E6EDF3; font-size: 32px; font-weight: 300;");
+  m_MemValueLabel->setProperty("cssClass", "cardValue");
   m_MemTotalLabel = new QLabel("/ -- GB", memCard);
-  m_MemTotalLabel->setStyleSheet("color: #8B949E; font-size: 16px; padding-bottom: 6px;");
+  m_MemTotalLabel->setProperty("cssClass", "cardUnit");
   
   memHeader->addWidget(m_MemValueLabel);
   memHeader->addWidget(m_MemTotalLabel, 0, Qt::AlignBottom);
@@ -110,9 +103,11 @@ void DashboardView::setupUI() {
   auto* netLayout = qobject_cast<QVBoxLayout*>(netCard->layout());
   
   m_NetRecvLabel = new QLabel(QString::fromUtf8("↓ 0 Kbps"), netCard);
-  m_NetRecvLabel->setStyleSheet("color: #3FB950; font-size: 20px; font-weight: 600;");
+  m_NetRecvLabel->setProperty("cssClass", "cardValue");
+  m_NetRecvLabel->setStyleSheet("color: #3FB950;");
   m_NetSentLabel = new QLabel(QString::fromUtf8("↑ 0 Kbps"), netCard);
-  m_NetSentLabel->setStyleSheet("color: #58A6FF; font-size: 20px; font-weight: 600;");
+  m_NetSentLabel->setProperty("cssClass", "cardValue");
+  m_NetSentLabel->setStyleSheet("color: #58A6FF;");
   
   netLayout->addSpacing(16);
   netLayout->addWidget(m_NetRecvLabel);

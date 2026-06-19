@@ -138,27 +138,9 @@ void MainWindow::setupSidebar() {
   for (int i = 0; i < static_cast<int>(m_ViewInfos.size()); ++i) {
     auto btn = new QPushButton(m_ViewInfos[i].icon, m_Sidebar);
     btn->setCheckable(true);
-    btn->setFixedSize(40, 40);
+    btn->setFixedSize(50, 50);
+    btn->setProperty("cssClass", "sidebarBtn");
     btn->setToolTip(m_ViewInfos[i].name + "  (" + m_ViewInfos[i].shortcut + ")");
-    btn->setStyleSheet(R"(
-      QPushButton {
-        background-color: transparent;
-        border: none;
-        border-radius: 8px;
-        color: #8B949E;
-        font-size: 16px;
-        font-weight: 700;
-        margin: 2px 8px;
-      }
-      QPushButton:hover {
-        background-color: #21262D;
-        color: #E6EDF3;
-      }
-      QPushButton:checked {
-        background-color: #1F3A5F;
-        color: #58A6FF;
-      }
-    )");
 
     connect(btn, &QPushButton::clicked, this, [this, i]() {
       onSidebarButtonClicked(i);
@@ -251,14 +233,15 @@ void MainWindow::setupStatusBar() {
       font-weight: 600;
       padding: 0 8px;
     }
-    QPushButton:hover { background-color: #21262D; }
+    QPushButton:hover { background-color: #0D1117; border-radius: 4px; }
     QPushButton::menu-indicator { image: none; }
   )");
   
   m_WorkspaceMenu = new QMenu(this);
   m_WorkspaceMenu->setStyleSheet(R"(
-    QMenu { background-color: #161B22; border: 1px solid #30363D; color: #E6EDF3; }
-    QMenu::item:selected { background-color: #1F3A5F; }
+    QMenu { background-color: #010409; border: 1px solid #21262D; color: #E6EDF3; border-radius: 6px; padding: 4px; }
+    QMenu::item { padding: 6px 20px; border-radius: 4px; }
+    QMenu::item:selected { background-color: #161B22; color: #58A6FF; }
   )");
   m_WorkspaceBtn->setMenu(m_WorkspaceMenu);
   bar->addPermanentWidget(m_WorkspaceBtn);
