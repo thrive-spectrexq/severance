@@ -225,14 +225,71 @@ bool ProcessManager::KillProcess(uint32_t pid) {
 }
 
 bool ProcessManager::SuspendProcess(uint32_t pid) {
-  // NtSuspendProcess is undocumented but widely used — we'll add later
-  SEV_CORE_WARN("SuspendProcess not yet implemented for PID {}", pid);
-  return false;
+  // NtSuspendProcess is an undocumented but stable ntdll export.
+  // Dynamically load to avoid compile-time ntdll dependency.
+  using NtSuspendProcessFn = NTSTATUS(NTAPI*)(HANDLE);
+  static NtSuspendProcessFn pNtSuspendProcess = nullptr;
+
+  if (!pNtSuspendProcess) {
+    HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+    if (hNtdll) {
+      pNtSuspendProcess = reinterpret_cast<NtSuspendProcessFn>(
+        GetProcAddress(hNtdll, "NtSuspendProcess"));
+    }
+  }
+
+  if (!pNtSuspendProcess) {
+    SEV_CORE_ERROR("NtSuspendProcess not available on this system");
+    return false;
+  }
+
+  utils::ScopedHandle hProcess(OpenProcess(PROCESS_SUSPEND_RESUME, FALSE, pid));
+  if (!hProcess.IsValid()) {
+    SEV_CORE_ERROR("Failed to open process {} for suspend (error {})", pid, GetLastError());
+    return false;
+  }
+
+  NTSTATUS status = pNtSuspendProcess(hProcess.Get());
+  if (status == 0) {
+    SEV_CORE_INFO("Suspended process {}", pid);
+    return true;
+  } else {
+    SEV_CORE_ERROR("NtSuspendProcess failed for PID {} (NTSTATUS: 0x{:08X})", pid, static_cast<uint32_t>(status));
+    return false;
+  }
 }
 
 bool ProcessManager::ResumeProcess(uint32_t pid) {
-  SEV_CORE_WARN("ResumeProcess not yet implemented for PID {}", pid);
-  return false;
+  using NtResumeProcessFn = NTSTATUS(NTAPI*)(HANDLE);
+  static NtResumeProcessFn pNtResumeProcess = nullptr;
+
+  if (!pNtResumeProcess) {
+    HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+    if (hNtdll) {
+      pNtResumeProcess = reinterpret_cast<NtResumeProcessFn>(
+        GetProcAddress(hNtdll, "NtResumeProcess"));
+    }
+  }
+
+  if (!pNtResumeProcess) {
+    SEV_CORE_ERROR("NtResumeProcess not available on this system");
+    return false;
+  }
+
+  utils::ScopedHandle hProcess(OpenProcess(PROCESS_SUSPEND_RESUME, FALSE, pid));
+  if (!hProcess.IsValid()) {
+    SEV_CORE_ERROR("Failed to open process {} for resume (error {})", pid, GetLastError());
+    return false;
+  }
+
+  NTSTATUS status = pNtResumeProcess(hProcess.Get());
+  if (status == 0) {
+    SEV_CORE_INFO("Resumed process {}", pid);
+    return true;
+  } else {
+    SEV_CORE_ERROR("NtResumeProcess failed for PID {} (NTSTATUS: 0x{:08X})", pid, static_cast<uint32_t>(status));
+    return false;
+  }
 }
 
 #else

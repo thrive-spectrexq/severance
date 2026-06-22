@@ -4,6 +4,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <tlhelp32.h>
 #include <unordered_map>
 #endif
 
@@ -14,7 +15,7 @@ public:
   WindowsMetricsProvider();
   ~WindowsMetricsProvider() override;
 
-  SystemMetricsSnapshot GetCurrentMetrics() override;
+  SystemMetricsSnapshot GetSnapshot() override;
 
 private:
 #ifdef _WIN32
@@ -26,6 +27,7 @@ private:
 
   // State for deltas
   uint64_t m_LastTickCount{0};
+  uint64_t m_BootTickCount{0};
   
   // CPU delta state
   ULARGE_INTEGER m_LastIdleTime{};

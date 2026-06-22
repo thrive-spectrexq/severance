@@ -60,6 +60,7 @@ struct GpuMetrics {
 
 struct SystemMetricsSnapshot {
   uint64_t timestampEpochMs{0};
+  uint64_t uptimeSeconds{0};
   CpuMetrics cpu;
   MemoryMetrics memory;
   NetworkMetrics network;
@@ -72,7 +73,7 @@ public:
   MetricsProvider() = default;
   virtual ~MetricsProvider() = default;
 
-  virtual SystemMetricsSnapshot GetCurrentMetrics() = 0;
+  virtual SystemMetricsSnapshot GetSnapshot() = 0;
 };
 
 } // namespace severance::core::metrics

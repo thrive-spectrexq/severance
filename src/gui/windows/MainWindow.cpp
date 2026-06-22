@@ -1,4 +1,5 @@
 #include "MainWindow.hpp"
+#include "SettingsWindow.hpp"
 #include "gui/dashboard/DashboardView.hpp"
 #include "gui/process_view/ProcessView.hpp"
 #include "gui/network_view/NetworkView.hpp"
@@ -106,6 +107,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   }});
   registry.registerCommand({"view.toggle_ai", "Toggle AI Insights", "Show or hide the AI Insights panel", "Ctrl+I", [this]() {
     m_AiPanel->setVisible(!m_AiPanel->isVisible());
+  }});
+  registry.registerCommand({"app.settings", "Open Settings", "Open the application settings dialog", "Ctrl+,", [this]() {
+    auto* settings = new SettingsWindow(this);
+    settings->setAttribute(Qt::WA_DeleteOnClose);
+    settings->exec();
   }});
 
   // Start on Dashboard
@@ -351,7 +357,9 @@ void MainWindow::setupShortcuts() {
   // Settings: Ctrl+,
   auto settingsShortcut = new QShortcut(QKeySequence("Ctrl+,"), this);
   connect(settingsShortcut, &QShortcut::activated, this, [this]() {
-    statusBar()->showMessage("Settings (coming soon)", 1500);
+    auto* settings = new SettingsWindow(this);
+    settings->setAttribute(Qt::WA_DeleteOnClose);
+    settings->exec();
   });
 }
 
@@ -397,6 +405,15 @@ void MainWindow::setupSystemTray() {
   QAction* restoreAction = new QAction("Restore", this);
   connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
   m_TrayMenu->addAction(restoreAction);
+
+  QAction* settingsAction = new QAction("Settings", this);
+  connect(settingsAction, &QAction::triggered, this, [this]() {
+    showNormal();
+    auto* settings = new SettingsWindow(this);
+    settings->setAttribute(Qt::WA_DeleteOnClose);
+    settings->exec();
+  });
+  m_TrayMenu->addAction(settingsAction);
   
   m_TrayMenu->addSeparator();
   

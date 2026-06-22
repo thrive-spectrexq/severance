@@ -4,8 +4,10 @@
 #ifdef _WIN32
 #include <iphlpapi.h>
 #include <pdh.h>
+#include <dxgi.h>
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "pdh.lib")
+#pragma comment(lib, "dxgi.lib")
 
 static uint64_t GetCurrentTimeMs() {
   FILETIME ft;
@@ -38,11 +40,14 @@ WindowsMetricsProvider::WindowsMetricsProvider() {
     }
     RegCloseKey(hKey);
   }
+
+  // Get system boot time for uptime calculation
+  m_BootTickCount = GetTickCount64();
 }
 
 WindowsMetricsProvider::~WindowsMetricsProvider() {}
 
-SystemMetricsSnapshot WindowsMetricsProvider::GetCurrentMetrics() {
+SystemMetricsSnapshot WindowsMetricsProvider::GetSnapshot() {
   SystemMetricsSnapshot snapshot;
   snapshot.timestampEpochMs = GetCurrentTimeMs();
 
@@ -51,6 +56,9 @@ SystemMetricsSnapshot WindowsMetricsProvider::GetCurrentMetrics() {
   UpdateNetworkMetrics(snapshot.network);
   UpdateDiskMetrics(snapshot.disks);
   UpdateGpuMetrics(snapshot.gpus);
+  
+  // System uptime from boot
+  snapshot.uptimeSeconds = GetTickCount64() / 1000;
   
   m_LastTickCount = GetTickCount64();
 
@@ -87,8 +95,23 @@ void WindowsMetricsProvider::UpdateCpuMetrics(CpuMetrics& cpu) {
     m_LastUserTime = uUser;
   }
 
-  // To get Process, Thread, and Handle counts we use PDH or NtQuerySystemInformation.
-  // For simplicity, we skip these in the minimal initial implementation.
+  // Get process and thread counts from snapshot
+  DWORD procCount = 0;
+  DWORD threadCount = 0;
+  HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if (hSnapshot != INVALID_HANDLE_VALUE) {
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(PROCESSENTRY32W);
+    if (Process32FirstW(hSnapshot, &pe)) {
+      do {
+        procCount++;
+        threadCount += pe.cntThreads;
+      } while (Process32NextW(hSnapshot, &pe));
+    }
+    CloseHandle(hSnapshot);
+  }
+  cpu.processCount = procCount;
+  cpu.threadCount = threadCount;
 }
 
 void WindowsMetricsProvider::UpdateMemoryMetrics(MemoryMetrics& mem) {
@@ -146,11 +169,90 @@ void WindowsMetricsProvider::UpdateNetworkMetrics(NetworkMetrics& net) {
 }
 
 void WindowsMetricsProvider::UpdateDiskMetrics(std::vector<DiskMetrics>& disks) {
-  // PDH or WMI required for disk I/O metrics. Skipping for minimal initial impl.
+  // Enumerate logical drives
+  DWORD driveMask = GetLogicalDrives();
+  char driveLetter[] = "A:\\";
+  
+  for (int i = 0; i < 26; ++i) {
+    if (!(driveMask & (1 << i))) continue;
+    
+    driveLetter[0] = 'A' + i;
+    
+    UINT driveType = GetDriveTypeA(driveLetter);
+    if (driveType != DRIVE_FIXED && driveType != DRIVE_REMOVABLE) continue;
+    
+    ULARGE_INTEGER freeBytesAvail, totalBytes, totalFreeBytes;
+    if (GetDiskFreeSpaceExA(driveLetter, &freeBytesAvail, &totalBytes, &totalFreeBytes)) {
+      DiskMetrics dm;
+      dm.name = std::string(1, driveLetter[0]) + ":";
+      dm.totalSpaceBytes = totalBytes.QuadPart;
+      dm.freeSpaceBytes = totalFreeBytes.QuadPart;
+      
+      // Compute I/O rates using performance counters (PDH)
+      // For the initial implementation, we report space usage only.
+      // Disk I/O rate tracking requires PDH queries with delta time,
+      // which we'll add in a follow-up iteration.
+      dm.readBytesPerSec = 0;
+      dm.writeBytesPerSec = 0;
+      dm.activeTimePercent = 0.0;
+      
+      disks.push_back(dm);
+    }
+  }
 }
 
 void WindowsMetricsProvider::UpdateGpuMetrics(std::vector<GpuMetrics>& gpus) {
-  // DXGI required for GPU metrics. Skipping for minimal initial impl.
+  // Use DXGI to enumerate GPUs and get memory info
+  IDXGIFactory1* pFactory = nullptr;
+  HRESULT hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pFactory));
+  if (FAILED(hr) || !pFactory) return;
+  
+  IDXGIAdapter1* pAdapter = nullptr;
+  for (UINT adapterIndex = 0; pFactory->EnumAdapters1(adapterIndex, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
+    DXGI_ADAPTER_DESC1 desc;
+    if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
+      // Skip software/basic adapters
+      if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+        pAdapter->Release();
+        continue;
+      }
+      
+      GpuMetrics gm;
+      
+      // Convert wide string name to narrow
+      int nameLen = WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, nullptr, 0, nullptr, nullptr);
+      if (nameLen > 0) {
+        std::string narrowName(nameLen - 1, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, narrowName.data(), nameLen, nullptr, nullptr);
+        gm.name = std::move(narrowName);
+      }
+      
+      gm.dedicatedMemoryTotalBytes = desc.DedicatedVideoMemory;
+      
+      // Query current VRAM usage via DXGI 1.4 (IDXGIAdapter3)
+      IDXGIAdapter3* pAdapter3 = nullptr;
+      if (SUCCEEDED(pAdapter->QueryInterface(__uuidof(IDXGIAdapter3), reinterpret_cast<void**>(&pAdapter3)))) {
+        DXGI_QUERY_VIDEO_MEMORY_INFO memInfo;
+        if (SUCCEEDED(pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &memInfo))) {
+          gm.dedicatedMemoryUsedBytes = memInfo.CurrentUsage;
+          
+          // Calculate usage percentage
+          if (gm.dedicatedMemoryTotalBytes > 0) {
+            gm.usagePercent = (static_cast<double>(gm.dedicatedMemoryUsedBytes) / gm.dedicatedMemoryTotalBytes) * 100.0;
+          }
+        }
+        pAdapter3->Release();
+      }
+      
+      // GPU temperature requires NVML or vendor-specific APIs — not available through DXGI
+      gm.temperatureCelsius = 0.0;
+      
+      gpus.push_back(gm);
+    }
+    pAdapter->Release();
+  }
+  
+  pFactory->Release();
 }
 
 #endif // _WIN32
