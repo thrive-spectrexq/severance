@@ -9,6 +9,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QMessageBox>
+#include <QApplication>
+#include <QClipboard>
 
 namespace severance::gui::process_view {
 

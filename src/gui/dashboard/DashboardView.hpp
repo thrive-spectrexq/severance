@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QLabel>
 #include <QProgressBar>
+#include <QTableWidget>
 #include <memory>
 
 namespace severance::core::metrics {
@@ -46,7 +47,7 @@ private:
   QLabel* m_CpuValueLabel{nullptr};
 
   // Bottom Table
-  class QTableWidget* m_RecentEventsTable{nullptr};
+  QTableWidget* m_RecentEventsTable{nullptr};
 
   // Model
   std::unique_ptr<core::metrics::MetricsProvider> m_MetricsProvider;
