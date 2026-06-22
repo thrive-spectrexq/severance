@@ -56,6 +56,10 @@ add_executable(severance
     src/core/notifications/NotificationManager.cpp
     src/core/notifications/RuleEngine.cpp
     src/core/session/SessionManager.cpp
+    src/core/security/FimManager.cpp
+    src/core/security/ActiveResponse.cpp
+    src/core/security/EventLogManager.cpp
+    src/core/security/RootkitScanner.cpp
     src/platform/windows/sev_platform_win32.c
 )
 
