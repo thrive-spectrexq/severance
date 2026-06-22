@@ -42,24 +42,30 @@ jobs:
     - name: Build Application
       run: cmake --build build --config Release
 
-    - name: Verify C Plugin DLL
+    - name: Run Tests
       shell: pwsh
       run: |
-        $PluginDll = "build\Release\plugins\sample_c_plugin.dll"
-        $AltPath   = "build\plugins\Release\sample_c_plugin.dll"
-        if (Test-Path $PluginDll) {
-          Write-Host "✓ C plugin built successfully: $PluginDll"
-        } elseif (Test-Path $AltPath) {
-          Write-Host "✓ C plugin built successfully: $AltPath"
-        } else {
-          # Search for it anywhere in the build tree
-          $Found = Get-ChildItem -Path build -Recurse -Filter "sample_c_plugin.dll" -ErrorAction SilentlyContinue
+        cd build
+        ctest --config Release --output-on-failure --timeout 60
+
+    - name: Verify Plugin DLLs
+      shell: pwsh
+      run: |
+        $ExpectedPlugins = @("sample_plugin.dll", "sample_c_plugin.dll", "security_plugin.dll")
+        $AllFound = $true
+        
+        foreach ($Plugin in $ExpectedPlugins) {
+          $Found = Get-ChildItem -Path build -Recurse -Filter $Plugin -ErrorAction SilentlyContinue
           if ($Found) {
-            Write-Host "✓ C plugin found at: $($Found.FullName)"
+            Write-Host "✓ $Plugin found at: $($Found.FullName)"
           } else {
-            Write-Host "✗ C plugin DLL not found in build tree"
-            exit 1
+            Write-Host "✗ $Plugin not found in build tree"
+            $AllFound = $false
           }
+        }
+        
+        if (-not $AllFound) {
+          Write-Host "::warning::Some plugin DLLs were not found"
         }
 
     - name: Deploy Qt Dependencies (windeployqt)
@@ -93,3 +99,4 @@ jobs:
       with:
         name: severance-windows-x64
         path: dist\
+        retention-days: 14

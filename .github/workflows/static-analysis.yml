@@ -1,1 +1,77 @@
-# TODO: Implement
+name: Static Analysis
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  clang-tidy:
+    name: Clang-Tidy Analysis
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        vcpkgJsonGlob: 'vcpkg.json'
+
+    - name: Configure CMake (compile_commands.json)
+      run: >
+        cmake -B build -S . 
+        -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" 
+        -DCMAKE_BUILD_TYPE=Release 
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Run clang-tidy
+      shell: pwsh
+      run: |
+        # Find clang-tidy from Visual Studio installation
+        $ClangTidy = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter "clang-tidy.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        
+        if (-not $ClangTidy) {
+          Write-Host "::warning::clang-tidy not found, skipping analysis"
+          exit 0
+        }
+
+        Write-Host "Found clang-tidy at: $($ClangTidy.FullName)"
+        
+        # Gather source files (skip platform-specific C files and generated files)
+        $SourceFiles = Get-ChildItem -Path src -Recurse -Include "*.cpp","*.hpp" | 
+          Where-Object { $_.FullName -notmatch "platform[/\\]windows" } |
+          Select-Object -ExpandProperty FullName
+
+        $ErrorCount = 0
+        foreach ($File in $SourceFiles) {
+          Write-Host "Analyzing: $File"
+          & $ClangTidy.FullName $File -p build --quiet 2>&1 | ForEach-Object {
+            if ($_ -match "warning:|error:") {
+              Write-Host $_
+              $ErrorCount++
+            }
+          }
+        }
+
+        Write-Host "`n--- Static Analysis Complete ---"
+        Write-Host "Issues found: $ErrorCount"
+        
+        # Don't fail the build for now — report only
+        if ($ErrorCount -gt 0) {
+          Write-Host "::warning::clang-tidy found $ErrorCount issues"
+        }
