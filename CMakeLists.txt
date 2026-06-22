@@ -28,6 +28,8 @@ add_executable(severance
     src/gui/theme/Theme.cpp
     src/gui/search/SearchOverlay.cpp
     src/gui/network_view/NetworkView.cpp
+    src/gui/security_view/SecurityView.cpp
+    src/gui/widgets/ToastNotification.cpp
     src/gui/file_view/FileView.cpp
     src/gui/timeline/TimelineView.cpp
     src/gui/timeline/TimelineHistogram.cpp

@@ -11,7 +11,10 @@
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
 #include "gui/ai_panel/AiPanel.hpp"
+#include "gui/security_view/SecurityView.hpp"
+#include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"
+#include "core/security/ActiveResponse.hpp"
 #include "core/notifications/NotificationManager.hpp"
 #include "core/workspace/WorkspaceManager.hpp"
 #include <QApplication>
@@ -41,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     {"Files",      "F", "Ctrl+5"},
     {"Isolation",  "I", "Ctrl+6"},
     {"Sessions",   "S", "Ctrl+7"},
+    {"Security",   "X", "Ctrl+8"},
   };
 
   // Build the central layout: sidebar | content
@@ -193,6 +197,7 @@ void MainWindow::setupViews() {
   auto* timelineView = new timeline::TimelineView(this);
   auto* isolationView = new isolation_view::IsolationView(this);
   auto* sessionView = new session_view::SessionView(this);
+  auto* securityView = new security_view::SecurityView(this);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
@@ -201,6 +206,7 @@ void MainWindow::setupViews() {
   m_ViewStack->addWidget(m_FileView);      // Index 4
   m_ViewStack->addWidget(isolationView);   // Index 5
   m_ViewStack->addWidget(sessionView);     // Index 6
+  m_ViewStack->addWidget(securityView);    // Index 7
 }
 
 void MainWindow::setupStatusBar() {
@@ -443,6 +449,23 @@ void MainWindow::setupSystemTray() {
           icon = QSystemTrayIcon::Critical;
       }
       
+      // Check if it's an Active Response critical notification
+      if (n.source == "Active Response") {
+        uint32_t pid = 0;
+        if (n.id.starts_with("active_response_")) {
+          pid = std::stoul(n.id.substr(16));
+        }
+        
+        QMetaObject::invokeMethod(this, [this, title = QString::fromStdString(n.title), msg = QString::fromStdString(n.message), pid]() {
+          auto* toast = new widgets::ToastNotification(title, msg, pid, this);
+          connect(toast, &widgets::ToastNotification::actionChosen, [](uint32_t p, bool kill) {
+            core::security::ActiveResponse::GetInstance().OnUserDecision(p, kill);
+          });
+          toast->showWithAnimation();
+        });
+        return; // Don't show in tray
+      }
+
       // We must call UI updates on the main thread, so we use QMetaObject::invokeMethod
       QMetaObject::invokeMethod(this, "showSystemNotification", Qt::QueuedConnection,
           Q_ARG(QString, QString::fromStdString(n.title)),

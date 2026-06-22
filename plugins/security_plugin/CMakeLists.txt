@@ -14,8 +14,9 @@ if(WIN32)
     )
 endif()
 
-# We only need headers for the API
+# Output directly to the plugins folder of the build directory
 set_target_properties(security_plugin PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins/$<CONFIG>"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins/$<CONFIG>"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins"
+    PREFIX "" # No "lib" prefix
 )

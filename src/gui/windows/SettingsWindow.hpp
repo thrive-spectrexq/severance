@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QListWidget>
 
 namespace severance::gui::windows {
 
@@ -26,6 +27,7 @@ private:
   QWidget* createGeneralTab();
   QWidget* createMonitoringTab();
   QWidget* createAppearanceTab();
+  QWidget* createSecurityTab();
   QWidget* createAdvancedTab();
   
   void loadSettings();
@@ -55,6 +57,9 @@ private:
   QSpinBox* m_FontSize{nullptr};
   QCheckBox* m_EnableAnimations{nullptr};
   QCheckBox* m_OpenGLGraphs{nullptr};
+  
+  // Security
+  QListWidget* m_FimDirectories{nullptr};
   
   // Advanced
   QLineEdit* m_PluginPath{nullptr};

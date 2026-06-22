@@ -1,6 +1,7 @@
 #include "SettingsWindow.hpp"
 #include "utils/Config.hpp"
 #include "logging/Logger.hpp"
+#include "core/security/FimManager.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -78,6 +79,7 @@ void SettingsWindow::setupUI() {
   m_Tabs->addTab(createGeneralTab(), "General");
   m_Tabs->addTab(createMonitoringTab(), "Monitoring");
   m_Tabs->addTab(createAppearanceTab(), "Appearance");
+  m_Tabs->addTab(createSecurityTab(), "Security");
   m_Tabs->addTab(createAdvancedTab(), "Advanced");
   
   mainLayout->addWidget(m_Tabs, 1);
@@ -218,6 +220,59 @@ QWidget* SettingsWindow::createAppearanceTab() {
   return tab;
 }
 
+QWidget* SettingsWindow::createSecurityTab() {
+  auto* tab = new QWidget();
+  auto* layout = new QVBoxLayout(tab);
+  layout->setContentsMargins(20, 8, 20, 8);
+  
+  auto* fimGroup = createGroup("File Integrity Monitoring (FIM)", tab);
+  auto* fimLayout = new QVBoxLayout(fimGroup);
+  
+  auto* desc = new QLabel("Directories to monitor for unauthorized changes:", fimGroup);
+  desc->setStyleSheet("color: #8B949E; font-size: 12px;");
+  fimLayout->addWidget(desc);
+  
+  auto* listLayout = new QHBoxLayout();
+  m_FimDirectories = new QListWidget(fimGroup);
+  m_FimDirectories->setStyleSheet(R"(
+    QListWidget { background-color: #0D1117; border: 1px solid #30363D; border-radius: 4px; color: #E6EDF3; }
+    QListWidget::item { padding: 4px; border-bottom: 1px solid #21262D; }
+    QListWidget::item:selected { background-color: #1F6FEB; }
+  )");
+  listLayout->addWidget(m_FimDirectories);
+  
+  auto* btnLayout = new QVBoxLayout();
+  auto* addBtn = new QPushButton("Add...", fimGroup);
+  addBtn->setStyleSheet("QPushButton { background: #21262D; color: #E6EDF3; padding: 4px 12px; border: 1px solid #30363D; border-radius: 4px; } QPushButton:hover { background: #30363D; }");
+  connect(addBtn, &QPushButton::clicked, this, [this]() {
+    QString dir = QFileDialog::getExistingDirectory(this, "Select Directory to Monitor");
+    if (!dir.isEmpty()) {
+      // Check if already exists
+      auto items = m_FimDirectories->findItems(dir, Qt::MatchExactly);
+      if (items.isEmpty()) {
+        m_FimDirectories->addItem(dir);
+      }
+    }
+  });
+  
+  auto* removeBtn = new QPushButton("Remove", fimGroup);
+  removeBtn->setStyleSheet("QPushButton { background: #21262D; color: #DA3633; padding: 4px 12px; border: 1px solid #30363D; border-radius: 4px; } QPushButton:hover { background: #30363D; }");
+  connect(removeBtn, &QPushButton::clicked, this, [this]() {
+    qDeleteAll(m_FimDirectories->selectedItems());
+  });
+  
+  btnLayout->addWidget(addBtn);
+  btnLayout->addWidget(removeBtn);
+  btnLayout->addStretch();
+  
+  listLayout->addLayout(btnLayout);
+  fimLayout->addLayout(listLayout);
+  
+  layout->addWidget(fimGroup);
+  layout->addStretch();
+  return tab;
+}
+
 QWidget* SettingsWindow::createAdvancedTab() {
   auto* tab = new QWidget();
   auto* layout = new QVBoxLayout(tab);
@@ -285,6 +340,14 @@ void SettingsWindow::loadSettings() {
   m_EnableAnimations->setChecked(cfg.Get("appearance.animations", "1") == "1");
   m_OpenGLGraphs->setChecked(cfg.Get("appearance.opengl_graphs", "1") == "1");
   
+  // Security
+  m_FimDirectories->clear();
+  std::string fimDirsStr = cfg.Get("security.fim_directories", "");
+  QStringList dirs = QString::fromStdString(fimDirsStr).split(";", Qt::SkipEmptyParts);
+  for (const auto& dir : dirs) {
+    m_FimDirectories->addItem(dir);
+  }
+  
   // Advanced
   m_EnablePlugins->setChecked(cfg.Get("advanced.plugins_enabled", "1") == "1");
   m_PluginPath->setText(QString::fromStdString(cfg.Get("advanced.plugin_path", "plugins")));
@@ -315,6 +378,20 @@ void SettingsWindow::saveSettings() {
   cfg.Set("appearance.font_size", std::to_string(m_FontSize->value()));
   cfg.Set("appearance.animations", m_EnableAnimations->isChecked() ? "1" : "0");
   cfg.Set("appearance.opengl_graphs", m_OpenGLGraphs->isChecked() ? "1" : "0");
+  
+  // Security
+  QStringList fimDirsList;
+  for(int i = 0; i < m_FimDirectories->count(); ++i) {
+      fimDirsList << m_FimDirectories->item(i)->text();
+  }
+  cfg.Set("security.fim_directories", fimDirsList.join(";").toStdString());
+  
+  // Apply FIM directly if needed (restarting watchers)
+  auto& fim = core::security::FimManager::GetInstance();
+  fim.StopAll();
+  for (const auto& dir : fimDirsList) {
+      fim.StartWatching(dir.toStdString());
+  }
   
   // Advanced
   cfg.Set("advanced.plugins_enabled", m_EnablePlugins->isChecked() ? "1" : "0");
