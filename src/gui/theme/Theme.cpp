@@ -1,6 +1,7 @@
 #include "Theme.hpp"
 #include <QFont>
 #include <QFontDatabase>
+#include <QPalette>
 
 namespace severance::gui::theme {
 

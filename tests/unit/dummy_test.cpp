@@ -59,8 +59,8 @@ TEST_CASE("ThreadPool Execution", "[ThreadPool]") {
 }
 
 TEST_CASE("UUID Generator", "[UUID]") {
-  std::string uuid1 = UUID::Generate();
-  std::string uuid2 = UUID::Generate();
+  std::string uuid1 = severance::utils::UUID::Generate();
+  std::string uuid2 = severance::utils::UUID::Generate();
 
   REQUIRE(uuid1.length() == 36);
   REQUIRE(uuid1[8] == '-');

@@ -4,6 +4,7 @@
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QLabel>
+#include <QPushButton>
 
 namespace severance::gui::process_view {
 
