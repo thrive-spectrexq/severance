@@ -202,6 +202,26 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
     }
   });
 
+  auto suspendAction = menu.addAction("Suspend Process");
+  connect(suspendAction, &QAction::triggered, this, [this, info]() {
+    core::process::ProcessManager mgr;
+    if (mgr.SuspendProcess(info.pid)) {
+      refreshProcessList();
+    } else {
+      QMessageBox::warning(this, "Suspend Process", "Failed to suspend process. It may be protected or already suspended.");
+    }
+  });
+
+  auto resumeAction = menu.addAction("Resume Process");
+  connect(resumeAction, &QAction::triggered, this, [this, info]() {
+    core::process::ProcessManager mgr;
+    if (mgr.ResumeProcess(info.pid)) {
+      refreshProcessList();
+    } else {
+      QMessageBox::warning(this, "Resume Process", "Failed to resume process.");
+    }
+  });
+
   menu.addSeparator();
 
   auto copyPidAction = menu.addAction("Copy PID");

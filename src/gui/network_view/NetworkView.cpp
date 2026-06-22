@@ -83,11 +83,14 @@ void NetworkView::Refresh() {
   m_Table->setUpdatesEnabled(false);
   m_Table->setRowCount(0);
 
+  // Fetch processes once to avoid querying the OS hundreds of times
+  core::process::ProcessManager procMgr;
+  auto procList = procMgr.GetRunningProcesses();
+
   int row = 0;
   for (const auto& conn : connections) {
     // Basic Process Name correlation
     QString procName = "Unknown";
-    auto procList = core::process::ProcessManager::GetInstance().RefreshProcessList();
     for (const auto& p : procList) {
       if (p.pid == conn.pid) {
         procName = QString::fromStdString(p.name);
@@ -145,7 +148,8 @@ void NetworkView::onContextMenuRequested(const QPoint& pos) {
   auto* copyIpAction = menu.addAction("Copy Remote IP");
 
   connect(killAction, &QAction::triggered, [this, pid]() {
-    core::process::ProcessManager::GetInstance().KillProcess(pid);
+    core::process::ProcessManager procMgr;
+    procMgr.KillProcess(pid);
     Refresh();
   });
 
