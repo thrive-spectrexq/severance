@@ -12,6 +12,8 @@
 #include "utils/Config.hpp"
 #include "utils/ThreadPool.hpp"
 #include "utils/UUID.hpp"
+#include "core/plugins/PluginManager.hpp"
+#include "core/sandbox/SandboxManager.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 
@@ -133,8 +135,6 @@ TEST_CASE("FileMonitor", "[FileMonitor]") {
   REQUIRE(events_after_stop.empty() == true);
 }
 
-#include "core/plugins/PluginManager.hpp"
-#include "core/sandbox/SandboxManager.hpp"
 
 using namespace severance::core::plugins;
 using namespace severance::core::sandbox;

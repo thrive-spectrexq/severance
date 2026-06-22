@@ -7,6 +7,7 @@
 #include "events/FileActivityEvent.hpp"
 #include "correlation/CorrelationEngine.hpp"
 #include "notifications/RuleEngine.hpp"
+#include "metrics/BaselineManager.hpp"
 #include <iostream>
 
 namespace severance::core::application {

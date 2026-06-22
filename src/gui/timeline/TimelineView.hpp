@@ -8,6 +8,8 @@
 #include <mutex>
 #include <memory>
 #include "TimelineHistogram.hpp"
+#include "core/events/Event.hpp"
+#include "core/events/EventTypes.hpp"
 
 namespace severance::gui::timeline {
 
