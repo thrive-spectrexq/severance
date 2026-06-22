@@ -47,7 +47,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     {"Security",   "X", "Ctrl+8"},
   };
 
-  // Build the central layout: sidebar | content
   auto centralWidget = new QWidget(this);
   auto mainLayout = new QHBoxLayout(centralWidget);
   mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -127,62 +126,90 @@ MainWindow::~MainWindow() = default;
 void MainWindow::setupSidebar() {
   m_Sidebar = new QWidget(this);
   m_Sidebar->setObjectName("sidebar");
-  m_Sidebar->setFixedWidth(theme::Dimensions::SidebarWidth);
+  m_Sidebar->setFixedWidth(theme::Dimensions::SidebarExpandedWidth); // Expand sidebar
 
   m_SidebarLayout = new QVBoxLayout(m_Sidebar);
   m_SidebarLayout->setContentsMargins(0, 8, 0, 8);
   m_SidebarLayout->setSpacing(2);
 
   // App logo / brand at top
-  auto logo = new QLabel("S", m_Sidebar);
-  logo->setAlignment(Qt::AlignCenter);
-  logo->setFixedHeight(40);
-  logo->setStyleSheet(
-    "font-size: 20px; font-weight: 800; color: #58A6FF; "
-    "background: transparent; padding-top: 4px;"
-  );
+  auto logo = new QLabel("S E V E R A N C E", m_Sidebar);
+  logo->setObjectName("sidebarLogo");
+  logo->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   m_SidebarLayout->addWidget(logo);
-  m_SidebarLayout->addSpacing(12);
+  m_SidebarLayout->addSpacing(8);
 
-  // Navigation buttons
-  for (int i = 0; i < static_cast<int>(m_ViewInfos.size()); ++i) {
-    auto btn = new QPushButton(m_ViewInfos[i].icon, m_Sidebar);
+  // Search box at top of sidebar
+  auto searchLayout = new QHBoxLayout();
+  searchLayout->setContentsMargins(12, 0, 12, 12);
+  auto searchBtnTop = new QPushButton("Search... (Ctrl+K)", m_Sidebar);
+  searchBtnTop->setStyleSheet(R"(
+    QPushButton {
+      background-color: #151A23;
+      border: 1px solid #2A3441;
+      border-radius: 6px;
+      color: #64748B;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    QPushButton:hover { border-color: #00E5FF; color: #F1F5F9; }
+  )");
+  connect(searchBtnTop, &QPushButton::clicked, this, &MainWindow::onSearchTriggered);
+  searchLayout->addWidget(searchBtnTop);
+  m_SidebarLayout->addLayout(searchLayout);
+
+  // Helper to create category headers
+  auto addCategory = [this](const QString& title) {
+    auto lbl = new QLabel(title, m_Sidebar);
+    lbl->setObjectName("sidebarTitle");
+    m_SidebarLayout->addWidget(lbl);
+  };
+
+  int viewIndex = 0;
+  
+  // OVERVIEW
+  addCategory("Overview");
+  auto btnDashboard = new QPushButton("  D    " + m_ViewInfos[viewIndex].name, m_Sidebar);
+  btnDashboard->setCheckable(true);
+  btnDashboard->setProperty("cssClass", "sidebarBtn");
+  connect(btnDashboard, &QPushButton::clicked, this, [this, i = viewIndex]() { onSidebarButtonClicked(i); });
+  m_SidebarButtons.push_back(btnDashboard);
+  m_SidebarLayout->addWidget(btnDashboard);
+  viewIndex++;
+
+  // MONITORING
+  addCategory("Monitoring");
+  for (int i = 0; i < 4; ++i, ++viewIndex) {
+    auto btn = new QPushButton("  " + m_ViewInfos[viewIndex].icon + "    " + m_ViewInfos[viewIndex].name, m_Sidebar);
     btn->setCheckable(true);
-    btn->setFixedSize(50, 50);
     btn->setProperty("cssClass", "sidebarBtn");
-    btn->setToolTip(m_ViewInfos[i].name + "  (" + m_ViewInfos[i].shortcut + ")");
-
-    connect(btn, &QPushButton::clicked, this, [this, i]() {
-      onSidebarButtonClicked(i);
-    });
-
+    connect(btn, &QPushButton::clicked, this, [this, idx = viewIndex]() { onSidebarButtonClicked(idx); });
     m_SidebarButtons.push_back(btn);
-    m_SidebarLayout->addWidget(btn, 0, Qt::AlignHCenter);
+    m_SidebarLayout->addWidget(btn);
   }
 
-  m_SidebarLayout->addStretch(); // Push remaining items to bottom
+  // SECURITY
+  addCategory("Security");
+  for (int i = 0; i < 3; ++i, ++viewIndex) {
+    auto btn = new QPushButton("  " + m_ViewInfos[viewIndex].icon + "    " + m_ViewInfos[viewIndex].name, m_Sidebar);
+    btn->setCheckable(true);
+    btn->setProperty("cssClass", "sidebarBtn");
+    connect(btn, &QPushButton::clicked, this, [this, idx = viewIndex]() { onSidebarButtonClicked(idx); });
+    m_SidebarButtons.push_back(btn);
+    m_SidebarLayout->addWidget(btn);
+  }
 
-  // Search button at bottom
-  auto searchBtn = new QPushButton("?", m_Sidebar);
-  searchBtn->setFixedSize(40, 40);
-  searchBtn->setToolTip("Search  (Ctrl+K)");
-  searchBtn->setStyleSheet(R"(
-    QPushButton {
-      background-color: transparent;
-      border: none;
-      border-radius: 8px;
-      color: #6E7681;
-      font-size: 16px;
-      font-weight: 700;
-      margin: 2px 8px;
-    }
-    QPushButton:hover {
-      background-color: #21262D;
-      color: #E6EDF3;
-    }
-  )");
-  connect(searchBtn, &QPushButton::clicked, this, &MainWindow::onSearchTriggered);
-  m_SidebarLayout->addWidget(searchBtn, 0, Qt::AlignHCenter);
+  m_SidebarLayout->addStretch();
+
+  // Bottom action: AI Panel
+  auto aiBtn = new QPushButton("  A    AI Insights", m_Sidebar);
+  aiBtn->setCheckable(true);
+  aiBtn->setProperty("cssClass", "sidebarBtn");
+  connect(aiBtn, &QPushButton::clicked, this, [this]() {
+    m_AiPanel->setVisible(!m_AiPanel->isVisible());
+  });
+  m_SidebarLayout->addWidget(aiBtn);
   m_SidebarLayout->addSpacing(4);
 }
 

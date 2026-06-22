@@ -11,8 +11,9 @@ namespace severance::core::metrics {
   class MetricsProvider;
 }
 
-namespace severance::gui::graphs {
-  class OpenGLResourceGraph;
+namespace severance::gui::widgets {
+  class DonutChartWidget;
+  class HorizontalBarChartWidget;
 }
 
 namespace severance::gui::dashboard {
@@ -31,35 +32,21 @@ private:
   void setupUI();
   void updateDashboard(const core::metrics::SystemMetricsSnapshot& snapshot);
 
-  // CPU Card
+  // KPI Cards (Top Row)
+  QLabel* m_KpiProcessCount{nullptr};
+  QLabel* m_KpiNetConnections{nullptr};
+  QLabel* m_KpiFileHandles{nullptr};
+  QLabel* m_KpiAlerts{nullptr};
+
+  // Charts (Middle Row)
+  widgets::DonutChartWidget* m_CpuDonut{nullptr};
+  widgets::HorizontalBarChartWidget* m_TopProcessesBar{nullptr};
+
+  // Status Labels for Charts
   QLabel* m_CpuValueLabel{nullptr};
-  QLabel* m_CpuNameLabel{nullptr};
-  graphs::OpenGLResourceGraph* m_CpuGraph{nullptr};
 
-  // Memory Card
-  QLabel* m_MemValueLabel{nullptr};
-  QLabel* m_MemTotalLabel{nullptr};
-  graphs::OpenGLResourceGraph* m_MemGraph{nullptr};
-
-  // Network Card
-  QLabel* m_NetRecvLabel{nullptr};
-  QLabel* m_NetSentLabel{nullptr};
-
-  // GPU Card
-  QLabel* m_GpuNameLabel{nullptr};
-  QLabel* m_GpuValueLabel{nullptr};
-  QLabel* m_GpuVramLabel{nullptr};
-  QProgressBar* m_GpuVramBar{nullptr};
-
-  // Disk Card
-  QLabel* m_DiskNameLabel{nullptr};
-  QLabel* m_DiskSpaceLabel{nullptr};
-  QProgressBar* m_DiskSpaceBar{nullptr};
-
-  // System Info Card
-  QLabel* m_UptimeLabel{nullptr};
-  QLabel* m_ProcessCountLabel{nullptr};
-  QLabel* m_ThreadCountLabel{nullptr};
+  // Bottom Table
+  class QTableWidget* m_RecentEventsTable{nullptr};
 
   // Model
   std::unique_ptr<core::metrics::MetricsProvider> m_MetricsProvider;
