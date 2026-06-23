@@ -17,7 +17,7 @@ void RuleEngine::Start() {
   if (m_Running) return;
   m_Running = true;
 
-  m_SubscriptionId = events::EventBus::GetInstance().Subscribe(
+  events::EventBus::GetInstance().Subscribe(
     events::EventType::FileModified,
     [this](const std::shared_ptr<events::Event>& event) {
       this->OnEvent(event);
@@ -43,7 +43,8 @@ void RuleEngine::Start() {
 void RuleEngine::Stop() {
   if (!m_Running) return;
   m_Running = false;
-  events::EventBus::GetInstance().Unsubscribe(m_SubscriptionId);
+  // Note: EventBus does not currently support Unsubscribe.
+  // Callbacks will be ignored since m_Running is false.
 }
 
 void RuleEngine::OnEvent(const std::shared_ptr<events::Event>& event) {
@@ -56,7 +57,7 @@ void RuleEngine::OnEvent(const std::shared_ptr<events::Event>& event) {
       CheckSuspiciousPath(event);
       break;
     case events::EventType::FileModified:
-    case events::EventType::FileRenamed:
+    case events::EventType::FileCreated:
     case events::EventType::FileDeleted:
       CheckRansomwarePattern(event);
       break;
@@ -86,7 +87,7 @@ void RuleEngine::CheckRansomwarePattern(const std::shared_ptr<events::Event>& ev
     state.count++;
     if (state.count == 20) {
       Notification n;
-      n.id = utils::GenerateUUID();
+      n.id = utils::UUID::Generate();
       n.timestamp = timestamp;
       n.severity = NotificationSeverity::Critical;
       n.title = "Ransomware Heuristic Triggered";

@@ -26,7 +26,6 @@ private:
   void CheckNetworkBurst(const std::shared_ptr<events::Event>& event);
 
   bool m_Running{false};
-  uint32_t m_SubscriptionId{0};
 
   // State for Ransomware Pattern
   struct FileModState {
