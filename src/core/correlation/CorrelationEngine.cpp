@@ -74,7 +74,8 @@ ProcessProfile CorrelationEngine::GetProcessProfile(uint32_t pid) {
     } else {
       profile.pid = pid;
       // Get name from ProcessManager
-      auto procs = process::ProcessManager::GetInstance().RefreshProcessList();
+      process::ProcessManager pm;
+      auto procs = pm.GetRunningProcesses();
       for (const auto& p : procs) {
         if (p.pid == pid) {
           profile.name = p.name;
