@@ -46,7 +46,7 @@ jobs:
       shell: pwsh
       run: |
         cd build
-        ctest --config Release --output-on-failure --timeout 60
+        ctest -C Release --output-on-failure --timeout 60
 
     - name: Verify Plugin DLLs
       shell: pwsh
