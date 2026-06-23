@@ -5,6 +5,7 @@
 #include <iphlpapi.h>
 #include <pdh.h>
 #include <dxgi.h>
+#include <dxgi1_4.h>
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "pdh.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -140,7 +141,7 @@ void WindowsMetricsProvider::UpdateNetworkMetrics(NetworkMetrics& net) {
         MIB_IFROW row = pIfTable->table[i];
         
         // Skip loopback or internal interfaces if desired
-        if (row.dwType == MIB_IF_TYPE_SOFTWARE_LOOPBACK) continue;
+        if (row.dwType == IF_TYPE_SOFTWARE_LOOPBACK) continue;
 
         NetworkAdapterMetrics adapter;
         adapter.name = reinterpret_cast<const char*>(row.bDescr);

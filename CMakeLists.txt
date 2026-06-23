@@ -90,11 +90,13 @@ add_executable(severance_tests
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
+    src/core/process/ProcessTree.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
     src/core/plugins/PluginManager.cpp
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
+    src/core/notifications/NotificationManager.cpp
 )
 target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(severance_tests PRIVATE
