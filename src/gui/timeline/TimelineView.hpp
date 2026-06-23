@@ -4,6 +4,7 @@
 #include <QTableWidget>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QPushButton>
 #include <vector>
 #include <mutex>
 #include <memory>

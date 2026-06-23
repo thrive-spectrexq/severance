@@ -180,7 +180,7 @@ void TimelineView::processPendingEvents() {
   for (const auto& ev : toProcess) {
     QString typeStr = getEventTypeName(ev->GetType());
     QString detailsStr = formatEventPayload(ev);
-    uint64_t ts = ev->GetTimestamp();
+    uint64_t ts = static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
 
     m_Histogram->addEvent(ts);
 

@@ -105,7 +105,7 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   ctx.profile = profile;
   ctx.hProcess = std::move(hPiProcess);
   ctx.hJob = std::move(hJob);
-  m_ActiveSandboxes.push_back(ctx);
+  m_ActiveSandboxes.push_back(std::move(ctx));
 
   return true;
 #else
