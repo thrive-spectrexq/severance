@@ -42,11 +42,16 @@ jobs:
     - name: Run clang-tidy
       shell: pwsh
       run: |
-        # Find clang-tidy from Visual Studio installation
-        $ClangTidy = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter "clang-tidy.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        # Find clang-tidy from Visual Studio installation (prefer x64 over ARM64)
+        $AllClangTidy = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter "clang-tidy.exe" -ErrorAction SilentlyContinue
+        $ClangTidy = $AllClangTidy | Where-Object { $_.FullName -match "x64" -or $_.FullName -match "X64" } | Select-Object -First 1
+        if (-not $ClangTidy) {
+          # Fall back to any non-ARM64 binary
+          $ClangTidy = $AllClangTidy | Where-Object { $_.FullName -notmatch "ARM64" -and $_.FullName -notmatch "arm64" } | Select-Object -First 1
+        }
         
         if (-not $ClangTidy) {
-          Write-Host "::warning::clang-tidy not found, skipping analysis"
+          Write-Host "::warning::clang-tidy (x64) not found, skipping analysis"
           exit 0
         }
 
