@@ -71,12 +71,29 @@ jobs:
     - name: Deploy Qt Dependencies (windeployqt)
       shell: pwsh
       run: |
-        $WindeployqtPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\tools\qt6\bin\windeployqt.exe"
+        $QtBinPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\tools\qt6\bin"
+        $QtPluginPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\plugins"
+        $WindeployqtPath = "$QtBinPath\windeployqt.exe"
         if (Test-Path $WindeployqtPath) {
           Write-Host "Running windeployqt..."
-          & $WindeployqtPath --release --compiler-runtime build\Release\severance.exe
+          $env:QT_PLUGIN_PATH = $QtPluginPath
+          & $WindeployqtPath --release --compiler-runtime --plugindir build\Release\plugins_qt build\Release\severance.exe
+          Write-Host "windeployqt completed"
         } else {
-          Write-Host "Warning: windeployqt not found at $WindeployqtPath"
+          Write-Host "Warning: windeployqt not found, manually copying platform plugin..."
+        }
+        
+        # Ensure the platforms directory exists with qwindows.dll
+        if (-not (Test-Path "build\Release\platforms\qwindows.dll") -and -not (Test-Path "build\Release\plugins_qt\platforms\qwindows.dll")) {
+          Write-Host "Platform plugin not deployed by windeployqt, copying manually..."
+          $QWindowsDll = Get-ChildItem "${{ github.workspace }}\vcpkg\installed\x64-windows" -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($QWindowsDll) {
+            New-Item -ItemType Directory -Force -Path "build\Release\platforms"
+            Copy-Item $QWindowsDll.FullName "build\Release\platforms\" -Force
+            Write-Host "Copied qwindows.dll from: $($QWindowsDll.FullName)"
+          } else {
+            Write-Host "::warning::qwindows.dll not found in vcpkg installation"
+          }
         }
         
     - name: Prepare Artifact Folder
@@ -84,11 +101,27 @@ jobs:
       run: |
         New-Item -ItemType Directory -Force -Path dist
         New-Item -ItemType Directory -Force -Path dist\plugins
-        # Copy the main application and Qt dependencies
+        New-Item -ItemType Directory -Force -Path dist\platforms
+        
+        # Copy the main application and all dependencies
         Copy-Item -Path build\Release\* -Destination dist\ -Recurse -Force
-        # Copy plugin DLLs
+        
+        # If windeployqt used a custom plugindir, move platform plugins to standard location
+        if (Test-Path "dist\plugins_qt\platforms\qwindows.dll") {
+          Copy-Item -Path "dist\plugins_qt\platforms\*" -Destination "dist\platforms\" -Force
+        }
+        
+        # Verify platforms directory
+        if (Test-Path "dist\platforms\qwindows.dll") {
+          Write-Host "✓ qwindows.dll found in dist\platforms\"
+        } else {
+          Write-Host "::warning::qwindows.dll is missing from the artifact!"
+        }
+        
+        # Copy severance plugin DLLs
         Get-ChildItem -Path build -Recurse -Filter "*.dll" | Where-Object {
-          $_.DirectoryName -match "plugins"
+          $_.DirectoryName -match "plugins[/\\](sample_|security_)" -or
+          ($_.DirectoryName -match "plugins[/\\]Release" -and $_.Name -match "(sample_|security_)")
         } | ForEach-Object {
           Copy-Item -Path $_.FullName -Destination dist\plugins\ -Force
           Write-Host "Copied plugin: $($_.Name)"
