@@ -82,8 +82,9 @@ target_link_libraries(severance PRIVATE
 )
 
 enable_testing()
-add_executable(severance_tests
-    tests/unit/dummy_test.cpp
+
+# --- Shared source files used by tests ---
+set(TEST_COMMON_SOURCES
     src/core/logging/Logger.cpp
     src/core/events/EventBus.cpp
     src/utils/ThreadPool.cpp
@@ -98,6 +99,14 @@ add_executable(severance_tests
     src/core/sandbox/SandboxManager.cpp
     src/core/notifications/NotificationManager.cpp
 )
+
+# --- Test executable ---
+add_executable(severance_tests
+    tests/unit/test_core_utils.cpp
+    tests/unit/test_process_network.cpp
+    tests/unit/test_system_components.cpp
+    ${TEST_COMMON_SOURCES}
+)
 target_include_directories(severance_tests PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(severance_tests PRIVATE
     spdlog::spdlog
@@ -105,7 +114,11 @@ target_link_libraries(severance_tests PRIVATE
     Qt6::Core
     Qt6::Network
 )
-add_test(NAME dummy_test COMMAND severance_tests)
+
+# Register individual test suites for clearer CI output
+add_test(NAME CoreUtils COMMAND severance_tests "[EventBus],[Logger],[ThreadPool],[UUID],[Config]")
+add_test(NAME ProcessNetwork COMMAND severance_tests "[ProcessManager],[ProcessTree],[NetworkManager]")
+add_test(NAME SystemComponents COMMAND severance_tests "[FileMonitor],[PluginManager],[SandboxManager]")
 
 # Plugins
 add_subdirectory(plugins)
