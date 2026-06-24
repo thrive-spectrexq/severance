@@ -102,6 +102,7 @@ set(TEST_COMMON_SOURCES
 
 # --- Test executable ---
 add_executable(severance_tests
+    tests/unit/test_setup.cpp
     tests/unit/test_core_utils.cpp
     tests/unit/test_process_network.cpp
     tests/unit/test_system_components.cpp
