@@ -3,6 +3,7 @@
 #include <QFontDatabase>
 #include <QPalette>
 #include <QGraphicsDropShadowEffect>
+#include <QWidget>
 
 namespace severance::gui::theme {
 

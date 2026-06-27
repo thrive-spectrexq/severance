@@ -103,10 +103,10 @@ void FimManager::WatchThread(std::string directoryPath) {
       directoryPath.c_str(),
       FILE_LIST_DIRECTORY,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      NULL,
+      nullptr,
       OPEN_EXISTING,
       FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-      NULL
+      nullptr
   );
 
   if (hDir == INVALID_HANDLE_VALUE) {
@@ -124,7 +124,7 @@ void FimManager::WatchThread(std::string directoryPath) {
 
   uint8_t buffer[1024 * 64];
   OVERLAPPED overlapped = {};
-  overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
   while (true) {
     {
@@ -144,7 +144,7 @@ void FimManager::WatchThread(std::string directoryPath) {
         FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY,
         &bytesReturned,
         &overlapped,
-        NULL
+        nullptr
     );
 
     if (!result) {

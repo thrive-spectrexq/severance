@@ -7,6 +7,7 @@
 #include <queue>
 #include <thread>
 #include <vector>
+#include <type_traits>
 
 namespace severance::utils {
 

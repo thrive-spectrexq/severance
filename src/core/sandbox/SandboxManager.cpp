@@ -16,7 +16,7 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   SEV_CORE_INFO("Launching sandbox profile: {} ({})", profile.name, profile.executablePath);
 
 #if defined(_WIN32)
-  utils::ScopedHandle hJob(CreateJobObjectW(NULL, NULL));
+  utils::ScopedHandle hJob(CreateJobObjectW(nullptr, nullptr));
   if (!hJob.IsValid()) {
     SEV_CORE_ERROR("Failed to create Job Object. Error: {}", GetLastError());
     return false;
@@ -50,8 +50,8 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
   utils::ScopedHandle hNewToken;
   if (!profile.policy.allowFileSystemWrite) {
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, hToken.GetAddressOf())) {
-      if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityImpersonation, TokenPrimary, hNewToken.GetAddressOf())) {
-        PSID pIntegritySid = NULL;
+      if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, nullptr, SecurityImpersonation, TokenPrimary, hNewToken.GetAddressOf())) {
+        PSID pIntegritySid = nullptr;
         if (ConvertStringSidToSidW(L"S-1-16-4096", &pIntegritySid)) { // Low Integrity
           TOKEN_MANDATORY_LABEL tml = {0};
           tml.Label.Attributes = SE_GROUP_INTEGRITY;
@@ -73,14 +73,14 @@ bool SandboxManager::LaunchProfile(const SandboxProfile &profile) {
 
   if (hNewToken.IsValid()) {
     // Note: CreateProcessAsUserW often requires SeAssignPrimaryTokenPrivilege which normal users don't have.
-    success = CreateProcessAsUserW(hNewToken, wExePath.c_str(), NULL, NULL, NULL, FALSE, creationFlags, NULL, NULL, &si, &pi);
+    success = CreateProcessAsUserW(hNewToken, wExePath.c_str(), nullptr, nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &si, &pi);
     if (!success) {
       SEV_CORE_WARN("CreateProcessAsUserW failed (Error {}). Falling back to CreateProcessW.", GetLastError());
     }
   }
 
   if (!success) {
-    success = CreateProcessW(wExePath.c_str(), NULL, NULL, NULL, FALSE, creationFlags, NULL, NULL, &si, &pi);
+    success = CreateProcessW(wExePath.c_str(), nullptr, nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &si, &pi);
   }
 
   // Tokens automatically closed when hNewToken/hToken go out of scope

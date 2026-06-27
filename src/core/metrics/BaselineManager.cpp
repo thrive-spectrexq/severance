@@ -57,8 +57,8 @@ void BaselineManager::onPoll() {
 
 void BaselineManager::recordBaseline(const SystemMetricsSnapshot& snapshot) {
   m_CpuSamples.push_back(snapshot.cpu.globalUsagePercent);
-  m_MemSamples.push_back((double)snapshot.memory.usedBytes);
-  m_NetSamples.push_back((double)snapshot.network.totalBytesReceivedPerSec);
+  m_MemSamples.push_back(static_cast<double>(snapshot.memory.usedBytes));
+  m_NetSamples.push_back(static_cast<double>(snapshot.network.totalBytesReceivedPerSec));
   
   m_SamplesCollected++;
   
@@ -88,7 +88,7 @@ void BaselineManager::monitorForAnomalies(const SystemMetricsSnapshot& snapshot)
                       .arg(currentCpu, 0, 'f', 1).arg(m_AvgCpu, 0, 'f', 1);
   }
   
-  double currentMem = (double)snapshot.memory.usedBytes;
+  auto currentMem = static_cast<double>(snapshot.memory.usedBytes);
   if (currentMem > (m_AvgMem * 1.5)) { // 50% increase in total system memory usage
     anomaly = true;
     explanation += QString("Massive Memory Consumption Detected. Current: %1 GB, Baseline: %2 GB.\n")

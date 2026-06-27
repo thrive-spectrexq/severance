@@ -22,20 +22,20 @@ void EventLogManager::RegisterCallback(EventCallback cb) {
 
 bool EventLogManager::Subscribe(const std::string& channel, const std::string& query) {
 #ifdef _WIN32
-  int chanLen = MultiByteToWideChar(CP_UTF8, 0, channel.c_str(), -1, NULL, 0);
+  int chanLen = MultiByteToWideChar(CP_UTF8, 0, channel.c_str(), -1, nullptr, 0);
   std::wstring wChannel(chanLen, 0);
   MultiByteToWideChar(CP_UTF8, 0, channel.c_str(), -1, &wChannel[0], chanLen);
 
-  int queryLen = MultiByteToWideChar(CP_UTF8, 0, query.c_str(), -1, NULL, 0);
+  int queryLen = MultiByteToWideChar(CP_UTF8, 0, query.c_str(), -1, nullptr, 0);
   std::wstring wQuery(queryLen, 0);
   MultiByteToWideChar(CP_UTF8, 0, query.c_str(), -1, &wQuery[0], queryLen);
 
   EVT_HANDLE hSubscription = EvtSubscribe(
-      NULL,
-      NULL,
+      nullptr,
+      nullptr,
       wChannel.c_str(),
       wQuery.c_str(),
-      NULL,
+      nullptr,
       this, // Context
       (EVT_SUBSCRIBE_CALLBACK)SubscriptionCallback,
       EvtSubscribeToFutureEvents
@@ -111,17 +111,17 @@ void EventLogManager::HandleEvent(void* eventHandle) {
   DWORD propertyCount = 0;
 
   // Render to XML
-  EvtRender(NULL, hEvent, EvtRenderEventXml, bufferSize, NULL, &bufferUsed, &propertyCount);
+  EvtRender(nullptr, hEvent, EvtRenderEventXml, bufferSize, nullptr, &bufferUsed, &propertyCount);
   if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
     bufferSize = bufferUsed;
     std::vector<WCHAR> buffer(bufferSize / sizeof(WCHAR));
-    if (EvtRender(NULL, hEvent, EvtRenderEventXml, bufferSize, buffer.data(), &bufferUsed, &propertyCount)) {
+    if (EvtRender(nullptr, hEvent, EvtRenderEventXml, bufferSize, buffer.data(), &bufferUsed, &propertyCount)) {
       std::wstring wXml(buffer.data());
       
       // Convert WString to String
-      int size_needed = WideCharToMultiByte(CP_UTF8, 0, wXml.c_str(), -1, NULL, 0, NULL, NULL);
+      int size_needed = WideCharToMultiByte(CP_UTF8, 0, wXml.c_str(), -1, nullptr, 0, nullptr, nullptr);
       std::string xmlStr(size_needed, 0);
-      WideCharToMultiByte(CP_UTF8, 0, wXml.c_str(), -1, &xmlStr[0], size_needed, NULL, NULL);
+      WideCharToMultiByte(CP_UTF8, 0, wXml.c_str(), -1, &xmlStr[0], size_needed, nullptr, nullptr);
 
       WindowsEvent ev;
       ev.xmlData = xmlStr;

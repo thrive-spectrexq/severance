@@ -287,7 +287,7 @@ Community plugins install from the in-app Plugin Marketplace without restarting.
 |                             GUI Layer (C++)                             |
 |-------------------------------------------------------------------------|
 | Dashboard | Process Explorer | Timeline | Network | Files | Isolation   |
-| Global Search | Command Palette | AI Insights Panel                    |
+| Global Search | Command Palette | AI Insights Panel                     |
 +-------------------------------------------------------------------------+
 |                            Event Bus (C++)                              |
 |              All modules communicate here — and only here               |
@@ -304,11 +304,11 @@ Community plugins install from the in-app Plugin Marketplace without restarting.
 | CPluginBridge: wraps C plugins → IPlugin C++ interface                  |
 | severance_plugin_api.h: stable C17 ABI for plugin development           |
 +-------------------------------------------------------------------------+
-|                    Windows Platform Layer (C/C++)                        |
+|                    Windows Platform Layer (C/C++)                       |
 |-------------------------------------------------------------------------|
-| sev_platform.h (C17)               | ETW (Event Tracing for Windows)   |
-| WFP (Windows Filtering Platform)   | PDH (Performance Data Helper)     |
-| Job Objects / Restricted Tokens    | WMI / COM                         |
+| sev_platform.h (C17)               | ETW (Event Tracing for Windows)    |
+| WFP (Windows Filtering Platform)   | PDH (Performance Data Helper)      |
+| Job Objects / Restricted Tokens    | WMI / COM                          |
 | NVML / DXGI (GPU)                                                       |
 +-------------------------------------------------------------------------+
 ```
@@ -528,9 +528,6 @@ cd build; ctest --output-on-failure
 
 ---
 
-## Roadmap
-
-
 ### Future — Cross-Platform Expansion
 
 - [ ] Linux support (procfs, netlink, inotify, eBPF)
@@ -579,24 +576,8 @@ Contributions are welcome.
 
 All submissions must pass CI, conform to `.clang-format`, pass `clang-tidy` with no new warnings, and include tests for any new behavior.
 
-Please read [`docs/contributing.md`](docs/contributing.md) before submitting.
-
 ---
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-## Vision
-
-Severance exists to answer three questions instantly:
-
-**What opened that connection?**
-**What did that process write?**
-**Why is memory climbing and not coming back down?**
-
-Not a collection of terminal commands to memorize. Not a cloud dashboard requiring an account. A native desktop application — fast, offline, and precise — that shows the full picture and explains it in plain language.
-
-The long-term vision: a tool serious enough for security researchers conducting behavioral analysis, practical enough for developers tracking down performance regressions, intelligent enough to explain what it finds, and clear enough that anyone curious about their machine can start using it in minutes.
