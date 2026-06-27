@@ -69,6 +69,9 @@ Source: "..\dist\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion 
 ; Qt styles plugin
 Source: "..\dist\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
+; Qt SQL driver plugin (SQLite — required for event store)
+Source: "..\dist\sqldrivers\*"; DestDir: "{app}\sqldrivers"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+
 ; Severance plugins
 Source: "..\dist\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 

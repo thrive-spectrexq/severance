@@ -87,6 +87,7 @@ jobs:
         New-Item -ItemType Directory -Force -Path dist\plugins | Out-Null
         New-Item -ItemType Directory -Force -Path dist\platforms | Out-Null
         New-Item -ItemType Directory -Force -Path dist\styles | Out-Null
+        New-Item -ItemType Directory -Force -Path dist\sqldrivers | Out-Null
 
         # Copy the main application and Qt dependencies
         Copy-Item -Path build\Release\* -Destination dist\ -Recurse -Force
@@ -140,6 +141,33 @@ jobs:
         if ($QWindowsStyleDll) {
           Copy-Item $QWindowsStyleDll.FullName "dist\styles\" -Force
           Write-Host "✓ Style plugin copied: $($QWindowsStyleDll.Name)"
+        }
+
+        # ── Copy SQL driver plugin (SQLite) ──
+        New-Item -ItemType Directory -Force -Path "dist\sqldrivers" | Out-Null
+        $QSqliteDll = $null
+        $SqlCandidates = @(
+          "dist\sqldrivers\qsqlite.dll",
+          "build\Release\sqldrivers\qsqlite.dll",
+          "build\Release\plugins\sqldrivers\qsqlite.dll"
+        )
+        foreach ($path in $SqlCandidates) {
+          if (Test-Path $path) {
+            $QSqliteDll = Get-Item $path
+            break
+          }
+        }
+        if (-not $QSqliteDll) {
+          $QSqliteDll = Get-ChildItem "$VcpkgRoot\installed" -Recurse -Filter "qsqlite.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+        if (-not $QSqliteDll) {
+          $QSqliteDll = Get-ChildItem "build" -Recurse -Filter "qsqlite.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+        if ($QSqliteDll) {
+          Copy-Item $QSqliteDll.FullName "dist\sqldrivers\" -Force
+          Write-Host "✓ qsqlite.dll copied to dist\sqldrivers\"
+        } else {
+          Write-Host "::warning::qsqlite.dll not found — SQLite database will not work"
         }
 
         # ── Copy severance plugin DLLs ──
