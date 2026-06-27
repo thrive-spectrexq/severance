@@ -2,9 +2,12 @@
 
 #include <QWidget>
 #include <QTableWidget>
+#include <QTimer>
 #include <QLineEdit>
+#include <QSplitter>
 #include <vector>
 #include <mutex>
+#include "FileDetailPanel.hpp"
 
 namespace severance::core::filesystem {
   struct FileEvent;
@@ -23,13 +26,18 @@ public:
 
 private slots:
   void onSearchTextChanged(const QString& text);
+  void onContextMenuRequested(const QPoint& pos);
+  void onSelectionChanged();
   void processPendingEvents();
 
 private:
   void setupUI();
 
-  QTableWidget* m_Table{nullptr};
-  QLineEdit* m_SearchBox{nullptr};
+  QTimer* m_RefreshTimer;
+  QLineEdit* m_SearchBox;
+  QTableWidget* m_Table;
+  QSplitter* m_Splitter;
+  FileDetailPanel* m_DetailPanel;
 
   std::vector<severance::core::filesystem::FileEvent> m_PendingEvents;
   std::mutex m_EventsMutex;

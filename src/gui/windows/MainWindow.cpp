@@ -35,16 +35,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setMinimumSize(1200, 800);
   resize(1400, 900);
 
-  // Define views available in sidebar
+  // Define views available in sidebar using Segoe Fluent Icons unicode points
   m_ViewInfos = {
-    {"Dashboard",  "D", "Ctrl+1"},
-    {"Processes",  "P", "Ctrl+2"},
-    {"Timeline",   "T", "Ctrl+3"},
-    {"Network",    "N", "Ctrl+4"},
-    {"Files",      "F", "Ctrl+5"},
-    {"Isolation",  "I", "Ctrl+6"},
-    {"Sessions",   "S", "Ctrl+7"},
-    {"Security",   "X", "Ctrl+8"},
+    {"Dashboard",  QString(QChar(0xE80F)), "Ctrl+1"},
+    {"Processes",  QString(QChar(0xE9D9)), "Ctrl+2"},
+    {"Timeline",   QString(QChar(0xE81C)), "Ctrl+3"},
+    {"Network",    QString(QChar(0xE839)), "Ctrl+4"},
+    {"Files",      QString(QChar(0xE8B7)), "Ctrl+5"},
+    {"Isolation",  QString(QChar(0xE773)), "Ctrl+6"},
+    {"Sessions",   QString(QChar(0xE716)), "Ctrl+7"},
+    {"Security",   QString(QChar(0xE72E)), "Ctrl+8"},
   };
 
   auto centralWidget = new QWidget(this);
@@ -170,7 +170,7 @@ void MainWindow::setupSidebar() {
   
   // OVERVIEW
   addCategory("Overview");
-  auto btnDashboard = new QPushButton("  D    " + m_ViewInfos[viewIndex].name, m_Sidebar);
+  auto btnDashboard = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
   btnDashboard->setCheckable(true);
   btnDashboard->setProperty("cssClass", "sidebarBtn");
   connect(btnDashboard, &QPushButton::clicked, this, [this, i = viewIndex]() { onSidebarButtonClicked(i); });
@@ -181,7 +181,7 @@ void MainWindow::setupSidebar() {
   // MONITORING
   addCategory("Monitoring");
   for (int i = 0; i < 4; ++i, ++viewIndex) {
-    auto btn = new QPushButton("  " + m_ViewInfos[viewIndex].icon + "    " + m_ViewInfos[viewIndex].name, m_Sidebar);
+    auto btn = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
     btn->setCheckable(true);
     btn->setProperty("cssClass", "sidebarBtn");
     connect(btn, &QPushButton::clicked, this, [this, idx = viewIndex]() { onSidebarButtonClicked(idx); });
@@ -192,7 +192,7 @@ void MainWindow::setupSidebar() {
   // SECURITY
   addCategory("Security");
   for (int i = 0; i < 3; ++i, ++viewIndex) {
-    auto btn = new QPushButton("  " + m_ViewInfos[viewIndex].icon + "    " + m_ViewInfos[viewIndex].name, m_Sidebar);
+    auto btn = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
     btn->setCheckable(true);
     btn->setProperty("cssClass", "sidebarBtn");
     connect(btn, &QPushButton::clicked, this, [this, idx = viewIndex]() { onSidebarButtonClicked(idx); });
@@ -203,7 +203,7 @@ void MainWindow::setupSidebar() {
   m_SidebarLayout->addStretch();
 
   // Bottom action: AI Panel
-  auto aiBtn = new QPushButton("  A    AI Insights", m_Sidebar);
+  auto aiBtn = new QPushButton(QString("  %1    AI Insights").arg(QChar(0xE8F3)), m_Sidebar); // Sparkle icon
   aiBtn->setCheckable(true);
   aiBtn->setProperty("cssClass", "sidebarBtn");
   connect(aiBtn, &QPushButton::clicked, this, [this]() {

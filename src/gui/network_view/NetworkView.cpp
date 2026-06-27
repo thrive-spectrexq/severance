@@ -40,9 +40,17 @@ void NetworkView::setupUI() {
   topBar->addStretch();
   layout->addLayout(topBar);
 
-  // Table
-  m_Table = new QTableWidget(this);
-  m_Table->setColumnCount(7);
+  // Splitter
+  m_Splitter = new QSplitter(Qt::Horizontal, this);
+  layout->addWidget(m_Splitter, 1);
+
+  // Table Setup (Left Side)
+  auto* tableContainer = new QWidget(m_Splitter);
+  auto* tableLayout = new QVBoxLayout(tableContainer);
+  tableLayout->setContentsMargins(0,0,0,0);
+
+  m_Table = new QTableWidget(tableContainer);
+  m_Table->setColumnCount(8);
   m_Table->setHorizontalHeaderLabels({"Process", "PID", "Protocol", "Local Address", "Local Port", "Remote Address", "Remote Port", "State"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -53,8 +61,17 @@ void NetworkView::setupUI() {
 
   m_Table->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_Table, &QTableWidget::customContextMenuRequested, this, &NetworkView::onContextMenuRequested);
+  connect(m_Table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NetworkView::onSelectionChanged);
 
-  layout->addWidget(m_Table);
+  tableLayout->addWidget(m_Table);
+  m_Splitter->addWidget(tableContainer);
+
+  // Detail Panel (Right Side)
+  m_DetailPanel = new NetworkDetailPanel(m_Splitter);
+  m_Splitter->addWidget(m_DetailPanel);
+  
+  m_Splitter->setStretchFactor(0, 7); // 70% width to table
+  m_Splitter->setStretchFactor(1, 3); // 30% width to detail panel
 }
 
 QString NetworkView::formatState(int stateEnum) {
@@ -158,6 +175,25 @@ void NetworkView::onContextMenuRequested(const QPoint& pos) {
   });
 
   menu.exec(m_Table->viewport()->mapToGlobal(pos));
+}
+
+void NetworkView::onSelectionChanged() {
+  auto items = m_Table->selectedItems();
+  if (items.isEmpty()) {
+    m_DetailPanel->Clear();
+    return;
+  }
+
+  int row = items.first()->row();
+  QString procName = m_Table->item(row, 0)->text();
+  uint32_t pid = m_Table->item(row, 1)->text().toUInt();
+  QString localIp = m_Table->item(row, 3)->text();
+  uint16_t localPort = m_Table->item(row, 4)->text().toUShort();
+  QString remoteIp = m_Table->item(row, 5)->text();
+  uint16_t remotePort = m_Table->item(row, 6)->text().toUShort();
+  QString state = m_Table->item(row, 7)->text();
+
+  m_DetailPanel->LoadConnection(pid, procName, localIp, localPort, remoteIp, remotePort, state);
 }
 
 } // namespace severance::gui::network_view

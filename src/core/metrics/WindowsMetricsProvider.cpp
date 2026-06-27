@@ -44,9 +44,22 @@ WindowsMetricsProvider::WindowsMetricsProvider() {
 
   // Get system boot time for uptime calculation
   m_BootTickCount = GetTickCount64();
+
+  // Initialize PDH for Disk I/O
+  if (PdhOpenQuery(nullptr, 0, &m_PdhQuery) == ERROR_SUCCESS) {
+    if (PdhAddCounter(m_PdhQuery, "\\PhysicalDisk(_Total)\\Disk Read Bytes/sec", 0, &m_DiskReadCounter) == ERROR_SUCCESS &&
+        PdhAddCounter(m_PdhQuery, "\\PhysicalDisk(_Total)\\Disk Write Bytes/sec", 0, &m_DiskWriteCounter) == ERROR_SUCCESS) {
+      PdhCollectQueryData(m_PdhQuery);
+      m_PdhInitialized = true;
+    }
+  }
 }
 
-WindowsMetricsProvider::~WindowsMetricsProvider() {}
+WindowsMetricsProvider::~WindowsMetricsProvider() {
+  if (m_PdhQuery) {
+    PdhCloseQuery(m_PdhQuery);
+  }
+}
 
 SystemMetricsSnapshot WindowsMetricsProvider::GetSnapshot() {
   SystemMetricsSnapshot snapshot;
@@ -189,15 +202,24 @@ void WindowsMetricsProvider::UpdateDiskMetrics(std::vector<DiskMetrics>& disks) 
       dm.totalSpaceBytes = totalBytes.QuadPart;
       dm.freeSpaceBytes = totalFreeBytes.QuadPart;
       
-      // Compute I/O rates using performance counters (PDH)
-      // For the initial implementation, we report space usage only.
-      // Disk I/O rate tracking requires PDH queries with delta time,
-      // which we'll add in a follow-up iteration.
       dm.readBytesPerSec = 0;
       dm.writeBytesPerSec = 0;
       dm.activeTimePercent = 0.0;
       
       disks.push_back(dm);
+    }
+  }
+
+  // Update overall disk I/O rates using PDH
+  if (m_PdhInitialized && !disks.empty()) {
+    PdhCollectQueryData(m_PdhQuery);
+    
+    PDH_FMT_COUNTERVALUE readVal, writeVal;
+    if (PdhGetFormattedCounterValue(m_DiskReadCounter, PDH_FMT_LARGE, nullptr, &readVal) == ERROR_SUCCESS) {
+      disks[0].readBytesPerSec = readVal.largeValue;
+    }
+    if (PdhGetFormattedCounterValue(m_DiskWriteCounter, PDH_FMT_LARGE, nullptr, &writeVal) == ERROR_SUCCESS) {
+      disks[0].writeBytesPerSec = writeVal.largeValue;
     }
   }
 }

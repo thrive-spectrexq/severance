@@ -44,19 +44,39 @@ void FileView::setupUI() {
   topBar->addStretch();
   layout->addLayout(topBar);
 
-  // Table
-  m_Table = new QTableWidget(this);
-  m_Table->setColumnCount(4);
-  m_Table->setHorizontalHeaderLabels({"Process", "PID", "Operation", "Path"});
+  // Splitter
+  m_Splitter = new QSplitter(Qt::Horizontal, this);
+  layout->addWidget(m_Splitter, 1);
+
+  // Table Setup (Left Side)
+  auto* tableContainer = new QWidget(m_Splitter);
+  auto* tableLayout = new QVBoxLayout(tableContainer);
+  tableLayout->setContentsMargins(0,0,0,0);
+
+  m_Table = new QTableWidget(tableContainer);
+  m_Table->setColumnCount(5);
+  m_Table->setHorizontalHeaderLabels({"Time", "Process", "PID", "Operation", "Path"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-  m_Table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+  m_Table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+  m_Table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
   m_Table->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_Table->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_Table->verticalHeader()->setVisible(false);
   m_Table->setShowGrid(false);
+  m_Table->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(m_Table, &QTableWidget::customContextMenuRequested, this, &FileView::onContextMenuRequested);
+  connect(m_Table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileView::onSelectionChanged);
 
-  layout->addWidget(m_Table);
+  tableLayout->addWidget(m_Table);
+  m_Splitter->addWidget(tableContainer);
+
+  // Detail Panel (Right Side)
+  m_DetailPanel = new FileDetailPanel(m_Splitter);
+  m_Splitter->addWidget(m_DetailPanel);
+  
+  m_Splitter->setStretchFactor(0, 7); // 70% width to table
+  m_Splitter->setStretchFactor(1, 3); // 30% width to detail panel
 }
 
 void FileView::appendEvent(const core::filesystem::FileEvent& event) {
@@ -95,10 +115,12 @@ void FileView::processPendingEvents() {
 
     m_Table->insertRow(0); // Insert at top
 
-    m_Table->setItem(0, 0, new QTableWidgetItem(procName));
-    m_Table->setItem(0, 1, new QTableWidgetItem(QString::number(ev.pid)));
-    m_Table->setItem(0, 2, new QTableWidgetItem(QString::fromStdString(ev.operation)));
-    m_Table->setItem(0, 3, new QTableWidgetItem(path));
+    QTime now = QTime::currentTime();
+    m_Table->setItem(0, 0, new QTableWidgetItem(now.toString("HH:mm:ss")));
+    m_Table->setItem(0, 1, new QTableWidgetItem(procName));
+    m_Table->setItem(0, 2, new QTableWidgetItem(QString::number(ev.pid)));
+    m_Table->setItem(0, 3, new QTableWidgetItem(QString::fromStdString(ev.operation)));
+    m_Table->setItem(0, 4, new QTableWidgetItem(path));
 
     if (m_Table->rowCount() > m_MaxRows) {
       m_Table->removeRow(m_MaxRows);
@@ -113,6 +135,23 @@ void FileView::onSearchTextChanged(const QString& text) {
   // For a streaming log, we just apply the filter to incoming events,
   // or clear the table to start fresh.
   m_Table->setRowCount(0); 
+}
+
+void FileView::onSelectionChanged() {
+  auto items = m_Table->selectedItems();
+  if (items.isEmpty()) {
+    m_DetailPanel->Clear();
+    return;
+  }
+
+  int row = items.first()->row();
+  QString time = m_Table->item(row, 0)->text();
+  QString procName = m_Table->item(row, 1)->text();
+  uint32_t pid = m_Table->item(row, 2)->text().toUInt();
+  QString operation = m_Table->item(row, 3)->text();
+  QString path = m_Table->item(row, 4)->text();
+
+  m_DetailPanel->LoadFileEvent(time, procName, pid, operation, path);
 }
 
 } // namespace severance::gui::file_view

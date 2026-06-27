@@ -134,10 +134,34 @@ void EtwMonitor::ProcessEvent(PEVENT_RECORD pEventRecord) {
       default: return; // Ignore others
     }
 
-    // Getting the filename via TDH is expensive and requires GetEventInformation.
-    // For this prototype, we pass raw ETW event parsing using basic buffer offset assumption (which is brittle),
-    // or we just emit the PID + Opcode for now to prove Correlation Engine connectivity.
-    fe.filePath = "<Requires TDH parsing logic>";
+    // Extract File Path using TDH
+    fe.filePath = "Unknown";
+    
+    DWORD bufferSize = 0;
+    PROPERTY_DATA_DESCRIPTOR descriptor;
+    descriptor.PropertyName = reinterpret_cast<ULONGLONG>(L"OpenPath");
+    descriptor.ArrayIndex = ULONG_MAX;
+    
+    if (TdhGetPropertySize(pEventRecord, 0, nullptr, 1, &descriptor, &bufferSize) == ERROR_SUCCESS && bufferSize > 0) {
+      std::vector<BYTE> buffer(bufferSize);
+      if (TdhGetProperty(pEventRecord, 0, nullptr, 1, &descriptor, bufferSize, buffer.data()) == ERROR_SUCCESS) {
+        std::wstring wPath(reinterpret_cast<wchar_t*>(buffer.data()));
+        fe.filePath = std::string(wPath.begin(), wPath.end());
+      }
+    }
+    
+    if (fe.filePath == "Unknown") {
+      // Fallback for some events which use "FileName" instead of "OpenPath"
+      descriptor.PropertyName = reinterpret_cast<ULONGLONG>(L"FileName");
+      if (TdhGetPropertySize(pEventRecord, 0, nullptr, 1, &descriptor, &bufferSize) == ERROR_SUCCESS && bufferSize > 0) {
+        std::vector<BYTE> buffer(bufferSize);
+        if (TdhGetProperty(pEventRecord, 0, nullptr, 1, &descriptor, bufferSize, buffer.data()) == ERROR_SUCCESS) {
+          std::wstring wPath(reinterpret_cast<wchar_t*>(buffer.data()));
+          fe.filePath = std::string(wPath.begin(), wPath.end());
+        }
+      }
+    }
+
     fe.processName = "PID: " + std::to_string(fe.pid);
 
     m_Callback(fe);

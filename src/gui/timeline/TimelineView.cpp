@@ -40,11 +40,6 @@ void TimelineView::setupUI() {
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
 
-  // Histogram
-  m_Histogram = new TimelineHistogram(this);
-  connect(m_Histogram, &TimelineHistogram::timeRangeSelected, this, &TimelineView::onTimeRangeSelected);
-  layout->addWidget(m_Histogram);
-
   // Top Bar
   auto* topBar = new QHBoxLayout();
   
@@ -89,8 +84,21 @@ void TimelineView::setupUI() {
   topBar->addStretch();
   layout->addLayout(topBar);
 
-  // Table
-  m_Table = new QTableWidget(this);
+  // Histogram
+  m_Histogram = new TimelineHistogram(this);
+  connect(m_Histogram, &TimelineHistogram::timeRangeSelected, this, &TimelineView::onTimeRangeSelected);
+  layout->addWidget(m_Histogram);
+
+  // Splitter
+  m_Splitter = new QSplitter(Qt::Horizontal, this);
+  layout->addWidget(m_Splitter, 1);
+
+  // Table Setup (Left Side)
+  auto* tableContainer = new QWidget(m_Splitter);
+  auto* tableLayout = new QVBoxLayout(tableContainer);
+  tableLayout->setContentsMargins(0,0,0,0);
+
+  m_Table = new QTableWidget(tableContainer);
   m_Table->setColumnCount(4); // Added hidden timestamp column for filtering
   m_Table->setHorizontalHeaderLabels({"Timestamp", "Type", "Details", "TS_MS"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
@@ -102,7 +110,19 @@ void TimelineView::setupUI() {
   m_Table->verticalHeader()->setVisible(false);
   m_Table->setShowGrid(false);
 
-  layout->addWidget(m_Table);
+  m_Table->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(m_Table, &QTableWidget::customContextMenuRequested, this, &TimelineView::onContextMenuRequested);
+  connect(m_Table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &TimelineView::onSelectionChanged);
+
+  tableLayout->addWidget(m_Table);
+  m_Splitter->addWidget(tableContainer);
+
+  // Detail Panel (Right Side)
+  m_DetailPanel = new TimelineDetailPanel(m_Splitter);
+  m_Splitter->addWidget(m_DetailPanel);
+  
+  m_Splitter->setStretchFactor(0, 7); // 70% width to table
+  m_Splitter->setStretchFactor(1, 3); // 30% width to detail panel
 }
 
 QString TimelineView::getEventTypeName(core::events::EventType type) {
@@ -250,6 +270,22 @@ void TimelineView::onTimeRangeSelected(uint64_t startMS, uint64_t endMS) {
   m_FilterStartMS = startMS;
   m_FilterEndMS = endMS;
   updateTableVisibility();
+}
+
+void TimelineView::onSelectionChanged() {
+  auto items = m_Table->selectedItems();
+  if (items.isEmpty()) {
+    m_DetailPanel->Clear();
+    return;
+  }
+
+  int row = items.first()->row();
+  QString time = m_Table->item(row, 0)->text();
+  QString type = m_Table->item(row, 1)->text();
+  QString source = "System"; // Source is currently not a dedicated column, it's baked into details
+  QString details = m_Table->item(row, 2)->text();
+
+  m_DetailPanel->LoadEvent(time, type, source, details);
 }
 
 } // namespace severance::gui::timeline

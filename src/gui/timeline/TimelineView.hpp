@@ -5,10 +5,13 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QPushButton>
+#include <QSplitter>
+#include <QTimer>
 #include <vector>
 #include <mutex>
 #include <memory>
 #include "TimelineHistogram.hpp"
+#include "TimelineDetailPanel.hpp"
 #include "core/events/Event.hpp"
 #include "core/events/EventTypes.hpp"
 
@@ -28,6 +31,8 @@ private slots:
   void onFilterToggled();
   void onTimeRangeSelected(uint64_t startMS, uint64_t endMS);
   void processPendingEvents();
+  void onContextMenuRequested(const QPoint& pos);
+  void onSelectionChanged();
 
 private:
   void setupUI();
@@ -44,6 +49,8 @@ private:
   QPushButton* m_FilterFile{nullptr};
 
   TimelineHistogram* m_Histogram{nullptr};
+  QSplitter* m_Splitter{nullptr};
+  TimelineDetailPanel* m_DetailPanel{nullptr};
 
   std::vector<std::shared_ptr<core::events::Event>> m_PendingEvents;
   std::mutex m_EventsMutex;

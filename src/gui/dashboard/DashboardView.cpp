@@ -34,6 +34,8 @@ static QFrame* createKpiCard(const QString& title, QLabel*& valueLabel, QWidget*
   valueLabel->setProperty("cssClass", "cardValue");
   layout->addWidget(valueLabel);
 
+  theme::ApplyDropShadow(card);
+
   return card;
 }
 
@@ -55,12 +57,17 @@ DashboardView::~DashboardView() = default;
 
 void DashboardView::setupUI() {
   auto* mainLayout = new QVBoxLayout(this);
-  mainLayout->setContentsMargins(24, 24, 24, 24);
-  mainLayout->setSpacing(16);
+  mainLayout->setContentsMargins(32, 32, 32, 32); // Increased padding
+  mainLayout->setSpacing(24);
+
+  // === Header ===
+  auto* headerLabel = new QLabel("System Telemetry & Analytics", this);
+  headerLabel->setProperty("cssClass", "heading");
+  mainLayout->addWidget(headerLabel);
 
   // === Top Row: KPI Cards ===
   auto* kpiLayout = new QHBoxLayout();
-  kpiLayout->setSpacing(16);
+  kpiLayout->setSpacing(24);
   kpiLayout->addWidget(createKpiCard("PROCESSES", m_KpiProcessCount, this, theme::Colors::Accent));
   kpiLayout->addWidget(createKpiCard("NETWORK CONNECTIONS", m_KpiNetConnections, this, theme::Colors::Success));
   kpiLayout->addWidget(createKpiCard("FILE HANDLES", m_KpiFileHandles, this, theme::Colors::ChartPurple));
@@ -74,7 +81,10 @@ void DashboardView::setupUI() {
   // CPU Donut Chart Card
   auto* donutCard = new QFrame(this);
   donutCard->setProperty("cssClass", "card");
+  theme::ApplyDropShadow(donutCard);
+  
   auto* donutLayout = new QVBoxLayout(donutCard);
+  donutLayout->setContentsMargins(20, 20, 20, 20);
   auto* donutTitle = new QLabel("CPU Distribution", donutCard);
   donutTitle->setProperty("cssClass", "cardTitle");
   donutLayout->addWidget(donutTitle);
@@ -86,7 +96,10 @@ void DashboardView::setupUI() {
   // Top Processes Bar Chart Card
   auto* barCard = new QFrame(this);
   barCard->setProperty("cssClass", "card");
+  theme::ApplyDropShadow(barCard);
+  
   auto* barLayout = new QVBoxLayout(barCard);
+  barLayout->setContentsMargins(20, 20, 20, 20);
   auto* barTitle = new QLabel("Top Memory Consumers", barCard);
   barTitle->setProperty("cssClass", "cardTitle");
   barLayout->addWidget(barTitle);
@@ -100,10 +113,14 @@ void DashboardView::setupUI() {
   // === Bottom Row: Recent Events Table ===
   auto* tableCard = new QFrame(this);
   tableCard->setProperty("cssClass", "card");
+  theme::ApplyDropShadow(tableCard);
+  
   auto* tableLayout = new QVBoxLayout(tableCard);
+  tableLayout->setContentsMargins(20, 20, 20, 20);
   auto* tableTitle = new QLabel("Recent Activity", tableCard);
   tableTitle->setProperty("cssClass", "cardTitle");
   tableLayout->addWidget(tableTitle);
+  tableLayout->addSpacing(8);
 
   m_RecentEventsTable = new QTableWidget(5, 4, tableCard);
   m_RecentEventsTable->setHorizontalHeaderLabels({"TIME", "TYPE", "PROCESS", "DETAILS"});
@@ -112,6 +129,7 @@ void DashboardView::setupUI() {
   m_RecentEventsTable->setShowGrid(false);
   m_RecentEventsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_RecentEventsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_RecentEventsTable->setFocusPolicy(Qt::NoFocus);
   
   // Dummy data for visual
   QStringList processes = {"chrome.exe", "svchost.exe", "Severance.exe", "MsMpEng.exe", "SearchIndexer.exe"};

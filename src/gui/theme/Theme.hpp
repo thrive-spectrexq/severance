@@ -15,15 +15,15 @@ namespace severance::gui::theme {
 
 struct Colors {
   // Backgrounds
-  static constexpr const char* BgPrimary    = "#0B0E14";   // Main background
-  static constexpr const char* BgSecondary  = "#151A23";   // Sidebar, cards, panels
-  static constexpr const char* BgTertiary   = "#1C2331";   // Elevated surfaces / input bg
-  static constexpr const char* BgHover      = "#242D3D";   // Hover state
-  static constexpr const char* BgSelected   = "#1A2E44";   // Selected/active
+  static constexpr const char* BgPrimary    = "#09090b";   // Main background (Deep Slate)
+  static constexpr const char* BgSecondary  = "#18181b";   // Sidebar, cards, panels
+  static constexpr const char* BgTertiary   = "#27272a";   // Elevated surfaces / input bg
+  static constexpr const char* BgHover      = "#27272a";   // Hover state
+  static constexpr const char* BgSelected   = "#1f2937";   // Selected/active
 
   // Borders
-  static constexpr const char* Border       = "#2A3441";   // Default border
-  static constexpr const char* BorderLight  = "#1C2331";   // Subtle dividers
+  static constexpr const char* Border       = "#27272a";   // Default border
+  static constexpr const char* BorderLight  = "#3f3f46";   // Subtle dividers
 
   // Text
   static constexpr const char* TextPrimary  = "#F1F5F9";   // Main text
@@ -31,10 +31,10 @@ struct Colors {
   static constexpr const char* TextTertiary = "#64748B";   // Disabled/hint
   static constexpr const char* TextLink     = "#00E5FF";   // Links / primary accent
 
-  // Accent — Cyan/Teal
-  static constexpr const char* Accent       = "#00E5FF";   // Primary accent
-  static constexpr const char* AccentHover  = "#33EFFF";   // Accent hover
-  static constexpr const char* AccentMuted  = "#003D4D";   // Accent background
+  // Accent — Electric Blue
+  static constexpr const char* Accent       = "#3b82f6";   // Primary accent
+  static constexpr const char* AccentHover  = "#60a5fa";   // Accent hover
+  static constexpr const char* AccentMuted  = "#1e3a8a";   // Accent background
 
   // Semantic
   static constexpr const char* Success      = "#00E676";   // Green — good/200 OK
@@ -61,6 +61,9 @@ struct Dimensions {
   static constexpr int SearchOverlayWidth  = 600;
   static constexpr int ScrollbarWidth      = 8;
 };
+
+// Applies a soft modern drop shadow to a widget
+void ApplyDropShadow(QWidget* widget);
 
 // Apply the complete dark theme to the application
 void ApplyDarkTheme(QApplication* app);

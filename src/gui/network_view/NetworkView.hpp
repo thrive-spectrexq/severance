@@ -4,6 +4,8 @@
 #include <QTableWidget>
 #include <QTimer>
 #include <QLineEdit>
+#include <QSplitter>
+#include "NetworkDetailPanel.hpp"
 
 namespace severance::gui::network_view {
 
@@ -19,14 +21,17 @@ public:
 private slots:
   void onSearchTextChanged(const QString& text);
   void onContextMenuRequested(const QPoint& pos);
+  void onSelectionChanged();
 
 private:
   void setupUI();
-  QString formatState(int state);
+  QString formatState(int stateEnum);
 
   QTableWidget* m_Table{nullptr};
   QLineEdit* m_SearchBox{nullptr};
   QTimer* m_RefreshTimer{nullptr};
+  QSplitter* m_Splitter{nullptr};
+  NetworkDetailPanel* m_DetailPanel{nullptr};
 };
 
 } // namespace severance::gui::network_view

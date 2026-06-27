@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <unordered_map>
+#include <pdh.h>
 #endif
 
 namespace severance::core::metrics {
@@ -40,6 +41,12 @@ private:
     uint64_t lastBytesSent{0};
   };
   std::unordered_map<uint32_t, NetAdapterState> m_NetState;
+
+  // PDH for Disk I/O
+  PDH_HQUERY m_PdhQuery{nullptr};
+  PDH_HCOUNTER m_DiskReadCounter{nullptr};
+  PDH_HCOUNTER m_DiskWriteCounter{nullptr};
+  bool m_PdhInitialized{false};
 
   // Cached system info
   std::string m_ProcessorName;
