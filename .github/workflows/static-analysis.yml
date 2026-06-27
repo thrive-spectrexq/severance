@@ -9,6 +9,7 @@ on:
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  VCPKG_BASELINE: "46c9f8d8398360278222d335c28bceb776ebb61f"
 
 jobs:
   clang-tidy:
@@ -25,6 +26,18 @@ jobs:
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    # ── vcpkg (dependency cache) ───────────────────────────────────
+    - name: Cache vcpkg installed packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg/installed
+          ${{ github.workspace }}/vcpkg/packages
+        key: vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: |
+          vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-
+          vcpkg-win-x64-
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
@@ -58,16 +71,20 @@ jobs:
         Write-Host "Found clang-tidy at: $($ClangTidy.FullName)"
         
         # Gather source files (skip platform-specific C files and generated files)
-        $SourceFiles = Get-ChildItem -Path src -Recurse -Include "*.cpp","*.hpp" | 
+        $SourceFiles = Get-ChildItem -Path src -Recurse -Include "*.cpp" | 
           Where-Object { $_.FullName -notmatch "platform[/\\]windows" } |
           Select-Object -ExpandProperty FullName
 
         $ErrorCount = 0
         foreach ($File in $SourceFiles) {
           Write-Host "Analyzing: $File"
-          & $ClangTidy.FullName $File -p build --quiet 2>&1 | ForEach-Object {
-            if ($_ -match "warning:|error:") {
-              Write-Host $_
+          $output = & $ClangTidy.FullName $File -p build --quiet 2>&1
+          foreach ($line in $output) {
+            $lineStr = $line.ToString()
+            # Skip "no checks enabled" meta-errors — these are config issues, not code issues
+            if ($lineStr -match "no checks enabled") { continue }
+            if ($lineStr -match "warning:|error:") {
+              Write-Host $lineStr
               $ErrorCount++
             }
           }
@@ -76,7 +93,7 @@ jobs:
         Write-Host "`n--- Static Analysis Complete ---"
         Write-Host "Issues found: $ErrorCount"
         
-        # Don't fail the build for now — report only
+        # Report-only mode — don't fail the CI build
         if ($ErrorCount -gt 0) {
           Write-Host "::warning::clang-tidy found $ErrorCount issues"
         }

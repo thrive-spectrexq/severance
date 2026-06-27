@@ -10,6 +10,8 @@ on:
 env:
   # Enable vcpkg binary caching via GitHub Actions cache
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  # Vcpkg baseline from vcpkg.json — update this when you bump the baseline
+  VCPKG_BASELINE: "46c9f8d8398360278222d335c28bceb776ebb61f"
 
 jobs:
   build-windows:
@@ -27,17 +29,36 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+    # ── sccache (C/C++ compilation cache) ──────────────────────────
+    - name: Setup sccache
+      uses: mozilla-actions/sccache-action@v0.0.7
+
+    # ── vcpkg (dependency cache) ───────────────────────────────────
+    - name: Cache vcpkg installed packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg/installed
+          ${{ github.workspace }}/vcpkg/packages
+        key: vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: |
+          vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-
+          vcpkg-win-x64-
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
         vcpkgJsonGlob: 'vcpkg.json'
 
+    # ── Build ──────────────────────────────────────────────────────
     - name: Configure CMake
       run: >
         cmake -B build -S . 
         -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" 
         -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_C_COMPILER_LAUNCHER=sccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
     - name: Build Application
       run: cmake --build build --config Release
@@ -68,57 +89,92 @@ jobs:
           Write-Host "::warning::Some plugin DLLs were not found"
         }
 
+    # ── Deploy Qt runtime dependencies ─────────────────────────────
     - name: Deploy Qt Dependencies (windeployqt)
       shell: pwsh
       run: |
-        $QtBinPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\tools\qt6\bin"
-        $QtPluginPath = "${{ github.workspace }}\vcpkg\installed\x64-windows\plugins"
-        $WindeployqtPath = "$QtBinPath\windeployqt.exe"
-        if (Test-Path $WindeployqtPath) {
-          Write-Host "Running windeployqt..."
-          $env:QT_PLUGIN_PATH = $QtPluginPath
-          & $WindeployqtPath --release --compiler-runtime --plugindir build\Release\plugins_qt build\Release\severance.exe
+        $VcpkgRoot = "${{ github.workspace }}\vcpkg"
+        $InstalledDir = "$VcpkgRoot\installed\x64-windows"
+
+        # Locate windeployqt (case-insensitive search for safety)
+        $WindeployqtExe = Get-ChildItem "$InstalledDir\tools" -Recurse -Filter "windeployqt.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        
+        if ($WindeployqtExe) {
+          Write-Host "Found windeployqt at: $($WindeployqtExe.FullName)"
+          $env:PATH = "$($WindeployqtExe.DirectoryName);$InstalledDir\bin;$env:PATH"
+          & $WindeployqtExe.FullName --release --no-compiler-runtime build\Release\severance.exe 2>&1 | ForEach-Object { Write-Host $_ }
           Write-Host "windeployqt completed"
         } else {
-          Write-Host "Warning: windeployqt not found, manually copying platform plugin..."
+          Write-Host "::warning::windeployqt not found — will do manual Qt plugin deployment"
         }
-        
-        # Ensure the platforms directory exists with qwindows.dll
-        if (-not (Test-Path "build\Release\platforms\qwindows.dll") -and -not (Test-Path "build\Release\plugins_qt\platforms\qwindows.dll")) {
-          Write-Host "Platform plugin not deployed by windeployqt, copying manually..."
-          $QWindowsDll = Get-ChildItem "${{ github.workspace }}\vcpkg\installed\x64-windows" -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($QWindowsDll) {
-            New-Item -ItemType Directory -Force -Path "build\Release\platforms"
-            Copy-Item $QWindowsDll.FullName "build\Release\platforms\" -Force
-            Write-Host "Copied qwindows.dll from: $($QWindowsDll.FullName)"
-          } else {
-            Write-Host "::warning::qwindows.dll not found in vcpkg installation"
-          }
-        }
-        
+
     - name: Prepare Artifact Folder
       shell: pwsh
       run: |
-        New-Item -ItemType Directory -Force -Path dist
-        New-Item -ItemType Directory -Force -Path dist\plugins
-        New-Item -ItemType Directory -Force -Path dist\platforms
-        
-        # Copy the main application and all dependencies
+        New-Item -ItemType Directory -Force -Path dist | Out-Null
+        New-Item -ItemType Directory -Force -Path dist\plugins | Out-Null
+        New-Item -ItemType Directory -Force -Path dist\platforms | Out-Null
+        New-Item -ItemType Directory -Force -Path dist\styles | Out-Null
+
+        # Copy the main application and all dependencies from build\Release
         Copy-Item -Path build\Release\* -Destination dist\ -Recurse -Force
-        
-        # If windeployqt used a custom plugindir, move platform plugins to standard location
-        if (Test-Path "dist\plugins_qt\platforms\qwindows.dll") {
-          Copy-Item -Path "dist\plugins_qt\platforms\*" -Destination "dist\platforms\" -Force
+
+        # ── Ensure qwindows.dll is in dist\platforms ──
+        # windeployqt may have placed it in various locations; search broadly
+        $VcpkgRoot = "${{ github.workspace }}\vcpkg"
+        $QWindowsDll = $null
+
+        # Check if windeployqt already placed it correctly
+        $CandidatePaths = @(
+          "dist\platforms\qwindows.dll",
+          "build\Release\platforms\qwindows.dll",
+          "build\Release\plugins\platforms\qwindows.dll"
+        )
+        foreach ($path in $CandidatePaths) {
+          if (Test-Path $path) {
+            $QWindowsDll = Get-Item $path
+            Write-Host "Found qwindows.dll at expected path: $path"
+            break
+          }
         }
-        
-        # Verify platforms directory
-        if (Test-Path "dist\platforms\qwindows.dll") {
-          Write-Host "✓ qwindows.dll found in dist\platforms\"
+
+        # Fallback: search vcpkg installed tree
+        if (-not $QWindowsDll) {
+          Write-Host "Searching vcpkg tree for qwindows.dll..."
+          $QWindowsDll = Get-ChildItem "$VcpkgRoot\installed" -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($QWindowsDll) {
+            Write-Host "Found qwindows.dll in vcpkg: $($QWindowsDll.FullName)"
+          }
+        }
+
+        # Fallback: search entire build tree
+        if (-not $QWindowsDll) {
+          Write-Host "Searching build tree for qwindows.dll..."
+          $QWindowsDll = Get-ChildItem "build" -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($QWindowsDll) {
+            Write-Host "Found qwindows.dll in build: $($QWindowsDll.FullName)"
+          }
+        }
+
+        if ($QWindowsDll) {
+          Copy-Item $QWindowsDll.FullName "dist\platforms\" -Force
+          Write-Host "✓ qwindows.dll copied to dist\platforms\"
         } else {
-          Write-Host "::warning::qwindows.dll is missing from the artifact!"
+          Write-Host "::error::qwindows.dll not found anywhere — artifact will be broken!"
+          exit 1
         }
-        
-        # Copy severance plugin DLLs
+
+        # ── Copy styles plugin (native Windows look & feel) ──
+        $QWindowsStyleDll = Get-ChildItem "$VcpkgRoot\installed" -Recurse -Filter "qmodernwindowsstyle.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $QWindowsStyleDll) {
+          $QWindowsStyleDll = Get-ChildItem "$VcpkgRoot\installed" -Recurse -Filter "qwindowsvistastyle.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+        }
+        if ($QWindowsStyleDll) {
+          Copy-Item $QWindowsStyleDll.FullName "dist\styles\" -Force
+          Write-Host "✓ Style plugin copied: $($QWindowsStyleDll.Name)"
+        }
+
+        # ── Copy severance plugin DLLs ──
         Get-ChildItem -Path build -Recurse -Filter "*.dll" | Where-Object {
           $_.DirectoryName -match "plugins[/\\](sample_|security_)" -or
           ($_.DirectoryName -match "plugins[/\\]Release" -and $_.Name -match "(sample_|security_)")
@@ -126,7 +182,14 @@ jobs:
           Copy-Item -Path $_.FullName -Destination dist\plugins\ -Force
           Write-Host "Copied plugin: $($_.Name)"
         }
-        
+
+        # ── Final verification ──
+        Write-Host "`n=== Artifact Contents ==="
+        Get-ChildItem dist -Recurse | ForEach-Object {
+          $rel = $_.FullName.Replace((Resolve-Path dist).Path + "\", "")
+          Write-Host "  $rel"
+        }
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
