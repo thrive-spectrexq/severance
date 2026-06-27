@@ -26,3 +26,5 @@ Makefile
 .DS_Store
 
 severance-windows-x64/
+dist/
+dist-installer/

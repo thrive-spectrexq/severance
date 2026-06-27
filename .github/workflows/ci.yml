@@ -196,3 +196,45 @@ jobs:
         name: severance-windows-x64
         path: dist\
         retention-days: 14
+
+    # ── Build Windows Installer ────────────────────────────────────
+    - name: Build Installer (Inno Setup)
+      shell: pwsh
+      run: |
+        # iscc is pre-installed on windows-latest at this path
+        $IsccPaths = @(
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+          "C:\Program Files\Inno Setup 6\ISCC.exe"
+        )
+        $Iscc = $null
+        foreach ($path in $IsccPaths) {
+          if (Test-Path $path) {
+            $Iscc = $path
+            break
+          }
+        }
+        
+        if (-not $Iscc) {
+          Write-Host "::warning::Inno Setup not found — skipping installer build"
+          exit 0
+        }
+        
+        Write-Host "Building installer with: $Iscc"
+        & $Iscc installer\severance-installer.iss
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "::error::Installer build failed"
+          exit 1
+        }
+        
+        Write-Host "✓ Installer built successfully"
+        Get-ChildItem dist-installer\
+
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: severance-setup
+        path: dist-installer\*.exe
+        retention-days: 14
+        if-no-files-found: warn
