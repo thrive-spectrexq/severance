@@ -4,6 +4,7 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QTimer>
+#include <QTime>
 #include <QStandardPaths>
 #include <QDir>
 #include <QDesktopServices>

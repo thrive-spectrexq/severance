@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QTimer>
+#include <QTime>
 
 namespace severance::gui::file_view {
 
