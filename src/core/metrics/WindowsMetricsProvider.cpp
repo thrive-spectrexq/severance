@@ -47,8 +47,8 @@ WindowsMetricsProvider::WindowsMetricsProvider() {
 
   // Initialize PDH for Disk I/O
   if (PdhOpenQuery(nullptr, 0, &m_PdhQuery) == ERROR_SUCCESS) {
-    if (PdhAddCounter(m_PdhQuery, "\\PhysicalDisk(_Total)\\Disk Read Bytes/sec", 0, &m_DiskReadCounter) == ERROR_SUCCESS &&
-        PdhAddCounter(m_PdhQuery, "\\PhysicalDisk(_Total)\\Disk Write Bytes/sec", 0, &m_DiskWriteCounter) == ERROR_SUCCESS) {
+    if (PdhAddCounter(m_PdhQuery, L"\\PhysicalDisk(_Total)\\Disk Read Bytes/sec", 0, &m_DiskReadCounter) == ERROR_SUCCESS &&
+        PdhAddCounter(m_PdhQuery, L"\\PhysicalDisk(_Total)\\Disk Write Bytes/sec", 0, &m_DiskWriteCounter) == ERROR_SUCCESS) {
       PdhCollectQueryData(m_PdhQuery);
       m_PdhInitialized = true;
     }
