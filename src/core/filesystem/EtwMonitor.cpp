@@ -145,8 +145,12 @@ void EtwMonitor::ProcessEvent(PEVENT_RECORD pEventRecord) {
     if (TdhGetPropertySize(pEventRecord, 0, nullptr, 1, &descriptor, &bufferSize) == ERROR_SUCCESS && bufferSize > 0) {
       std::vector<BYTE> buffer(bufferSize);
       if (TdhGetProperty(pEventRecord, 0, nullptr, 1, &descriptor, bufferSize, buffer.data()) == ERROR_SUCCESS) {
-        std::wstring wPath(reinterpret_cast<wchar_t*>(buffer.data()));
-        fe.filePath = std::string(wPath.begin(), wPath.end());
+        int len = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(buffer.data()), -1, nullptr, 0, nullptr, nullptr);
+        if (len > 0) {
+          std::string narrowStr(len - 1, '\0');
+          WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(buffer.data()), -1, narrowStr.data(), len, nullptr, nullptr);
+          fe.filePath = narrowStr;
+        }
       }
     }
     
@@ -156,8 +160,12 @@ void EtwMonitor::ProcessEvent(PEVENT_RECORD pEventRecord) {
       if (TdhGetPropertySize(pEventRecord, 0, nullptr, 1, &descriptor, &bufferSize) == ERROR_SUCCESS && bufferSize > 0) {
         std::vector<BYTE> buffer(bufferSize);
         if (TdhGetProperty(pEventRecord, 0, nullptr, 1, &descriptor, bufferSize, buffer.data()) == ERROR_SUCCESS) {
-          std::wstring wPath(reinterpret_cast<wchar_t*>(buffer.data()));
-          fe.filePath = std::string(wPath.begin(), wPath.end());
+          int len = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(buffer.data()), -1, nullptr, 0, nullptr, nullptr);
+          if (len > 0) {
+            std::string narrowStr(len - 1, '\0');
+            WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(buffer.data()), -1, narrowStr.data(), len, nullptr, nullptr);
+            fe.filePath = narrowStr;
+          }
         }
       }
     }

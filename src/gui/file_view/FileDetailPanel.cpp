@@ -2,6 +2,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFileInfo>
+#include <QDir>
 
 namespace severance::gui::file_view {
 

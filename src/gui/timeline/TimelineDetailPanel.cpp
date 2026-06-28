@@ -102,7 +102,7 @@ void TimelineDetailPanel::LoadEvent(const QString& time, const QString& type, co
   "payload": "%4",
   "correlation_id": "c-7b2x91a",
   "confidence": 0.99
-})").arg(time).arg(type).arg(source).arg(details.replace("\"", "\\\""));
+})").arg(time).arg(type).arg(source).arg(QString(details).replace("\"", "\\\""));
 
   m_RawContent->setPlainText(rawJson);
 }
