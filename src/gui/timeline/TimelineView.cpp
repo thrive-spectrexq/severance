@@ -288,4 +288,8 @@ void TimelineView::onSelectionChanged() {
   m_DetailPanel->LoadEvent(time, type, source, details);
 }
 
+void TimelineView::onContextMenuRequested(const QPoint& pos) {
+  // TODO: Implement context menu for TimelineView
+}
+
 } // namespace severance::gui::timeline

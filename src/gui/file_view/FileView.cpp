@@ -155,4 +155,8 @@ void FileView::onSelectionChanged() {
   m_DetailPanel->LoadFileEvent(time, procName, pid, operation, path);
 }
 
+void FileView::onContextMenuRequested(const QPoint& pos) {
+  // TODO: Implement context menu for FileView
+}
+
 } // namespace severance::gui::file_view
