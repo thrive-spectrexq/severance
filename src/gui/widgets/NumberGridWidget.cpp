@@ -1,5 +1,7 @@
 #include "NumberGridWidget.hpp"
 #include "gui/theme/Theme.hpp"
+#include "core/store/EventStore.hpp"
+#include "core/events/MacrodataRefinedEvent.hpp"
 #include <QPainter>
 #include <QKeyEvent>
 #include <QWheelEvent>
@@ -20,6 +22,15 @@ NumberGridWidget::NumberGridWidget(QWidget* parent)
     m_Font = QFont("Courier New", 14, QFont::Bold);
 
     generateGrid();
+
+    // Fetch initial refined count from database
+    m_RefinedCount = 0;
+    auto recentEvents = core::store::EventStore::GetInstance().GetRecentEvents(10000);
+    for (const auto& ev : recentEvents) {
+        if (ev.eventType == static_cast<int>(core::events::EventType::MacrodataRefined)) {
+            m_RefinedCount++;
+        }
+    }
 
     m_Timer = new QTimer(this);
     connect(m_Timer, &QTimer::timeout, this, &NumberGridWidget::onTimerUpdate);
@@ -134,6 +145,7 @@ void NumberGridWidget::activateRandomGroup() {
 void NumberGridWidget::refineGroup(int groupId) {
     if (m_Groups.find(groupId) == m_Groups.end()) return;
     
+    int groupSize = m_Groups[groupId].size();
     for (const auto& p : m_Groups[groupId]) {
         auto& cell = m_Grid[p.y()][p.x()];
         cell.isAnimating = true;
@@ -146,6 +158,11 @@ void NumberGridWidget::refineGroup(int groupId) {
         m_ActiveGroupId = -1;
         m_HoveredGroupId = -1;
     }
+
+    const char* bins[] = {"Siena", "Tumwater", "Culpeper", "O&D", "Minsk"};
+    std::string binName = bins[std::rand() % 5];
+    auto event = std::make_shared<core::events::MacrodataRefinedEvent>(binName, groupSize);
+    core::store::EventStore::GetInstance().RecordEvent(event);
 }
 
 QPoint NumberGridWidget::mapToGrid(const QPoint& pos) const {

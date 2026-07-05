@@ -11,6 +11,7 @@ public:
 
   virtual EventType GetType() const = 0;
   virtual std::string GetName() const = 0;
+  virtual std::string GetPayload() const { return "{}"; }
 
   bool handled = false;
 };

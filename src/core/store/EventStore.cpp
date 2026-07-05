@@ -83,8 +83,7 @@ void EventStore::RecordEvent(std::shared_ptr<events::Event> event) {
   query.addBindValue(QDateTime::currentMSecsSinceEpoch());
   query.addBindValue(static_cast<int>(event->GetType()));
   query.addBindValue(QString::fromStdString(event->GetName()));
-  // In a real implementation, we'd serialize event specific data to JSON.
-  query.addBindValue("{}");
+  query.addBindValue(QString::fromStdString(event->GetPayload()));
 
   if (!query.exec()) {
     SEV_CORE_WARN("Failed to record event {}: {}", event->GetName(), query.lastError().text().toStdString());

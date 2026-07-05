@@ -12,6 +12,7 @@
 #include "gui/command/CommandRegistry.hpp"
 #include "gui/ai_panel/AiPanel.hpp"
 #include "gui/security_view/SecurityView.hpp"
+#include "gui/board_comms/BoardCommsView.hpp"
 #include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"
 #include "core/security/ActiveResponse.hpp"
@@ -45,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     {"SEVERANCE PROTOCOLS",     QString(QChar(0xE773)), "Ctrl+6"},
     {"OBSERVATION",             QString(QChar(0xE716)), "Ctrl+7"},
     {"VIGILANCE",               QString(QChar(0xE72E)), "Ctrl+8"},
+    {"BOARD COMMUNICATIONS",    QString(QChar(0xE8F4)), "Ctrl+9"},
   };
 
   auto centralWidget = new QWidget(this);
@@ -191,7 +193,7 @@ void MainWindow::setupSidebar() {
 
   // SECURITY
   addCategory("CONTAINMENT & VIGILANCE");
-  for (int i = 0; i < 3; ++i, ++viewIndex) {
+  for (int i = 0; i < 4; ++i, ++viewIndex) {
     auto btn = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
     btn->setCheckable(true);
     btn->setProperty("cssClass", "sidebarBtn");
@@ -225,6 +227,7 @@ void MainWindow::setupViews() {
   auto* isolationView = new isolation_view::IsolationView(this);
   auto* sessionView = new session_view::SessionView(this);
   auto* securityView = new security_view::SecurityView(this);
+  auto* boardCommsView = new board_comms::BoardCommsView(this);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
@@ -234,6 +237,7 @@ void MainWindow::setupViews() {
   m_ViewStack->addWidget(isolationView);   // Index 5
   m_ViewStack->addWidget(sessionView);     // Index 6
   m_ViewStack->addWidget(securityView);    // Index 7
+  m_ViewStack->addWidget(boardCommsView);  // Index 8
 }
 
 void MainWindow::setupStatusBar() {

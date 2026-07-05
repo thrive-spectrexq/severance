@@ -39,6 +39,7 @@ add_executable(severance
     src/gui/isolation_view/IsolationView.cpp
     src/gui/session_view/SessionView.cpp
     src/gui/ai_panel/AiPanel.cpp
+    src/gui/board_comms/BoardCommsView.cpp
     src/gui/graphs/ResourceGraph.cpp
     src/gui/graphs/OpenGLResourceGraph.cpp
     src/gui/widgets/StatusIndicator.cpp
@@ -47,6 +48,7 @@ add_executable(severance
     src/gui/widgets/NumberGridWidget.cpp
     src/gui/windows/SettingsWindow.cpp
     src/utils/ThreadPool.cpp
+    src/core/concurrency/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp
@@ -92,6 +94,7 @@ set(TEST_COMMON_SOURCES
     src/core/logging/Logger.cpp
     src/core/events/EventBus.cpp
     src/utils/ThreadPool.cpp
+    src/core/concurrency/ThreadPool.cpp
     src/utils/UUID.cpp
     src/utils/Config.cpp
     src/core/process/ProcessManager.cpp

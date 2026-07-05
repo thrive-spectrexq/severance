@@ -8,6 +8,7 @@
 #include "correlation/CorrelationEngine.hpp"
 #include "notifications/RuleEngine.hpp"
 #include "metrics/BaselineManager.hpp"
+#include "concurrency/ThreadPool.hpp"
 #include <iostream>
 
 namespace severance::core::application {
@@ -15,6 +16,9 @@ namespace severance::core::application {
 Application::Application() : m_Running(true) {
   logging::Logger::Init();
   SEV_CORE_INFO("Application initialized.");
+
+  // Initialize Thread Pool
+  concurrency::ThreadPool::GetInstance().Initialize();
 
   // Initialize Event Store
   store::EventStore::GetInstance().Initialize();
@@ -60,6 +64,7 @@ Application::~Application() {
   correlation::CorrelationEngine::GetInstance().Shutdown();
   filesystem::EtwMonitor::GetInstance().Stop();
   store::EventStore::GetInstance().Shutdown();
+  concurrency::ThreadPool::GetInstance().Shutdown();
 }
 
 void Application::Run() {

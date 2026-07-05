@@ -11,7 +11,8 @@ enum class EventType {
   FileCreated,
   FileModified,
   FileDeleted,
-  AppQuit
+  AppQuit,
+  MacrodataRefined
 };
 
 } // namespace severance::core::events
