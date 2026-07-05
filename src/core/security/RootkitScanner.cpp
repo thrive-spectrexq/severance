@@ -60,7 +60,7 @@ std::vector<HiddenProcess> RootkitScanner::ScanForHiddenProcesses() {
       SEV_CORE_WARN("RootkitScanner: Process {} is hidden from CreateToolhelp32Snapshot!", pid);
       
       // Trigger active response
-      ActiveResponse::GetInstance().HandleSuspiciousProcess(pid, "Hidden process detected (Toolhelp32 evasion)");
+      ActiveResponse::GetInstance().EvaluateAndRespond(pid, "HiddenProcess", "Hidden process detected (Toolhelp32 evasion)");
     }
   }
 
