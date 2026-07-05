@@ -24,41 +24,66 @@ SecurityView::SecurityView(QWidget* parent) : QWidget(parent) {
 
 SecurityView::~SecurityView() = default;
 
+#include "gui/theme/Theme.hpp"
+#include <QTabWidget>
+
 void SecurityView::setupUI() {
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(16, 16, 16, 16);
 
-  auto* splitter = new QSplitter(Qt::Vertical, this);
+  auto* tabs = new QTabWidget(this);
+  tabs->setStyleSheet(QString(
+    "QTabBar::tab { background: %1; color: %2; padding: 8px 16px; border: 1px solid %3; }"
+    "QTabBar::tab:selected { background: %4; color: %5; border-bottom-color: %4; font-weight: bold; }"
+    "QTabWidget::pane { border: 1px solid %3; background: %1; }"
+  ).arg(theme::Colors::BgSecondary, theme::Colors::TextSecondary, theme::Colors::Border, theme::Colors::BgHover, theme::Colors::TextPrimary));
 
-  // FIM Section
-  auto* fimGroup = new QGroupBox("Document Surveillance (FIM)");
-  auto* fimLayout = new QVBoxLayout(fimGroup);
+  // FIM Section (Document Surveillance)
   m_FimTable = new QTableWidget();
   m_FimTable->setColumnCount(4);
-  m_FimTable->setHorizontalHeaderLabels({"Action", "Designation", "Prior Designation", "SHA-256 Hash"});
+  m_FimTable->setHorizontalHeaderLabels({"ACTION", "DESIGNATION", "PRIOR DESIGNATION", "SHA-256 HASH"});
   m_FimTable->horizontalHeader()->setStretchLastSection(true);
   m_FimTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
   m_FimTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_FimTable->verticalHeader()->setVisible(false);
   m_FimTable->setShowGrid(false);
-  fimLayout->addWidget(m_FimTable);
-  splitter->addWidget(fimGroup);
+  m_FimTable->setStyleSheet(QString("background-color: %1; color: %2;").arg(theme::Colors::BgPrimary, theme::Colors::TextPrimary));
+  tabs->addTab(m_FimTable, "DOCUMENT SURVEILLANCE");
 
-  // Event Log Section
-  auto* logGroup = new QGroupBox("Vigilance Event Ledger (Priority Filtering)");
-  auto* logLayout = new QVBoxLayout(logGroup);
+  // Event Log Section (Vigilance Event Ledger)
   m_LogTable = new QTableWidget();
   m_LogTable->setColumnCount(1);
-  m_LogTable->setHorizontalHeaderLabels({"Raw XML Data"});
+  m_LogTable->setHorizontalHeaderLabels({"RAW XML DATA"});
   m_LogTable->horizontalHeader()->setStretchLastSection(true);
   m_LogTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_LogTable->verticalHeader()->setVisible(false);
   m_LogTable->setShowGrid(false);
-  logLayout->addWidget(m_LogTable);
-  splitter->addWidget(logGroup);
+  m_LogTable->setStyleSheet(QString("background-color: %1; color: %2;").arg(theme::Colors::BgPrimary, theme::Colors::TextPrimary));
+  tabs->addTab(m_LogTable, "VIGILANCE EVENT LEDGER");
 
-  splitter->setSizes({300, 300});
-  layout->addWidget(splitter);
+  // Anomalies Section
+  m_AnomaliesTable = new QTableWidget();
+  m_AnomaliesTable->setColumnCount(3);
+  m_AnomaliesTable->setHorizontalHeaderLabels({"INNIE PID", "DESIGNATION", "STATE"});
+  m_AnomaliesTable->horizontalHeader()->setStretchLastSection(true);
+  m_AnomaliesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_AnomaliesTable->verticalHeader()->setVisible(false);
+  m_AnomaliesTable->setShowGrid(false);
+  m_AnomaliesTable->setStyleSheet(QString("background-color: %1; color: %2;").arg(theme::Colors::BgPrimary, theme::Colors::TextPrimary));
+  tabs->addTab(m_AnomaliesTable, "MACRODATA ANOMALIES");
+
+  // Directives Section
+  m_DirectivesTable = new QTableWidget();
+  m_DirectivesTable->setColumnCount(3);
+  m_DirectivesTable->setHorizontalHeaderLabels({"DIRECTIVE NAME", "CONDITION", "ACTION"});
+  m_DirectivesTable->horizontalHeader()->setStretchLastSection(true);
+  m_DirectivesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_DirectivesTable->verticalHeader()->setVisible(false);
+  m_DirectivesTable->setShowGrid(false);
+  m_DirectivesTable->setStyleSheet(QString("background-color: %1; color: %2;").arg(theme::Colors::BgPrimary, theme::Colors::TextPrimary));
+  tabs->addTab(m_DirectivesTable, "CONTAINMENT DIRECTIVES");
+
+  layout->addWidget(tabs);
 }
 
 void SecurityView::onFimEvent(const core::security::FimEvent& ev) {
@@ -128,6 +153,48 @@ void SecurityView::updateTables() {
     while (m_LogTable->rowCount() > 1000) m_LogTable->removeRow(1000);
     m_LogTable->setUpdatesEnabled(true);
   }
+
+  // Update Directives Table
+  auto directives = core::security::ActiveResponse::GetInstance().GetDirectives();
+  m_DirectivesTable->setUpdatesEnabled(false);
+  m_DirectivesTable->setRowCount(0);
+  for (const auto& dir : directives) {
+    int row = m_DirectivesTable->rowCount();
+    m_DirectivesTable->insertRow(row);
+    m_DirectivesTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(dir.name)));
+    m_DirectivesTable->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(dir.condition)));
+    m_DirectivesTable->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(dir.action)));
+  }
+  m_DirectivesTable->setUpdatesEnabled(true);
+
+  // Update Anomalies Table
+  auto anomalies = core::correlation::CorrelationEngine::GetInstance().GetAllProfiles();
+  m_AnomaliesTable->setUpdatesEnabled(false);
+  m_AnomaliesTable->setRowCount(0);
+  for (const auto& prof : anomalies) {
+    if (prof.state != core::correlation::InnieState::Idle) {
+      int row = m_AnomaliesTable->rowCount();
+      m_AnomaliesTable->insertRow(row);
+      m_AnomaliesTable->setItem(row, 0, new QTableWidgetItem(QString::number(prof.pid)));
+      m_AnomaliesTable->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(prof.name)));
+      
+      QString stateStr;
+      switch (prof.state) {
+        case core::correlation::InnieState::Macrodata_Refinement_Detected: stateStr = "MACRODATA REFINEMENT DETECTED"; break;
+        case core::correlation::InnieState::Kier_Alert_Triggered: stateStr = "KIER ALERT TRIGGERED"; break;
+        default: stateStr = "IDLE"; break;
+      }
+      
+      auto* item = new QTableWidgetItem(stateStr);
+      if (prof.state == core::correlation::InnieState::Kier_Alert_Triggered) {
+          item->setForeground(QColor(theme::Colors::Error));
+      } else {
+          item->setForeground(QColor(theme::Colors::Warning));
+      }
+      m_AnomaliesTable->setItem(row, 2, item);
+    }
+  }
+  m_AnomaliesTable->setUpdatesEnabled(true);
 }
 
 } // namespace severance::gui::security_view

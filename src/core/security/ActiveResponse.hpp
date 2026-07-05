@@ -33,6 +33,8 @@ public:
   // Called by UI after prompting the user
   void OnUserDecision(uint32_t pid, bool kill);
 
+  std::vector<ContainmentDirective> GetDirectives() const;
+
 private:
   ActiveResponse() = default;
   ~ActiveResponse() = default;
@@ -41,7 +43,7 @@ private:
   ActiveResponse& operator=(const ActiveResponse&) = delete;
 
   std::vector<ContainmentDirective> directives_;
-  std::mutex directivesMutex_;
+  mutable std::mutex directivesMutex_;
 };
 
 } // namespace severance::core::security

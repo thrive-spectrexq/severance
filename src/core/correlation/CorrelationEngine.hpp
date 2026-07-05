@@ -76,6 +76,7 @@ public:
   void Shutdown();
 
   ProcessProfile GetProcessProfile(uint32_t pid);
+  std::vector<ProcessProfile> GetAllProfiles();
 
 private:
   CorrelationEngine() = default;

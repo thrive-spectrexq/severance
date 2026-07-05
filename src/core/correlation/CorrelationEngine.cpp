@@ -147,4 +147,13 @@ ProcessProfile CorrelationEngine::GetProcessProfile(uint32_t pid) {
   return profile;
 }
 
+std::vector<ProcessProfile> CorrelationEngine::GetAllProfiles() {
+  std::vector<ProcessProfile> profiles;
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  for (const auto& [pid, profile] : m_Profiles) {
+    profiles.push_back(profile);
+  }
+  return profiles;
+}
+
 } // namespace severance::core::correlation

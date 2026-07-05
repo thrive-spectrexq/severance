@@ -8,6 +8,8 @@
 
 #include "core/security/FimManager.hpp"
 #include "core/security/EventLogManager.hpp"
+#include "core/security/ActiveResponse.hpp"
+#include "core/correlation/CorrelationEngine.hpp"
 
 namespace severance::gui::security_view {
 
@@ -33,6 +35,8 @@ private:
 
   QTableWidget* m_FimTable{nullptr};
   QTableWidget* m_LogTable{nullptr};
+  QTableWidget* m_AnomaliesTable{nullptr};
+  QTableWidget* m_DirectivesTable{nullptr};
   QTimer* m_UiTimer{nullptr};
 };
 

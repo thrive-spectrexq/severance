@@ -109,4 +109,9 @@ void ActiveResponse::OnUserDecision(uint32_t pid, bool kill) {
   }
 }
 
+std::vector<ContainmentDirective> ActiveResponse::GetDirectives() const {
+  std::lock_guard<std::mutex> lock(directivesMutex_);
+  return directives_;
+}
+
 } // namespace severance::core::security
