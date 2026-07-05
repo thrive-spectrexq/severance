@@ -1,3 +1,4 @@
 add_subdirectory(sample_plugin)
 add_subdirectory(sample_c_plugin)
 add_subdirectory(security_plugin)
+add_subdirectory(optics_and_design)
