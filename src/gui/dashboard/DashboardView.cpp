@@ -61,17 +61,17 @@ void DashboardView::setupUI() {
   mainLayout->setSpacing(24);
 
   // === Header ===
-  auto* headerLabel = new QLabel("System Telemetry & Analytics", this);
+  auto* headerLabel = new QLabel("Macrodata Refinement Telemetry", this);
   headerLabel->setProperty("cssClass", "heading");
   mainLayout->addWidget(headerLabel);
 
   // === Top Row: KPI Cards ===
   auto* kpiLayout = new QHBoxLayout();
   kpiLayout->setSpacing(24);
-  kpiLayout->addWidget(createKpiCard("PROCESSES", m_KpiProcessCount, this, theme::Colors::Accent));
-  kpiLayout->addWidget(createKpiCard("NETWORK CONNECTIONS", m_KpiNetConnections, this, theme::Colors::Success));
-  kpiLayout->addWidget(createKpiCard("FILE HANDLES", m_KpiFileHandles, this, theme::Colors::ChartPurple));
-  kpiLayout->addWidget(createKpiCard("ALERTS", m_KpiAlerts, this, theme::Colors::Error));
+  kpiLayout->addWidget(createKpiCard("ACTIVE INNIES", m_KpiProcessCount, this, theme::Colors::Accent));
+  kpiLayout->addWidget(createKpiCard("PERIMETER BREACHES", m_KpiNetConnections, this, theme::Colors::Success));
+  kpiLayout->addWidget(createKpiCard("MEMORY COMPARTMENTS", m_KpiFileHandles, this, theme::Colors::ChartTeal));
+  kpiLayout->addWidget(createKpiCard("OBSERVATION ALERTS", m_KpiAlerts, this, theme::Colors::Error));
   mainLayout->addLayout(kpiLayout, 0);
 
   // === Middle Row: Charts ===
@@ -85,7 +85,7 @@ void DashboardView::setupUI() {
   
   auto* donutLayout = new QVBoxLayout(donutCard);
   donutLayout->setContentsMargins(20, 20, 20, 20);
-  auto* donutTitle = new QLabel("CPU Distribution", donutCard);
+  auto* donutTitle = new QLabel("Cognitive Load Distribution", donutCard);
   donutTitle->setProperty("cssClass", "cardTitle");
   donutLayout->addWidget(donutTitle);
   
@@ -100,7 +100,7 @@ void DashboardView::setupUI() {
   
   auto* barLayout = new QVBoxLayout(barCard);
   barLayout->setContentsMargins(20, 20, 20, 20);
-  auto* barTitle = new QLabel("Top Memory Consumers", barCard);
+  auto* barTitle = new QLabel("Primary Resource Consumers", barCard);
   barTitle->setProperty("cssClass", "cardTitle");
   barLayout->addWidget(barTitle);
 
@@ -117,13 +117,13 @@ void DashboardView::setupUI() {
   
   auto* tableLayout = new QVBoxLayout(tableCard);
   tableLayout->setContentsMargins(20, 20, 20, 20);
-  auto* tableTitle = new QLabel("Recent Activity", tableCard);
+  auto* tableTitle = new QLabel("Temporal Event Log", tableCard);
   tableTitle->setProperty("cssClass", "cardTitle");
   tableLayout->addWidget(tableTitle);
   tableLayout->addSpacing(8);
 
   m_RecentEventsTable = new QTableWidget(5, 4, tableCard);
-  m_RecentEventsTable->setHorizontalHeaderLabels({"TIME", "TYPE", "PROCESS", "DETAILS"});
+  m_RecentEventsTable->setHorizontalHeaderLabels({"TIME", "DEPARTMENT", "SUBJECT", "OBSERVATION"});
   m_RecentEventsTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
   m_RecentEventsTable->verticalHeader()->setVisible(false);
   m_RecentEventsTable->setShowGrid(false);
