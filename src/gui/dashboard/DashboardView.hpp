@@ -15,6 +15,7 @@ namespace severance::core::metrics {
 namespace severance::gui::widgets {
   class DonutChartWidget;
   class HorizontalBarChartWidget;
+  class NumberGridWidget;
 }
 
 namespace severance::gui::dashboard {
@@ -46,8 +47,8 @@ private:
   // Status Labels for Charts
   QLabel* m_CpuValueLabel{nullptr};
 
-  // Bottom Table
-  QTableWidget* m_RecentEventsTable{nullptr};
+  // Bottom Grid
+  widgets::NumberGridWidget* m_NumberGrid{nullptr};
 
   // Model
   std::unique_ptr<core::metrics::MetricsProvider> m_MetricsProvider;

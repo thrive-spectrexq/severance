@@ -46,6 +46,37 @@ Each module observes one domain cleanly. The correlation engine links events acr
 
 ---
 
+## Macrodata Refinement (Number Grid Generation)
+
+**GENERATE**
+A N×N grid is created. Each cell is filled with a random integer between 0-9.
+
+**MAP**
+A Perlin noise map assigns smooth gradient values to the grid. This ensures numbers are naturally grouped rather than randomly scattered.
+
+**THRESHOLD**
+Each cell's value is compared to a set threshold. Values above the threshold are marked as 'bad'/'scary' numbers.
+
+**GROUP**
+'Bad' numbers are grouped based on proximity to one another. At random intervals, a group visible in the viewport will be activated:
+- If hovered over, they become 'super active', extending their active time and appearing agitated.
+- If clicked, the group is 'refined', animating into a pre-determined bin and resetting as no longer 'bad'.
+
+### The Interface
+
+- A moving Perlin noise map offsets each number (vertically or horizontally).
+- Activated bad groups expand / contract / jitter.
+- Numbers scale-up based on cursor position.
+- Refined groups animate into bins, with a percent bar keeping track of your progress.
+
+### Additional Features
+- The application is cross-compatible, allowing compilation for both Linux and Raspberry Pi (ARM).
+- A 'debug mode' reveals various settings (which can be saved / loaded from disk as JSON).
+- An 'idle mode' can be enabled to display the Lumon logo screensaver.
+- The user can navigate the full grid using arrow and zoom keys.
+
+---
+
 ## Core Protocols
 
 **Modern C++ with a Stable C ABI**

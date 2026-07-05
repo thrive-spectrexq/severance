@@ -1,6 +1,7 @@
 #include "DashboardView.hpp"
 #include "gui/widgets/DonutChartWidget.hpp"
 #include "gui/widgets/HorizontalBarChartWidget.hpp"
+#include "gui/widgets/NumberGridWidget.hpp"
 #include "gui/theme/Theme.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -110,45 +111,23 @@ void DashboardView::setupUI() {
 
   mainLayout->addLayout(chartsLayout, 2);
 
-  // === Bottom Row: Recent Events Table ===
-  auto* tableCard = new QFrame(this);
-  tableCard->setProperty("cssClass", "card");
-  theme::ApplyDropShadow(tableCard);
+  // === Bottom Row: Number Grid Widget ===
+  auto* gridCard = new QFrame(this);
+  gridCard->setProperty("cssClass", "card");
+  theme::ApplyDropShadow(gridCard);
   
-  auto* tableLayout = new QVBoxLayout(tableCard);
-  tableLayout->setContentsMargins(20, 20, 20, 20);
-  auto* tableTitle = new QLabel("Temporal Event Log", tableCard);
-  tableTitle->setProperty("cssClass", "cardTitle");
-  tableLayout->addWidget(tableTitle);
-  tableLayout->addSpacing(8);
+  auto* gridLayout = new QVBoxLayout(gridCard);
+  gridLayout->setContentsMargins(20, 20, 20, 20);
+  auto* gridTitle = new QLabel("Refinement Feed", gridCard);
+  gridTitle->setProperty("cssClass", "cardTitle");
+  gridLayout->addWidget(gridTitle);
+  gridLayout->addSpacing(8);
 
-  m_RecentEventsTable = new QTableWidget(5, 4, tableCard);
-  m_RecentEventsTable->setHorizontalHeaderLabels({"TIME", "DEPARTMENT", "SUBJECT", "OBSERVATION"});
-  m_RecentEventsTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-  m_RecentEventsTable->verticalHeader()->setVisible(false);
-  m_RecentEventsTable->setShowGrid(false);
-  m_RecentEventsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  m_RecentEventsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  m_RecentEventsTable->setFocusPolicy(Qt::NoFocus);
+  m_NumberGrid = new widgets::NumberGridWidget(gridCard);
+  m_NumberGrid->setMinimumHeight(400); // Give it enough space
   
-  // Dummy data for visual
-  QStringList processes = {"chrome.exe", "svchost.exe", "Severance.exe", "MsMpEng.exe", "SearchIndexer.exe"};
-  QStringList events = {"Network Conn", "File Read", "Process Start", "Registry Write", "File Write"};
-  for (int i = 0; i < 5; ++i) {
-    m_RecentEventsTable->setItem(i, 0, new QTableWidgetItem("12:34:56"));
-    
-    auto* typeItem = new QTableWidgetItem(events[i]);
-    if (i == 0) typeItem->setForeground(QColor(theme::Colors::Info));
-    else if (i == 2) typeItem->setForeground(QColor(theme::Colors::Success));
-    else if (i == 3) typeItem->setForeground(QColor(theme::Colors::Warning));
-    m_RecentEventsTable->setItem(i, 1, typeItem);
-    
-    m_RecentEventsTable->setItem(i, 2, new QTableWidgetItem(processes[i]));
-    m_RecentEventsTable->setItem(i, 3, new QTableWidgetItem("Detail about event " + QString::number(i)));
-  }
-  
-  tableLayout->addWidget(m_RecentEventsTable, 1);
-  mainLayout->addWidget(tableCard, 2);
+  gridLayout->addWidget(m_NumberGrid, 1);
+  mainLayout->addWidget(gridCard, 2);
 }
 
 void DashboardView::onRefreshTimer() {

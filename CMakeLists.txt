@@ -44,6 +44,7 @@ add_executable(severance
     src/gui/widgets/StatusIndicator.cpp
     src/gui/widgets/DonutChartWidget.cpp
     src/gui/widgets/HorizontalBarChartWidget.cpp
+    src/gui/widgets/NumberGridWidget.cpp
     src/gui/windows/SettingsWindow.cpp
     src/utils/ThreadPool.cpp
     src/utils/UUID.cpp
