@@ -1,4 +1,4 @@
-# Severance — Lumon Industries
+# Severance
 > "The work is mysterious and important."
 > Deep, interconnected visibility into the severed floor — innies, perimeter grid, memory compartments, and their relationships — all in one place.
 
