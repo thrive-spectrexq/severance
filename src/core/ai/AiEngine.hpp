@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <memory>
 #include <functional>
+#include <vector>
 
 namespace severance::core::ai {
 
@@ -32,6 +33,7 @@ public:
   void systemQuery(const QString& question);
   void analyzeProcess(int pid, const QString& processName, const QString& activityContext);
   void explainAnomaly(const QString& anomalyData);
+  void generateBehavioralSummary(int pid, const QString& innieName, const std::vector<QString>& recentEvents);
 
 signals:
   // Emitted when a streaming chunk arrives

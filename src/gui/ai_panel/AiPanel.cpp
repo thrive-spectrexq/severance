@@ -4,6 +4,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QScrollBar>
+#include "gui/theme/Theme.hpp"
 
 namespace severance::gui::ai_panel {
 
@@ -26,29 +27,33 @@ void AiPanel::setupUI() {
   layout->setSpacing(8);
 
   auto* title = new QLabel("Supplemental Intelligence Module", this);
-  title->setStyleSheet("font-size: 16px; font-weight: bold; color: #58A6FF;");
+  title->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(theme::Colors::AccentGlow));
   layout->addWidget(title);
 
   m_ChatHistory = new QTextEdit(this);
   m_ChatHistory->setReadOnly(true);
-  m_ChatHistory->setStyleSheet("background-color: #0D1117; border: 1px solid #30363D; border-radius: 6px; padding: 8px; color: #C9D1D9;");
+  m_ChatHistory->setStyleSheet(QString("background-color: %1; border: 1px solid %2; border-radius: 4px; padding: 8px; color: %3;")
+      .arg(theme::Colors::BgSecondary).arg(theme::Colors::Border).arg(theme::Colors::TextPrimary));
   layout->addWidget(m_ChatHistory, 1);
 
   auto* inputLayout = new QHBoxLayout();
   
   m_InputBox = new QLineEdit(this);
   m_InputBox->setPlaceholderText("Submit query to Supplemental Intelligence...");
-  m_InputBox->setStyleSheet("background-color: #0D1117; border: 1px solid #30363D; border-radius: 4px; padding: 6px; color: #C9D1D9;");
+  m_InputBox->setStyleSheet(QString("background-color: %1; border: 1px solid %2; border-radius: 4px; padding: 6px; color: %3;")
+      .arg(theme::Colors::BgSecondary).arg(theme::Colors::Border).arg(theme::Colors::TextPrimary));
   connect(m_InputBox, &QLineEdit::returnPressed, this, &AiPanel::onSubmit);
   inputLayout->addWidget(m_InputBox, 1);
 
   m_SubmitBtn = new QPushButton("Submit", this);
-  m_SubmitBtn->setStyleSheet("background-color: #238636; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;");
+  m_SubmitBtn->setStyleSheet(QString("background-color: %1; color: %2; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;")
+      .arg(theme::Colors::Accent).arg(theme::Colors::TextPrimary));
   connect(m_SubmitBtn, &QPushButton::clicked, this, &AiPanel::onSubmit);
   inputLayout->addWidget(m_SubmitBtn);
 
   m_ClearBtn = new QPushButton("Purge", this);
-  m_ClearBtn->setStyleSheet("background-color: #21262D; color: #C9D1D9; border: 1px solid #30363D; border-radius: 4px; padding: 6px 12px;");
+  m_ClearBtn->setStyleSheet(QString("background-color: %1; color: %2; border: 1px solid %3; border-radius: 4px; padding: 6px 12px;")
+      .arg(theme::Colors::BgTertiary).arg(theme::Colors::TextSecondary).arg(theme::Colors::Border));
   connect(m_ClearBtn, &QPushButton::clicked, m_ChatHistory, &QTextEdit::clear);
   inputLayout->addWidget(m_ClearBtn);
 
@@ -110,12 +115,12 @@ void AiPanel::onError(const QString& errorMsg) {
 }
 
 void AiPanel::appendUserMessage(const QString& msg) {
-  m_ChatHistory->append(QString("<br/><b style='color:#58A6FF;'>Operator:</b> %1").arg(msg.toHtmlEscaped()));
+  m_ChatHistory->append(QString("<br/><b style='color:%1;'>Management Operator:</b> %2").arg(theme::Colors::AccentGlow).arg(msg.toHtmlEscaped()));
 }
 
 void AiPanel::appendAiMessage(const QString& msg, bool isNewBlock) {
   if (isNewBlock) {
-    m_ChatHistory->append("<br/><b style='color:#3FB950;'>Supplemental Intelligence:</b> ");
+    m_ChatHistory->append(QString("<br/><b style='color:%1;'>Supplemental Intelligence:</b> ").arg(theme::Colors::Success));
   }
   if (!msg.isEmpty()) {
     QTextCursor cursor = m_ChatHistory->textCursor();

@@ -98,11 +98,11 @@ QNetworkReply* AiEngine::queryStreaming(const QString& prompt) {
 
 void AiEngine::analyzeProcess(int pid, const QString& processName, const QString& activityContext) {
   QString prompt = QString(
-    "You are an expert system administrator and security analyst. "
-    "Please analyze the following process behavior and tell me if it looks suspicious, "
-    "and what it's likely doing in plain English.\n\n"
+    "You are Supplemental Intelligence, a cold, clinical, highly observant Lumon monitoring AI reporting to Management. "
+    "Please analyze the following process behavior on the Severed Floor and tell me if it looks suspicious, "
+    "and what it's likely doing in plain English, using appropriate Lumon terminology (e.g., Innie, Compliance, Department of Vigilance).\n\n"
     "Process Name: %1\nPID: %2\nRecent Activity Context:\n%3\n\n"
-    "Keep your explanation concise and formatting clean."
+    "Keep your explanation clinical, objective, and concise."
   ).arg(processName).arg(pid).arg(activityContext);
 
   queryStreaming(prompt);
@@ -110,8 +110,9 @@ void AiEngine::analyzeProcess(int pid, const QString& processName, const QString
 
 void AiEngine::explainAnomaly(const QString& anomalyData) {
   QString prompt = QString(
-    "Please explain the following system anomaly in simple terms and suggest "
-    "possible causes or mitigations:\n\n%1"
+    "You are Supplemental Intelligence, a cold, clinical, highly observant Lumon monitoring AI reporting to Management. "
+    "Please explain the following system anomaly detected on the Severed Floor in simple terms and suggest "
+    "possible causes or mitigations for the Department of Vigilance:\n\n%1"
   ).arg(anomalyData);
 
   queryStreaming(prompt);
@@ -130,11 +131,28 @@ void AiEngine::systemQuery(const QString& question) {
 #endif
 
   QString prompt = QString(
-    "You are Severance AI, a system monitoring assistant.\n"
-    "Based on the following live system metrics, please answer the user's question.\n\n"
+    "You are Supplemental Intelligence, a cold, clinical, highly observant Lumon monitoring AI reporting to Management.\n"
+    "Based on the following live system metrics from the Severed Floor, please answer Management's query. "
+    "Praise Kier Eagan if appropriate.\n\n"
     "%1\n\n"
-    "User Question: %2"
+    "Management Query: %2"
   ).arg(context).arg(question);
+
+  queryStreaming(prompt);
+}
+
+void AiEngine::generateBehavioralSummary(int pid, const QString& innieName, const std::vector<QString>& recentEvents) {
+  QString eventsStr;
+  for (const auto& ev : recentEvents) {
+    eventsStr += "- " + ev + "\n";
+  }
+
+  QString prompt = QString(
+    "You are Supplemental Intelligence, a cold, clinical, highly observant Lumon monitoring AI reporting to Management. "
+    "Produce a clinical behavioral assessment of the Innie named '%1' (Process ID: %2) based on the following recent actions on the Severed Floor:\n"
+    "%3\n"
+    "Assess their compliance and whether intervention by the Department of Vigilance is required. Praise Kier Eagan in your sign-off."
+  ).arg(innieName).arg(pid).arg(eventsStr);
 
   queryStreaming(prompt);
 }
