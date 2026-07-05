@@ -2,6 +2,8 @@
 > "The work is mysterious and important."
 > Deep, interconnected visibility into the severed floor — innies, perimeter grid, memory compartments, and their relationships — all in one place.
 
+*Inspired by Lumon Industries's Macrodata Refinement application from Apple TV's 'Severance'.*
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![C++](https://img.shields.io/badge/C%2B%2B-23-1A7A5C.svg)
 ![C](https://img.shields.io/badge/C-17-1A7A5C.svg)
