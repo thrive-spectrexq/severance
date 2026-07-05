@@ -26,11 +26,11 @@ void StatusIndicator::paintEvent(QPaintEvent *event) {
 
 QColor StatusIndicator::getColorForStatus(Status status) const {
   switch (status) {
-    case Status::Online: return QColor("#238636"); // Green
-    case Status::Warning: return QColor("#D29922"); // Yellow
-    case Status::Error: return QColor("#F85149");   // Red
+    case Status::Online: return QColor("#2ECC71");  // Lumon bright green — neural impulse active
+    case Status::Warning: return QColor("#D4A017"); // Institutional amber
+    case Status::Error: return QColor("#C0392B");   // Clinical red
     case Status::Offline:
-    default: return QColor("#8B949E"); // Gray
+    default: return QColor("#3D4F5F"); // Faint gray — dormant
   }
 }
 

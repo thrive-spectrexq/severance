@@ -31,20 +31,20 @@
 namespace severance::gui::windows {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-  setWindowTitle("Severance");
+  setWindowTitle("Severance \u2014 Lumon Industries");
   setMinimumSize(1200, 800);
   resize(1400, 900);
 
   // Define views available in sidebar using Segoe Fluent Icons unicode points
   m_ViewInfos = {
-    {"Dashboard",  QString(QChar(0xE80F)), "Ctrl+1"},
-    {"Processes",  QString(QChar(0xE9D9)), "Ctrl+2"},
-    {"Timeline",   QString(QChar(0xE81C)), "Ctrl+3"},
-    {"Network",    QString(QChar(0xE839)), "Ctrl+4"},
-    {"Files",      QString(QChar(0xE8B7)), "Ctrl+5"},
-    {"Isolation",  QString(QChar(0xE773)), "Ctrl+6"},
-    {"Sessions",   QString(QChar(0xE716)), "Ctrl+7"},
-    {"Security",   QString(QChar(0xE72E)), "Ctrl+8"},
+    {"MACRODATA REFINEMENT",     QString(QChar(0xE80F)), "Ctrl+1"},
+    {"PERSONNEL REGISTRY",      QString(QChar(0xE9D9)), "Ctrl+2"},
+    {"TEMPORAL LEDGER",         QString(QChar(0xE81C)), "Ctrl+3"},
+    {"PERIMETER GRID",          QString(QChar(0xE839)), "Ctrl+4"},
+    {"DOCUMENT PROCESSING",     QString(QChar(0xE8B7)), "Ctrl+5"},
+    {"SEVERANCE PROTOCOLS",     QString(QChar(0xE773)), "Ctrl+6"},
+    {"OBSERVATION",             QString(QChar(0xE716)), "Ctrl+7"},
+    {"VIGILANCE",               QString(QChar(0xE72E)), "Ctrl+8"},
   };
 
   auto centralWidget = new QWidget(this);
@@ -96,22 +96,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // Register some global commands
   auto& registry = command::CommandRegistry::GetInstance();
-  registry.registerCommand({"app.quit", "Quit Severance", "Close the application", "Ctrl+Q", [this]() {
+  registry.registerCommand({"app.quit", "Exit Terminal", "Disconnect from the Lumon workstation", "Ctrl+Q", [this]() {
     close();
   }});
-  registry.registerCommand({"view.dashboard", "Show Dashboard", "Switch to the system dashboard view", "Ctrl+1", [this]() {
+  registry.registerCommand({"view.dashboard", "Macrodata Refinement", "Switch to the Macrodata Refinement console", "Ctrl+1", [this]() {
     setActiveView(0);
   }});
-  registry.registerCommand({"view.processes", "Show Processes", "Switch to the process explorer view", "Ctrl+2", [this]() {
+  registry.registerCommand({"view.processes", "Personnel Registry", "Switch to the Personnel Registry view", "Ctrl+2", [this]() {
     setActiveView(1);
   }});
-  registry.registerCommand({"cmd.palette", "Show Command Palette", "Show the command palette", "Ctrl+Shift+P", [this]() {
+  registry.registerCommand({"cmd.palette", "Command Directive", "Open the Lumon command directive interface", "Ctrl+Shift+P", [this]() {
     onCommandPaletteTriggered();
   }});
-  registry.registerCommand({"view.toggle_ai", "Toggle AI Insights", "Show or hide the AI Insights panel", "Ctrl+I", [this]() {
+  registry.registerCommand({"view.toggle_ai", "Supplemental Intelligence", "Show or hide the Supplemental Intelligence module", "Ctrl+I", [this]() {
     m_AiPanel->setVisible(!m_AiPanel->isVisible());
   }});
-  registry.registerCommand({"app.settings", "Open Settings", "Open the application settings dialog", "Ctrl+,", [this]() {
+  registry.registerCommand({"app.settings", "Terminal Configuration", "Open the Lumon terminal configuration panel", "Ctrl+,", [this]() {
     auto* settings = new SettingsWindow(this);
     settings->setAttribute(Qt::WA_DeleteOnClose);
     settings->exec();
@@ -133,7 +133,7 @@ void MainWindow::setupSidebar() {
   m_SidebarLayout->setSpacing(2);
 
   // App logo / brand at top
-  auto logo = new QLabel("S E V E R A N C E", m_Sidebar);
+  auto logo = new QLabel("L U M O N", m_Sidebar);
   logo->setObjectName("sidebarLogo");
   logo->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   m_SidebarLayout->addWidget(logo);
@@ -142,7 +142,7 @@ void MainWindow::setupSidebar() {
   // Search box at top of sidebar
   auto searchLayout = new QHBoxLayout();
   searchLayout->setContentsMargins(12, 0, 12, 12);
-  auto searchBtnTop = new QPushButton("Search... (Ctrl+K)", m_Sidebar);
+  auto searchBtnTop = new QPushButton("Search Directive... (Ctrl+K)", m_Sidebar);
   searchBtnTop->setStyleSheet(R"(
     QPushButton {
       background-color: #151A23;
@@ -169,7 +169,7 @@ void MainWindow::setupSidebar() {
   int viewIndex = 0;
   
   // OVERVIEW
-  addCategory("Overview");
+  addCategory("CORE OPERATIONS");
   auto btnDashboard = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
   btnDashboard->setCheckable(true);
   btnDashboard->setProperty("cssClass", "sidebarBtn");
@@ -179,7 +179,7 @@ void MainWindow::setupSidebar() {
   viewIndex++;
 
   // MONITORING
-  addCategory("Monitoring");
+  addCategory("DEPARTMENTAL MONITORING");
   for (int i = 0; i < 4; ++i, ++viewIndex) {
     auto btn = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
     btn->setCheckable(true);
@@ -190,7 +190,7 @@ void MainWindow::setupSidebar() {
   }
 
   // SECURITY
-  addCategory("Security");
+  addCategory("CONTAINMENT & VIGILANCE");
   for (int i = 0; i < 3; ++i, ++viewIndex) {
     auto btn = new QPushButton(QString("  %1    %2").arg(m_ViewInfos[viewIndex].icon, m_ViewInfos[viewIndex].name), m_Sidebar);
     btn->setCheckable(true);
@@ -203,7 +203,7 @@ void MainWindow::setupSidebar() {
   m_SidebarLayout->addStretch();
 
   // Bottom action: AI Panel
-  auto aiBtn = new QPushButton(QString("  %1    AI Insights").arg(QChar(0xE8F3)), m_Sidebar); // Sparkle icon
+  auto aiBtn = new QPushButton(QString("  %1    SUPPLEMENTAL INTELLIGENCE").arg(QChar(0xE8F3)), m_Sidebar); // Sparkle icon
   aiBtn->setCheckable(true);
   aiBtn->setProperty("cssClass", "sidebarBtn");
   connect(aiBtn, &QPushButton::clicked, this, [this]() {
@@ -240,20 +240,20 @@ void MainWindow::setupStatusBar() {
   auto bar = statusBar();
   bar->setFixedHeight(theme::Dimensions::StatusBarHeight);
 
-  m_StatusCpu = new QLabel("CPU: ---%");
+  m_StatusCpu = new QLabel("CORE LOAD: ---%");
   m_StatusCpu->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
   bar->addWidget(m_StatusCpu);
 
-  m_StatusMem = new QLabel("MEM: ---");
+  m_StatusMem = new QLabel("ALLOCATION: ---");
   m_StatusMem->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
   bar->addWidget(m_StatusMem);
 
-  m_StatusProcessCount = new QLabel("Processes: ---");
+  m_StatusProcessCount = new QLabel("Active Personnel: ---");
   m_StatusProcessCount->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
   bar->addWidget(m_StatusProcessCount);
 
   // Recording indicator (right side)
-  m_StatusRecording = new QLabel("REC");
+  m_StatusRecording = new QLabel("OBSERVING");
   m_StatusRecording->setStyleSheet(
     "color: #F85149; font-size: 11px; font-weight: 700; "
     "padding: 0 8px; background: transparent;"
@@ -262,7 +262,7 @@ void MainWindow::setupStatusBar() {
   bar->addPermanentWidget(m_StatusRecording);
 
   // Workspace Menu
-  m_WorkspaceBtn = new QPushButton("Workspace: Default");
+  m_WorkspaceBtn = new QPushButton("Department: Default");
   m_WorkspaceBtn->setStyleSheet(R"(
     QPushButton {
       background-color: transparent;
@@ -285,7 +285,7 @@ void MainWindow::setupStatusBar() {
   m_WorkspaceBtn->setMenu(m_WorkspaceMenu);
   bar->addPermanentWidget(m_WorkspaceBtn);
 
-  auto version = new QLabel("v0.2.0-dev");
+  auto version = new QLabel("LUMON INDUSTRIES \u2014 The work is mysterious and important");
   version->setStyleSheet("color: #6E7681; font-size: 11px; padding: 0 8px;");
   bar->addPermanentWidget(version);
 
@@ -300,7 +300,7 @@ void MainWindow::updateWorkspaceMenu() {
   auto profiles = core::workspace::WorkspaceManager::GetInstance().GetAvailableProfiles();
   auto active = core::workspace::WorkspaceManager::GetInstance().GetActiveProfile();
   
-  m_WorkspaceBtn->setText("Workspace: " + QString::fromStdString(active.name));
+  m_WorkspaceBtn->setText("Department: " + QString::fromStdString(active.name));
 
   for (const auto& p : profiles) {
     QAction* act = m_WorkspaceMenu->addAction(QString::fromStdString(p.name));
@@ -312,14 +312,14 @@ void MainWindow::updateWorkspaceMenu() {
   }
 
   m_WorkspaceMenu->addSeparator();
-  QAction* saveAct = m_WorkspaceMenu->addAction("Save Current Workspace As...");
+  QAction* saveAct = m_WorkspaceMenu->addAction("Save Current Department Configuration...");
   connect(saveAct, &QAction::triggered, this, &MainWindow::onSaveWorkspace);
 }
 
 void MainWindow::onSaveWorkspace() {
   bool ok;
-  QString text = QInputDialog::getText(this, "Save Workspace",
-                                       "Workspace Name:", QLineEdit::Normal,
+  QString text = QInputDialog::getText(this, "Save Department Configuration",
+                                       "Department Name:", QLineEdit::Normal,
                                        "", &ok);
   if (ok && !text.isEmpty()) {
     QJsonObject obj;
@@ -331,7 +331,7 @@ void MainWindow::onSaveWorkspace() {
 
     core::workspace::WorkspaceProfile profile;
     profile.name = text.toStdString();
-    profile.description = "User saved workspace";
+    profile.description = "Departmental configuration preserved";
     profile.layoutJson = jsonStr.toStdString();
 
     auto& wm = core::workspace::WorkspaceManager::GetInstance();
@@ -384,7 +384,7 @@ void MainWindow::setupShortcuts() {
   auto refreshShortcut = new QShortcut(QKeySequence("F5"), this);
   connect(refreshShortcut, &QShortcut::activated, this, [this]() {
     // Will trigger refresh on active view
-    statusBar()->showMessage("Refreshed", 1500);
+    statusBar()->showMessage("Data recalibrated. Please enjoy each metric equally.", 1500);
   });
 
   // Settings: Ctrl+,
@@ -435,11 +435,11 @@ void MainWindow::setupSystemTray() {
   m_TrayIcon->setIcon(icon);
   
   m_TrayMenu = new QMenu(this);
-  QAction* restoreAction = new QAction("Restore", this);
+  QAction* restoreAction = new QAction("Return to Terminal", this);
   connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
   m_TrayMenu->addAction(restoreAction);
 
-  QAction* settingsAction = new QAction("Settings", this);
+  QAction* settingsAction = new QAction("Terminal Configuration", this);
   connect(settingsAction, &QAction::triggered, this, [this]() {
     showNormal();
     auto* settings = new SettingsWindow(this);
@@ -450,7 +450,7 @@ void MainWindow::setupSystemTray() {
   
   m_TrayMenu->addSeparator();
   
-  QAction* quitAction = new QAction("Quit", this);
+  QAction* quitAction = new QAction("End Shift", this);
   connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
   m_TrayMenu->addAction(quitAction);
   

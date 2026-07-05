@@ -15,7 +15,7 @@ namespace severance::gui::windows {
 
 SettingsWindow::SettingsWindow(QWidget *parent)
   : QDialog(parent) {
-  setWindowTitle("Settings");
+  setWindowTitle("Severance Configuration");
   setMinimumSize(600, 500);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setupUI();
@@ -58,7 +58,7 @@ void SettingsWindow::setupUI() {
   titleBar->setStyleSheet("background-color: #010409; border-bottom: 1px solid #21262D;");
   auto* titleLayout = new QHBoxLayout(titleBar);
   titleLayout->setContentsMargins(20, 12, 20, 12);
-  auto* titleLabel = new QLabel("Settings", titleBar);
+  auto* titleLabel = new QLabel("Severance Configuration", titleBar);
   titleLabel->setStyleSheet("color: #E6EDF3; font-size: 18px; font-weight: 700; background: transparent;");
   titleLayout->addWidget(titleLabel);
   titleLayout->addStretch();
@@ -76,11 +76,11 @@ void SettingsWindow::setupUI() {
     QTabBar::tab:selected { color: #58A6FF; border-bottom-color: #58A6FF; }
   )");
   
-  m_Tabs->addTab(createGeneralTab(), "General");
-  m_Tabs->addTab(createMonitoringTab(), "Monitoring");
-  m_Tabs->addTab(createAppearanceTab(), "Appearance");
-  m_Tabs->addTab(createSecurityTab(), "Security");
-  m_Tabs->addTab(createAdvancedTab(), "Advanced");
+  m_Tabs->addTab(createGeneralTab(), "GENERAL");
+  m_Tabs->addTab(createMonitoringTab(), "FLOOR MONITORING");
+  m_Tabs->addTab(createAppearanceTab(), "TERMINAL DISPLAY");
+  m_Tabs->addTab(createSecurityTab(), "COMPLIANCE");
+  m_Tabs->addTab(createAdvancedTab(), "CHIP PARAMETERS");
   
   mainLayout->addWidget(m_Tabs, 1);
 
@@ -91,7 +91,7 @@ void SettingsWindow::setupUI() {
   buttonLayout->setContentsMargins(20, 12, 20, 12);
   buttonLayout->addStretch();
   
-  auto* resetBtn = new QPushButton("Reset Defaults", buttonBar);
+  auto* resetBtn = new QPushButton("Restore Defaults", buttonBar);
   resetBtn->setStyleSheet(R"(
     QPushButton { background: transparent; border: 1px solid #30363D; color: #8B949E; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
     QPushButton:hover { color: #E6EDF3; border-color: #8B949E; }
@@ -99,7 +99,7 @@ void SettingsWindow::setupUI() {
   connect(resetBtn, &QPushButton::clicked, this, &SettingsWindow::onReset);
   buttonLayout->addWidget(resetBtn);
   
-  auto* applyBtn = new QPushButton("Apply", buttonBar);
+  auto* applyBtn = new QPushButton("Confirm", buttonBar);
   applyBtn->setStyleSheet(R"(
     QPushButton { background: #238636; border: 1px solid #2EA043; color: #FFFFFF; padding: 8px 24px; border-radius: 6px; font-weight: 600; }
     QPushButton:hover { background: #2EA043; border-color: #3FB950; }
@@ -115,24 +115,24 @@ QWidget* SettingsWindow::createGeneralTab() {
   auto* layout = new QVBoxLayout(tab);
   layout->setContentsMargins(20, 8, 20, 8);
   
-  auto* behaviorGroup = createGroup("Behavior", tab);
+  auto* behaviorGroup = createGroup("Innie Terminal Behavior", tab);
   auto* behaviorLayout = new QVBoxLayout(behaviorGroup);
   
-  m_MinimizeToTray = new QCheckBox("Minimize to system tray instead of closing", behaviorGroup);
-  m_StartMinimized = new QCheckBox("Start minimized to tray", behaviorGroup);
-  m_LaunchOnBoot = new QCheckBox("Launch Severance on Windows startup", behaviorGroup);
+  m_MinimizeToTray = new QCheckBox("Minimize to system tray on severed floor close", behaviorGroup);
+  m_StartMinimized = new QCheckBox("Start terminal minimized to tray", behaviorGroup);
+  m_LaunchOnBoot = new QCheckBox("Initialize Lumon terminal on system startup", behaviorGroup);
   
   behaviorLayout->addWidget(m_MinimizeToTray);
   behaviorLayout->addWidget(m_StartMinimized);
   behaviorLayout->addWidget(m_LaunchOnBoot);
   layout->addWidget(behaviorGroup);
   
-  auto* regionGroup = createGroup("Locale", tab);
+  auto* regionGroup = createGroup("Regional Compliance", tab);
   auto* regionLayout = new QFormLayout(regionGroup);
   
   m_LanguageCombo = new QComboBox(regionGroup);
   m_LanguageCombo->addItems({"English", "Japanese", "German", "French", "Spanish", "Korean", "Mandarin"});
-  regionLayout->addRow("Language:", m_LanguageCombo);
+  regionLayout->addRow("Terminal Language:", m_LanguageCombo);
   layout->addWidget(regionGroup);
   
   layout->addStretch();
@@ -144,36 +144,36 @@ QWidget* SettingsWindow::createMonitoringTab() {
   auto* layout = new QVBoxLayout(tab);
   layout->setContentsMargins(20, 8, 20, 8);
   
-  auto* intervalGroup = createGroup("Collection", tab);
+  auto* intervalGroup = createGroup("Data Collection Frequency", tab);
   auto* intervalLayout = new QFormLayout(intervalGroup);
   
   m_RefreshInterval = new QSpinBox(intervalGroup);
   m_RefreshInterval->setRange(200, 10000);
   m_RefreshInterval->setSuffix(" ms");
   m_RefreshInterval->setSingleStep(100);
-  intervalLayout->addRow("Refresh interval:", m_RefreshInterval);
+  intervalLayout->addRow("Observation interval:", m_RefreshInterval);
   
   m_MaxProcessHistory = new QSpinBox(intervalGroup);
   m_MaxProcessHistory->setRange(100, 100000);
   m_MaxProcessHistory->setSingleStep(1000);
-  intervalLayout->addRow("Max process history:", m_MaxProcessHistory);
+  intervalLayout->addRow("Max innie activity records:", m_MaxProcessHistory);
   
   m_MaxNetworkHistory = new QSpinBox(intervalGroup);
   m_MaxNetworkHistory->setRange(100, 100000);
   m_MaxNetworkHistory->setSingleStep(1000);
-  intervalLayout->addRow("Max network history:", m_MaxNetworkHistory);
+  intervalLayout->addRow("Max perimeter traffic records:", m_MaxNetworkHistory);
   
   layout->addWidget(intervalGroup);
   
-  auto* sourcesGroup = createGroup("Data Sources", tab);
+  auto* sourcesGroup = createGroup("Surveillance Channels", tab);
   auto* sourcesLayout = new QVBoxLayout(sourcesGroup);
   
-  m_MonitorCpu = new QCheckBox("CPU metrics (process times, clock speed)", sourcesGroup);
-  m_MonitorMemory = new QCheckBox("Memory metrics (physical, virtual)", sourcesGroup);
-  m_MonitorNetwork = new QCheckBox("Network metrics (per-adapter throughput)", sourcesGroup);
-  m_MonitorDisk = new QCheckBox("Disk metrics (space, I/O rate)", sourcesGroup);
-  m_MonitorGpu = new QCheckBox("GPU metrics (VRAM via DXGI)", sourcesGroup);
-  m_MonitorFileSystem = new QCheckBox("Filesystem events (ETW tracing)", sourcesGroup);
+  m_MonitorCpu = new QCheckBox("Core utilization metrics (innie workload)", sourcesGroup);
+  m_MonitorMemory = new QCheckBox("Memory compartment metrics (allocation)", sourcesGroup);
+  m_MonitorNetwork = new QCheckBox("Perimeter integrity metrics (per-adapter)", sourcesGroup);
+  m_MonitorDisk = new QCheckBox("Storage compartment metrics (I/O rate)", sourcesGroup);
+  m_MonitorGpu = new QCheckBox("Auxiliary processing metrics (VRAM)", sourcesGroup);
+  m_MonitorFileSystem = new QCheckBox("Memory compartment events (ETW tracing)", sourcesGroup);
   
   sourcesLayout->addWidget(m_MonitorCpu);
   sourcesLayout->addWidget(m_MonitorMemory);
@@ -192,25 +192,25 @@ QWidget* SettingsWindow::createAppearanceTab() {
   auto* layout = new QVBoxLayout(tab);
   layout->setContentsMargins(20, 8, 20, 8);
   
-  auto* themeGroup = createGroup("Theme", tab);
+  auto* themeGroup = createGroup("Terminal Aesthetic", tab);
   auto* themeLayout = new QFormLayout(themeGroup);
   
   m_ThemeCombo = new QComboBox(themeGroup);
-  m_ThemeCombo->addItems({"Midnight (Default)", "Solarized Dark", "Nord", "Dracula", "One Dark"});
-  themeLayout->addRow("Color theme:", m_ThemeCombo);
+  m_ThemeCombo->addItems({"Lumon Standard (Default)", "Perpetuity Wing", "Break Room", "Wellness Session", "Board Interface"});
+  themeLayout->addRow("Color scheme:", m_ThemeCombo);
   
   m_FontSize = new QSpinBox(themeGroup);
   m_FontSize->setRange(8, 24);
   m_FontSize->setSuffix(" px");
-  themeLayout->addRow("Base font size:", m_FontSize);
+  themeLayout->addRow("Terminal font size:", m_FontSize);
   
   layout->addWidget(themeGroup);
   
-  auto* effectsGroup = createGroup("Effects", tab);
+  auto* effectsGroup = createGroup("Visual Compliance", tab);
   auto* effectsLayout = new QVBoxLayout(effectsGroup);
   
-  m_EnableAnimations = new QCheckBox("Enable micro-animations and transitions", effectsGroup);
-  m_OpenGLGraphs = new QCheckBox("Use hardware-accelerated OpenGL graphs", effectsGroup);
+  m_EnableAnimations = new QCheckBox("Enable micro-transitions (Lumon standard)", effectsGroup);
+  m_OpenGLGraphs = new QCheckBox("Hardware-accelerated data visualization", effectsGroup);
   
   effectsLayout->addWidget(m_EnableAnimations);
   effectsLayout->addWidget(m_OpenGLGraphs);
@@ -225,10 +225,10 @@ QWidget* SettingsWindow::createSecurityTab() {
   auto* layout = new QVBoxLayout(tab);
   layout->setContentsMargins(20, 8, 20, 8);
   
-  auto* fimGroup = createGroup("File Integrity Monitoring (FIM)", tab);
+  auto* fimGroup = createGroup("Memory Compartment Integrity Monitoring", tab);
   auto* fimLayout = new QVBoxLayout(fimGroup);
   
-  auto* desc = new QLabel("Directories to monitor for unauthorized changes:", fimGroup);
+  auto* desc = new QLabel("Directories monitored for unauthorized memory leakage:", fimGroup);
   desc->setStyleSheet("color: #8B949E; font-size: 12px;");
   fimLayout->addWidget(desc);
   
@@ -245,7 +245,7 @@ QWidget* SettingsWindow::createSecurityTab() {
   auto* addBtn = new QPushButton("Add...", fimGroup);
   addBtn->setStyleSheet("QPushButton { background: #21262D; color: #E6EDF3; padding: 4px 12px; border: 1px solid #30363D; border-radius: 4px; } QPushButton:hover { background: #30363D; }");
   connect(addBtn, &QPushButton::clicked, this, [this]() {
-    QString dir = QFileDialog::getExistingDirectory(this, "Select Directory to Monitor");
+    QString dir = QFileDialog::getExistingDirectory(this, "Select Compartment to Monitor");
     if (!dir.isEmpty()) {
       // Check if already exists
       auto items = m_FimDirectories->findItems(dir, Qt::MatchExactly);
@@ -278,38 +278,38 @@ QWidget* SettingsWindow::createAdvancedTab() {
   auto* layout = new QVBoxLayout(tab);
   layout->setContentsMargins(20, 8, 20, 8);
   
-  auto* pluginGroup = createGroup("Plugins", tab);
+  auto* pluginGroup = createGroup("Extension Modules", tab);
   auto* pluginLayout = new QFormLayout(pluginGroup);
   
-  m_EnablePlugins = new QCheckBox("Enable plugin system", pluginGroup);
+  m_EnablePlugins = new QCheckBox("Enable extension module system", pluginGroup);
   pluginLayout->addRow("", m_EnablePlugins);
   
   auto* pluginPathLayout = new QHBoxLayout();
   m_PluginPath = new QLineEdit(pluginGroup);
-  m_PluginPath->setPlaceholderText("Plugin directory path...");
+  m_PluginPath->setPlaceholderText("Extension module directory path...");
   auto* browseBtn = new QPushButton("Browse", pluginGroup);
   browseBtn->setFixedWidth(80);
   connect(browseBtn, &QPushButton::clicked, [this]() {
-    QString dir = QFileDialog::getExistingDirectory(this, "Select Plugin Directory");
+    QString dir = QFileDialog::getExistingDirectory(this, "Select Extension Module Directory");
     if (!dir.isEmpty()) {
       m_PluginPath->setText(dir);
     }
   });
   pluginPathLayout->addWidget(m_PluginPath);
   pluginPathLayout->addWidget(browseBtn);
-  pluginLayout->addRow("Plugin path:", pluginPathLayout);
+  pluginLayout->addRow("Module path:", pluginPathLayout);
   
   layout->addWidget(pluginGroup);
   
-  auto* debugGroup = createGroup("Diagnostics", tab);
+  auto* debugGroup = createGroup("Chip Diagnostics", tab);
   auto* debugLayout = new QFormLayout(debugGroup);
   
-  m_VerboseLogging = new QCheckBox("Enable verbose logging (spdlog::debug)", debugGroup);
+  m_VerboseLogging = new QCheckBox("Enable verbose chip telemetry logging", debugGroup);
   debugLayout->addRow("", m_VerboseLogging);
   
   m_ThreadPoolSize = new QSpinBox(debugGroup);
   m_ThreadPoolSize->setRange(1, 32);
-  debugLayout->addRow("Thread pool size:", m_ThreadPoolSize);
+  debugLayout->addRow("Processing thread count:", m_ThreadPoolSize);
   
   layout->addWidget(debugGroup);
   layout->addStretch();
@@ -408,8 +408,8 @@ void SettingsWindow::onApply() {
 }
 
 void SettingsWindow::onReset() {
-  auto result = QMessageBox::question(this, "Reset Settings", 
-    "Reset all settings to defaults? This cannot be undone.",
+  auto result = QMessageBox::question(this, "Restore Configuration", 
+    "Restore all parameters to Lumon factory defaults? This directive cannot be reversed.",
     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     
   if (result == QMessageBox::Yes) {

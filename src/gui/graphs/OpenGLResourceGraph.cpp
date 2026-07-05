@@ -114,7 +114,7 @@ void OpenGLResourceGraph::updateBuffers() {
 }
 
 void OpenGLResourceGraph::paintGL() {
-  glClearColor(0.051f, 0.067f, 0.090f, 1.0f); // #0D1117 roughly
+  glClearColor(0.039f, 0.055f, 0.078f, 1.0f); // #0A0E14 — Lumon primary background
   glClear(GL_COLOR_BUFFER_BIT);
 
   updateBuffers();
@@ -125,7 +125,7 @@ void OpenGLResourceGraph::paintGL() {
   // Draw grid lines or background? Skipping for brevity
 
   // Draw the line graph
-  m_Program->setUniformValue(m_ColorUniform, QVector4D(0.345f, 0.651f, 1.0f, 1.0f)); // #58A6FF
+  m_Program->setUniformValue(m_ColorUniform, QVector4D(0.498f, 0.859f, 0.792f, 1.0f)); // #7FDBCA — Lumon accent glow
   
   // Line width (might be ignored by modern core profile, but we try)
   glLineWidth(2.0f);

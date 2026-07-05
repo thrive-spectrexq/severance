@@ -67,14 +67,14 @@ void HorizontalBarChartWidget::paintEvent(QPaintEvent* event) {
   for (const auto& bar : m_Bars) {
     // Draw Label
     painter.setFont(labelFont);
-    painter.setPen(QColor("#94A3B8"));
+    painter.setPen(QColor("#8B9DAF"));
     QRect labelRect(10, y, maxLabelWidth, barHeight);
     painter.drawText(labelRect, Qt::AlignRight | Qt::AlignVCenter, bar.label);
 
     // Draw Background Bar
     QRect bgBarRect(10 + maxLabelWidth + 10, y + 2, availableBarWidth, barHeight - 4);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor("#1C2331")); // Track color
+    painter.setBrush(QColor("#132A2E")); // Lumon panel background track
     painter.drawRoundedRect(bgBarRect, 4, 4);
 
     // Draw Foreground Bar
@@ -89,7 +89,7 @@ void HorizontalBarChartWidget::paintEvent(QPaintEvent* event) {
 
     // Draw Value
     painter.setFont(valueFont);
-    painter.setPen(QColor("#F1F5F9"));
+    painter.setPen(QColor("#E8ECEF"));
     QRect valueRect(10 + maxLabelWidth + 10 + availableBarWidth + 10, y, maxValueWidth, barHeight);
     painter.drawText(valueRect, Qt::AlignLeft | Qt::AlignVCenter, bar.displayValue);
 

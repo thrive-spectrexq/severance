@@ -44,7 +44,7 @@ void DonutChartWidget::paintEvent(QPaintEvent* event) {
   if (m_TotalValue <= 0.0f) {
     // Empty state
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor("#2A3441"));
+    painter.setBrush(QColor("#132A2E"));
     painter.drawPie(rect, 0, 360 * 16);
   } else {
     float startAngle = 90.0f; // Start at top
@@ -65,14 +65,14 @@ void DonutChartWidget::paintEvent(QPaintEvent* event) {
   float innerSize = size - (m_Thickness * 2);
   if (innerSize > 0) {
     QRectF innerRect(width() / 2.0 - innerSize / 2.0, height() / 2.0 - innerSize / 2.0, innerSize, innerSize);
-    painter.setBrush(QColor("#151A23")); // Background color of card
+    painter.setBrush(QColor("#0F1A1F")); // Lumon secondary background
     painter.setPen(Qt::NoPen);
     painter.drawEllipse(innerRect);
   }
 
   // Draw center text
   if (!m_CenterText.isEmpty()) {
-    painter.setPen(QColor("#F1F5F9"));
+    painter.setPen(QColor("#E8ECEF"));
     QFont font = painter.font();
     font.setPixelSize(18);
     font.setBold(true);

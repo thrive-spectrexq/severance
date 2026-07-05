@@ -44,7 +44,7 @@ void ResourceGraph::paintEvent(QPaintEvent *event) {
   painter.setRenderHint(QPainter::Antialiasing);
 
   // Background
-  painter.fillRect(rect(), QColor("#0D1117"));
+  painter.fillRect(rect(), QColor("#0A0E14"));
 
   if (m_Data.empty()) return;
 
@@ -73,11 +73,11 @@ void ResourceGraph::paintEvent(QPaintEvent *event) {
   fillPath.lineTo(width(), height());
   fillPath.lineTo(0, height());
   
-  QColor fillColor("#58A6FF");
-  fillColor.setAlpha(40);
+  QColor fillColor("#1A7A5C");
+  fillColor.setAlpha(50);
   painter.fillPath(fillPath, fillColor);
 
-  painter.setPen(QPen(QColor("#58A6FF"), 2));
+  painter.setPen(QPen(QColor("#7FDBCA"), 2));
   painter.drawPath(path);
 }
 
