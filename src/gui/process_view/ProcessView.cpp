@@ -34,13 +34,13 @@ void ProcessView::setupUI() {
   // Header
   auto headerLayout = new QHBoxLayout();
 
-  auto title = new QLabel("Process Explorer", this);
+  auto title = new QLabel("Innate Process Registry", this);
   title->setStyleSheet("font-size: 18px; font-weight: 600; color: #E6EDF3;");
   headerLayout->addWidget(title);
 
   headerLayout->addStretch();
 
-  m_ProcessCountLabel = new QLabel("0 processes", this);
+  m_ProcessCountLabel = new QLabel("0 active registries", this);
   m_ProcessCountLabel->setStyleSheet("font-size: 13px; color: #8B949E;");
   headerLayout->addWidget(m_ProcessCountLabel);
 
@@ -51,19 +51,19 @@ void ProcessView::setupUI() {
   auto toolbarLayout = new QHBoxLayout();
 
   m_SearchBar = new QLineEdit(this);
-  m_SearchBar->setPlaceholderText("Filter processes by name, PID, or user...");
+  m_SearchBar->setPlaceholderText("Filter registry by designation, ID, or operator...");
   m_SearchBar->setClearButtonEnabled(true);
   m_SearchBar->setFixedHeight(36);
   connect(m_SearchBar, &QLineEdit::textChanged, this, &ProcessView::onSearchTextChanged);
   toolbarLayout->addWidget(m_SearchBar, 1);
 
-  m_KillBtn = new QPushButton("End Process", this);
+  m_KillBtn = new QPushButton("Sever Procedure", this);
   m_KillBtn->setProperty("cssClass", "danger");
   m_KillBtn->setFixedHeight(36);
   m_KillBtn->setEnabled(false);
   toolbarLayout->addWidget(m_KillBtn);
 
-  m_RefreshBtn = new QPushButton("Refresh", this);
+  m_RefreshBtn = new QPushButton("Recalibrate", this);
   m_RefreshBtn->setFixedHeight(36);
   connect(m_RefreshBtn, &QPushButton::clicked, this, [this]() {
     refreshProcessList();
@@ -126,8 +126,8 @@ void ProcessView::setupUI() {
     if (selected.isValid()) {
       auto sourceIndex = m_ProxyModel->mapToSource(selected);
       auto info = m_Model->getProcessInfo(sourceIndex);
-      auto reply = QMessageBox::question(this, "End Process",
-        QString("Terminate %1 (PID %2)?")
+      auto reply = QMessageBox::question(this, "Sever Procedure",
+        QString("Authorize severance of procedure %1 (ID %2)?")
           .arg(QString::fromStdString(info.name))
           .arg(info.pid),
         QMessageBox::Yes | QMessageBox::No);
@@ -162,7 +162,7 @@ void ProcessView::refreshProcessList() {
   core::process::ProcessManager mgr;
   auto processes = mgr.GetRunningProcesses();
   m_Model->updateProcessList(processes);
-  m_ProcessCountLabel->setText(QString::number(m_Model->totalProcessCount()) + " processes");
+  m_ProcessCountLabel->setText(QString::number(m_Model->totalProcessCount()) + " active registries");
 
   // Expand first level for visibility
   for (int i = 0; i < m_ProxyModel->rowCount(); ++i) {
@@ -190,11 +190,11 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
 
   QMenu menu(this);
 
-  auto killAction = menu.addAction("End Process");
+  auto killAction = menu.addAction("Sever Procedure");
   killAction->setIcon(QIcon()); // Will add icons later
   connect(killAction, &QAction::triggered, this, [this, info]() {
-    auto reply = QMessageBox::question(this, "End Process",
-      QString("Terminate %1 (PID %2)?")
+    auto reply = QMessageBox::question(this, "Sever Procedure",
+      QString("Authorize severance of procedure %1 (ID %2)?")
         .arg(QString::fromStdString(info.name))
         .arg(info.pid));
     if (reply == QMessageBox::Yes) {
@@ -204,23 +204,23 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
     }
   });
 
-  auto suspendAction = menu.addAction("Suspend Process");
+  auto suspendAction = menu.addAction("Halt Procedure");
   connect(suspendAction, &QAction::triggered, this, [this, info]() {
     core::process::ProcessManager mgr;
     if (mgr.SuspendProcess(info.pid)) {
       refreshProcessList();
     } else {
-      QMessageBox::warning(this, "Suspend Process", "Failed to suspend process. It may be protected or already suspended.");
+      QMessageBox::warning(this, "Halt Procedure", "Failure to halt procedure. It may be integral to Lumon operations or already halted.");
     }
   });
 
-  auto resumeAction = menu.addAction("Resume Process");
+  auto resumeAction = menu.addAction("Resume Procedure");
   connect(resumeAction, &QAction::triggered, this, [this, info]() {
     core::process::ProcessManager mgr;
     if (mgr.ResumeProcess(info.pid)) {
       refreshProcessList();
     } else {
-      QMessageBox::warning(this, "Resume Process", "Failed to resume process.");
+      QMessageBox::warning(this, "Resume Procedure", "Failure to resume procedure. Protocol error.");
     }
   });
 
@@ -238,7 +238,7 @@ void ProcessView::onProcessContextMenu(const QPoint &pos) {
 
   menu.addSeparator();
 
-  auto propertiesAction = menu.addAction("Properties");
+  auto propertiesAction = menu.addAction("Registry Details");
   connect(propertiesAction, &QAction::triggered, this, [this, info]() {
     m_DetailPanel->LoadProcess(info.pid);
   });

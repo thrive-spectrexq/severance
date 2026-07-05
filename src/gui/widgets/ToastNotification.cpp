@@ -48,7 +48,7 @@ void ToastNotification::setupUI(const QString& title, const QString& message) {
   });
   btnLayout->addWidget(resumeBtn);
 
-  auto* killBtn = new QPushButton("Terminate", this);
+  auto* killBtn = new QPushButton("Sever", this);
   killBtn->setStyleSheet(R"(
     QPushButton { background-color: #C0392B; color: #E8ECEF; border: none; border-radius: 3px; padding: 4px 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
     QPushButton:hover { background-color: #E74C3C; }

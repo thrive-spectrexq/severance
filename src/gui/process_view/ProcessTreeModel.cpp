@@ -117,13 +117,13 @@ QVariant ProcessTreeModel::headerData(int section, Qt::Orientation orientation, 
   if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
 
   switch (section) {
-    case ColName:    return "Name";
-    case ColPID:     return "PID";
-    case ColCPU:     return "CPU %";
-    case ColMemory:  return "Memory";
-    case ColThreads: return "Threads";
-    case ColUser:    return "User";
-    case ColPath:    return "Path";
+    case ColName:    return "DESIGNATION";
+    case ColPID:     return "ID";
+    case ColCPU:     return "COMPUTATION %";
+    case ColMemory:  return "CAPACITY";
+    case ColThreads: return "THREADS";
+    case ColUser:    return "OPERATOR";
+    case ColPath:    return "LOCATION";
     default: return {};
   }
 }

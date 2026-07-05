@@ -38,7 +38,7 @@ void FileView::setupUI() {
   // Top Bar
   auto* topBar = new QHBoxLayout();
   m_SearchBox = new QLineEdit(this);
-  m_SearchBox->setPlaceholderText("Filter events by process or path...");
+  m_SearchBox->setPlaceholderText("Filter surveillance by procedure or designation...");
   m_SearchBox->setMinimumWidth(300);
   connect(m_SearchBox, &QLineEdit::textChanged, this, &FileView::onSearchTextChanged);
   topBar->addWidget(m_SearchBox);
@@ -56,7 +56,7 @@ void FileView::setupUI() {
 
   m_Table = new QTableWidget(tableContainer);
   m_Table->setColumnCount(5);
-  m_Table->setHorizontalHeaderLabels({"Time", "Process", "PID", "Operation", "Path"});
+  m_Table->setHorizontalHeaderLabels({"TIMESTAMP", "PROCEDURE", "ID", "OPERATION", "DESIGNATION"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   m_Table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);

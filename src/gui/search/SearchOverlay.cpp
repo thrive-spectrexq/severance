@@ -40,7 +40,7 @@ void SearchOverlay::setupUI() {
   containerLayout->setSpacing(8);
 
   m_SearchInput = new QLineEdit(container);
-  m_SearchInput->setPlaceholderText("Search processes, files, connections... (Ctrl+K to focus)");
+  m_SearchInput->setPlaceholderText("Search procedures, documents, grid connections... (Ctrl+K to focus)");
   m_SearchInput->setStyleSheet(R"(
     QLineEdit {
       background-color: #0D1117;

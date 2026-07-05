@@ -33,7 +33,7 @@ void NetworkView::setupUI() {
   // Top Bar
   auto* topBar = new QHBoxLayout();
   m_SearchBox = new QLineEdit(this);
-  m_SearchBox->setPlaceholderText("Filter connections by IP, Port, or Process...");
+  m_SearchBox->setPlaceholderText("Filter grid by IP, Port, or Procedure...");
   m_SearchBox->setMinimumWidth(300);
   connect(m_SearchBox, &QLineEdit::textChanged, this, &NetworkView::onSearchTextChanged);
   topBar->addWidget(m_SearchBox);
@@ -51,7 +51,7 @@ void NetworkView::setupUI() {
 
   m_Table = new QTableWidget(tableContainer);
   m_Table->setColumnCount(8);
-  m_Table->setHorizontalHeaderLabels({"Process", "PID", "Protocol", "Local Address", "Local Port", "Remote Address", "Remote Port", "State"});
+  m_Table->setHorizontalHeaderLabels({"PROCEDURE", "ID", "PROTOCOL", "INTERNAL ADDRESS", "INTERNAL PORT", "EXTERNAL ADDRESS", "EXTERNAL PORT", "STATUS"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   m_Table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -161,8 +161,8 @@ void NetworkView::onContextMenuRequested(const QPoint& pos) {
   uint32_t pid = pidStr.toUInt();
 
   QMenu menu(this);
-  auto* killAction = menu.addAction("Kill Process");
-  auto* copyIpAction = menu.addAction("Copy Remote IP");
+  auto* killAction = menu.addAction("Sever Procedure");
+  auto* copyIpAction = menu.addAction("Copy External IP");
 
   connect(killAction, &QAction::triggered, [this, pid]() {
     core::process::ProcessManager procMgr;

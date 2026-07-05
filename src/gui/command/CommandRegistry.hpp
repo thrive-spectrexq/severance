@@ -58,7 +58,7 @@ public:
         if (!cmd.shortcut.isEmpty()) {
           res.subtitle += " (" + cmd.shortcut + ")";
         }
-        res.category = "Command";
+        res.category = "Directive";
         
         // Exact prefix match gets higher score
         if (lowerTitle.startsWith(lowerQuery)) res.score = 100.0;

@@ -66,9 +66,9 @@ void TimelineView::setupUI() {
     return btn;
   };
 
-  m_FilterProcess = createFilterBtn("Process");
-  m_FilterNetwork = createFilterBtn("Network");
-  m_FilterFile = createFilterBtn("File");
+  m_FilterProcess = createFilterBtn("Procedure");
+  m_FilterNetwork = createFilterBtn("Grid");
+  m_FilterFile = createFilterBtn("Document");
 
   topBar->addWidget(m_FilterProcess);
   topBar->addWidget(m_FilterNetwork);
@@ -76,7 +76,7 @@ void TimelineView::setupUI() {
   topBar->addSpacing(20);
 
   m_SearchBox = new QLineEdit(this);
-  m_SearchBox->setPlaceholderText("Filter events by keyword...");
+  m_SearchBox->setPlaceholderText("Filter ledger by keyword...");
   m_SearchBox->setMinimumWidth(300);
   connect(m_SearchBox, &QLineEdit::textChanged, this, &TimelineView::onSearchTextChanged);
   topBar->addWidget(m_SearchBox);
@@ -100,7 +100,7 @@ void TimelineView::setupUI() {
 
   m_Table = new QTableWidget(tableContainer);
   m_Table->setColumnCount(4); // Added hidden timestamp column for filtering
-  m_Table->setHorizontalHeaderLabels({"Timestamp", "Type", "Details", "TS_MS"});
+  m_Table->setHorizontalHeaderLabels({"TIMESTAMP", "TYPE", "PARTICULARS", "TS_MS"});
   m_Table->horizontalHeader()->setStretchLastSection(true);
   m_Table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   m_Table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -127,14 +127,14 @@ void TimelineView::setupUI() {
 
 QString TimelineView::getEventTypeName(core::events::EventType type) {
   switch (type) {
-    case core::events::EventType::ProcessCreated: return "Process Created";
-    case core::events::EventType::ProcessTerminated: return "Process Terminated";
-    case core::events::EventType::NetworkConnectionOpened: return "Network Opened";
-    case core::events::EventType::NetworkConnectionClosed: return "Network Closed";
-    case core::events::EventType::FileCreated: return "File Created";
-    case core::events::EventType::FileModified: return "File Activity";
-    case core::events::EventType::FileDeleted: return "File Deleted";
-    case core::events::EventType::AppQuit: return "App Quit";
+    case core::events::EventType::ProcessCreated: return "Procedure Initiated";
+    case core::events::EventType::ProcessTerminated: return "Procedure Severed";
+    case core::events::EventType::NetworkConnectionOpened: return "Grid Opened";
+    case core::events::EventType::NetworkConnectionClosed: return "Grid Closed";
+    case core::events::EventType::FileCreated: return "Document Created";
+    case core::events::EventType::FileModified: return "Document Processing";
+    case core::events::EventType::FileDeleted: return "Document Purged";
+    case core::events::EventType::AppQuit: return "System Terminated";
     default: return "Unknown";
   }
 }
@@ -145,7 +145,7 @@ QString TimelineView::formatEventPayload(std::shared_ptr<core::events::Event> ev
       event->GetType() == core::events::EventType::FileDeleted) {
     auto fae = std::static_pointer_cast<core::events::FileActivityEvent>(event);
     if (fae) {
-      return QString("PID: %1 [%2] %3 %4")
+      return QString("ID: %1 [%2] %3 %4")
         .arg(fae->fileEvent.pid)
         .arg(QString::fromStdString(fae->fileEvent.processName))
         .arg(QString::fromStdString(fae->fileEvent.operation))

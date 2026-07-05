@@ -8,7 +8,7 @@ StatusBarWidget::StatusBarWidget(QWidget *parent) : QWidget(parent) {
   auto layout = new QHBoxLayout(this);
   layout->setContentsMargins(5, 5, 5, 5);
 
-  auto statusText = new QLabel("System status: OK");
+  auto statusText = new QLabel("LUMON INDUSTRIES — The work is mysterious and important");
   layout->addWidget(statusText);
   layout->addStretch();
 }

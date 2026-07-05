@@ -21,7 +21,7 @@ void ProcessDetailPanel::setupUI() {
 
   // Header
   auto* headerLayout = new QHBoxLayout();
-  m_TitleLabel = new QLabel("Select a process", this);
+  m_TitleLabel = new QLabel("Select a procedure", this);
   m_TitleLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #E6EDF3;");
   
   m_PidLabel = new QLabel("", this);
@@ -31,7 +31,7 @@ void ProcessDetailPanel::setupUI() {
   headerLayout->addWidget(m_PidLabel);
   headerLayout->addStretch();
   
-  m_AiAnalyzeBtn = new QPushButton("✨ Analyze with AI", this);
+  m_AiAnalyzeBtn = new QPushButton("✨ Supplemental Intelligence Analysis", this);
   m_AiAnalyzeBtn->setStyleSheet("background-color: #238636; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;");
   m_AiAnalyzeBtn->hide(); // Hide until process loaded
   connect(m_AiAnalyzeBtn, &QPushButton::clicked, this, [this]() {
@@ -47,40 +47,40 @@ void ProcessDetailPanel::setupUI() {
   // Overview Tab
   auto* overviewTab = new QWidget(this);
   auto* overviewLayout = new QVBoxLayout(overviewTab);
-  m_OverviewContent = new QLabel("Overview details will go here...", this);
+  m_OverviewContent = new QLabel("Registry particulars pending selection...", this);
   m_OverviewContent->setAlignment(Qt::AlignTop | Qt::AlignLeft);
   overviewLayout->addWidget(m_OverviewContent);
-  m_Tabs->addTab(overviewTab, "Overview");
+  m_Tabs->addTab(overviewTab, "OVERVIEW");
 
   // Files Tab
   m_FilesTable = new QTableWidget(this);
   m_FilesTable->setColumnCount(3);
-  m_FilesTable->setHorizontalHeaderLabels({"Time", "Operation", "Path"});
+  m_FilesTable->setHorizontalHeaderLabels({"Timestamp", "Operation", "Designation"});
   m_FilesTable->horizontalHeader()->setStretchLastSection(true);
   m_FilesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_FilesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_FilesTable->verticalHeader()->setVisible(false);
-  m_Tabs->addTab(m_FilesTable, "Files Touched");
+  m_Tabs->addTab(m_FilesTable, "DOCUMENT ACTIVITY");
 
   // Network Tab
   m_NetworkTable = new QTableWidget(this);
   m_NetworkTable->setColumnCount(5);
-  m_NetworkTable->setHorizontalHeaderLabels({"Protocol", "Local IP", "Local Port", "Remote IP", "Remote Port"});
+  m_NetworkTable->setHorizontalHeaderLabels({"Protocol", "Internal IP", "Internal Port", "External IP", "External Port"});
   m_NetworkTable->horizontalHeader()->setStretchLastSection(true);
   m_NetworkTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_NetworkTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_NetworkTable->verticalHeader()->setVisible(false);
-  m_Tabs->addTab(m_NetworkTable, "Network Connections");
+  m_Tabs->addTab(m_NetworkTable, "COMMUNICATIONS");
 
   layout->addWidget(m_Tabs);
 }
 
 void ProcessDetailPanel::Clear() {
   m_CurrentPid = 0;
-  m_TitleLabel->setText("Select a process");
+  m_TitleLabel->setText("Select a procedure");
   m_PidLabel->setText("");
   m_AiAnalyzeBtn->hide();
-  m_OverviewContent->setText("Overview details will go here...");
+  m_OverviewContent->setText("Registry particulars pending selection...");
   m_FilesTable->setRowCount(0);
   m_NetworkTable->setRowCount(0);
 }
@@ -90,7 +90,7 @@ void ProcessDetailPanel::LoadProcess(uint32_t pid) {
   auto profile = CorrelationEngine::GetInstance().GetProcessProfile(pid);
 
   m_TitleLabel->setText(QString::fromStdString(profile.name));
-  m_PidLabel->setText(QString("PID: %1").arg(pid));
+  m_PidLabel->setText(QString("ID: %1").arg(pid));
   m_AiAnalyzeBtn->show();
 
   // Populate Files

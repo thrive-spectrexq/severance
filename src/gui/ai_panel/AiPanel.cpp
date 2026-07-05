@@ -25,7 +25,7 @@ void AiPanel::setupUI() {
   layout->setContentsMargins(12, 12, 12, 12);
   layout->setSpacing(8);
 
-  auto* title = new QLabel("AI Insights", this);
+  auto* title = new QLabel("Supplemental Intelligence Module", this);
   title->setStyleSheet("font-size: 16px; font-weight: bold; color: #58A6FF;");
   layout->addWidget(title);
 
@@ -37,17 +37,17 @@ void AiPanel::setupUI() {
   auto* inputLayout = new QHBoxLayout();
   
   m_InputBox = new QLineEdit(this);
-  m_InputBox->setPlaceholderText("Ask a question about your system...");
+  m_InputBox->setPlaceholderText("Submit query to Supplemental Intelligence...");
   m_InputBox->setStyleSheet("background-color: #0D1117; border: 1px solid #30363D; border-radius: 4px; padding: 6px; color: #C9D1D9;");
   connect(m_InputBox, &QLineEdit::returnPressed, this, &AiPanel::onSubmit);
   inputLayout->addWidget(m_InputBox, 1);
 
-  m_SubmitBtn = new QPushButton("Ask", this);
+  m_SubmitBtn = new QPushButton("Submit", this);
   m_SubmitBtn->setStyleSheet("background-color: #238636; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;");
   connect(m_SubmitBtn, &QPushButton::clicked, this, &AiPanel::onSubmit);
   inputLayout->addWidget(m_SubmitBtn);
 
-  m_ClearBtn = new QPushButton("Clear", this);
+  m_ClearBtn = new QPushButton("Purge", this);
   m_ClearBtn->setStyleSheet("background-color: #21262D; color: #C9D1D9; border: 1px solid #30363D; border-radius: 4px; padding: 6px 12px;");
   connect(m_ClearBtn, &QPushButton::clicked, m_ChatHistory, &QTextEdit::clear);
   inputLayout->addWidget(m_ClearBtn);
@@ -59,7 +59,7 @@ void AiPanel::startAnalysis(int pid, const QString& processName, const QString& 
   if (m_IsGenerating) return;
   m_IsGenerating = true;
 
-  appendUserMessage(QString("Analyze process %1 (PID %2)").arg(processName).arg(pid));
+  appendUserMessage(QString("Analyze procedure %1 (ID %2)").arg(processName).arg(pid));
   appendAiMessage("Analyzing...", true);
 
   core::ai::AiEngine::GetInstance().analyzeProcess(pid, processName, context);
@@ -110,12 +110,12 @@ void AiPanel::onError(const QString& errorMsg) {
 }
 
 void AiPanel::appendUserMessage(const QString& msg) {
-  m_ChatHistory->append(QString("<br/><b style='color:#58A6FF;'>You:</b> %1").arg(msg.toHtmlEscaped()));
+  m_ChatHistory->append(QString("<br/><b style='color:#58A6FF;'>Operator:</b> %1").arg(msg.toHtmlEscaped()));
 }
 
 void AiPanel::appendAiMessage(const QString& msg, bool isNewBlock) {
   if (isNewBlock) {
-    m_ChatHistory->append("<br/><b style='color:#3FB950;'>Severance AI:</b> ");
+    m_ChatHistory->append("<br/><b style='color:#3FB950;'>Supplemental Intelligence:</b> ");
   }
   if (!msg.isEmpty()) {
     QTextCursor cursor = m_ChatHistory->textCursor();

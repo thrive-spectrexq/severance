@@ -31,11 +31,11 @@ void SecurityView::setupUI() {
   auto* splitter = new QSplitter(Qt::Vertical, this);
 
   // FIM Section
-  auto* fimGroup = new QGroupBox("File Integrity Monitoring (FIM)");
+  auto* fimGroup = new QGroupBox("Document Surveillance (FIM)");
   auto* fimLayout = new QVBoxLayout(fimGroup);
   m_FimTable = new QTableWidget();
   m_FimTable->setColumnCount(4);
-  m_FimTable->setHorizontalHeaderLabels({"Action", "File Path", "Old Path", "SHA-256 Hash"});
+  m_FimTable->setHorizontalHeaderLabels({"Action", "Designation", "Prior Designation", "SHA-256 Hash"});
   m_FimTable->horizontalHeader()->setStretchLastSection(true);
   m_FimTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
   m_FimTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -45,7 +45,7 @@ void SecurityView::setupUI() {
   splitter->addWidget(fimGroup);
 
   // Event Log Section
-  auto* logGroup = new QGroupBox("Windows Event Logs (High Severity Filtered)");
+  auto* logGroup = new QGroupBox("Vigilance Event Ledger (Priority Filtering)");
   auto* logLayout = new QVBoxLayout(logGroup);
   m_LogTable = new QTableWidget();
   m_LogTable->setColumnCount(1);

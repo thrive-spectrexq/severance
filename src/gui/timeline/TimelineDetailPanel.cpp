@@ -19,7 +19,7 @@ void TimelineDetailPanel::setupUI() {
   // Header
   auto* headerLayout = new QVBoxLayout();
   headerLayout->setSpacing(4);
-  m_TitleLabel = new QLabel("Select an event", this);
+  m_TitleLabel = new QLabel("Select a temporal event", this);
   m_TitleLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #E6EDF3;");
   m_TitleLabel->setWordWrap(true);
   
@@ -40,7 +40,7 @@ void TimelineDetailPanel::setupUI() {
   m_ContextTree->setHeaderHidden(true);
   m_ContextTree->setStyleSheet("background: transparent; border: none; color: #F1F5F9; font-size: 13px;");
   contextLayout->addWidget(m_ContextTree);
-  m_Tabs->addTab(contextTab, "Cross-Context Chain");
+  m_Tabs->addTab(contextTab, "CROSS-CONTEXT CHAIN");
 
   // Raw Data Tab
   auto* rawTab = new QWidget(this);
@@ -49,13 +49,13 @@ void TimelineDetailPanel::setupUI() {
   m_RawContent->setReadOnly(true);
   m_RawContent->setStyleSheet("background: transparent; border: none; color: #94A3B8; font-family: monospace;");
   rawLayout->addWidget(m_RawContent);
-  m_Tabs->addTab(rawTab, "Raw Event Data");
+  m_Tabs->addTab(rawTab, "RAW LEDGER DATA");
 
   layout->addWidget(m_Tabs);
 }
 
 void TimelineDetailPanel::Clear() {
-  m_TitleLabel->setText("Select an event");
+  m_TitleLabel->setText("Select a temporal event");
   m_SubtitleLabel->setText("");
   m_ContextTree->clear();
   m_RawContent->clear();
@@ -69,11 +69,11 @@ void TimelineDetailPanel::LoadEvent(const QString& time, const QString& type, co
   m_ContextTree->clear();
   
   auto* rootItem = new QTreeWidgetItem(m_ContextTree);
-  rootItem->setText(0, QString("Process: %1").arg(source));
+  rootItem->setText(0, QString("Procedure: %1").arg(source));
   rootItem->setExpanded(true);
   
   auto* fileItem = new QTreeWidgetItem(rootItem);
-  fileItem->setText(0, "Filesystem Activity");
+  fileItem->setText(0, "Document Surveillance");
   fileItem->setExpanded(true);
   
   auto* fileDetail = new QTreeWidgetItem(fileItem);
@@ -84,7 +84,7 @@ void TimelineDetailPanel::LoadEvent(const QString& time, const QString& type, co
   }
   
   auto* netItem = new QTreeWidgetItem(rootItem);
-  netItem->setText(0, "Network Connections");
+  netItem->setText(0, "Grid Communications");
   netItem->setExpanded(true);
   
   auto* netDetail = new QTreeWidgetItem(netItem);

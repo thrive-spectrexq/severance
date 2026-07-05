@@ -19,18 +19,18 @@ void IsolationView::setupUI() {
   layout->setSpacing(16);
 
   // Header
-  auto* header = new QLabel("Sandbox & Isolation", this);
+  auto* header = new QLabel("Severance Containment Protocols", this);
   header->setStyleSheet("font-size: 20px; font-weight: bold; color: #E6EDF3;");
   layout->addWidget(header);
 
-  auto* desc = new QLabel("Launch applications in an isolated environment with restricted filesystem and network access.", this);
+  auto* desc = new QLabel("Initiate procedures within an isolated containment environment, strictly enforcing Lumon spatial and communication policies.", this);
   desc->setStyleSheet("color: #8B949E;");
   layout->addWidget(desc);
 
   // Launch Area
   auto* launchLayout = new QHBoxLayout();
   m_ExecutablePath = new QLineEdit(this);
-  m_ExecutablePath->setPlaceholderText("Path to executable (e.g. C:\\Windows\\System32\\cmd.exe)");
+  m_ExecutablePath->setPlaceholderText("Designation of executable procedure...");
   launchLayout->addWidget(m_ExecutablePath);
 
   m_BrowseBtn = new QPushButton("Browse...", this);
@@ -42,7 +42,7 @@ void IsolationView::setupUI() {
   });
   launchLayout->addWidget(m_BrowseBtn);
 
-  m_LaunchBtn = new QPushButton("Launch Isolated", this);
+  m_LaunchBtn = new QPushButton("Initiate Severance", this);
   m_LaunchBtn->setStyleSheet("background-color: #238636; color: white; font-weight: bold; padding: 6px 12px; border-radius: 4px;");
   connect(m_LaunchBtn, &QPushButton::clicked, this, &IsolationView::onLaunchClicked);
   launchLayout->addWidget(m_LaunchBtn);
@@ -55,7 +55,7 @@ void IsolationView::setupUI() {
   auto* profileLabel = new QLabel("Profile:", this);
   profileLabel->setStyleSheet("color: #E6EDF3;");
   m_ProfileCombo = new QComboBox(this);
-  m_ProfileCombo->addItems({"Strict", "Restricted", "Unrestricted"});
+  m_ProfileCombo->addItems({"Clean Slate", "Goldfish", "Standard"});
   
   auto* memLabel = new QLabel("Memory (MB):", this);
   memLabel->setStyleSheet("color: #E6EDF3;");
@@ -93,7 +93,7 @@ void IsolationView::setupUI() {
 
   // Active Sandboxes & Analysis
   layout->addSpacing(16);
-  auto* subheader = new QLabel("Active Sandboxes & Analysis", this);
+  auto* subheader = new QLabel("Active Containment & Surveillance", this);
   subheader->setStyleSheet("font-size: 16px; font-weight: bold; color: #E6EDF3;");
   layout->addWidget(subheader);
 
@@ -101,7 +101,7 @@ void IsolationView::setupUI() {
 
   m_ActiveSandboxesTable = new QTableWidget(this);
   m_ActiveSandboxesTable->setColumnCount(4);
-  m_ActiveSandboxesTable->setHorizontalHeaderLabels({"Profile Name", "Executable", "Status", "Action"});
+  m_ActiveSandboxesTable->setHorizontalHeaderLabels({"PROTOCOL", "PROCEDURE", "STATUS", "DIRECTIVE"});
   m_ActiveSandboxesTable->horizontalHeader()->setStretchLastSection(true);
   m_ActiveSandboxesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_ActiveSandboxesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -113,9 +113,9 @@ void IsolationView::setupUI() {
   m_AnalysisPane->setStyleSheet("background-color: #0D1117; border: 1px solid #30363D; border-radius: 6px;");
   auto* analysisLayout = new QVBoxLayout(m_AnalysisPane);
   
-  m_AnalysisTitle = new QLabel("Security Analysis", m_AnalysisPane);
+  m_AnalysisTitle = new QLabel("Containment Analysis", m_AnalysisPane);
   m_AnalysisTitle->setStyleSheet("font-size: 14px; font-weight: bold; color: #58A6FF; border: none;");
-  m_AnalysisDetails = new QLabel("Select a sandbox to view isolation details and behavior.", m_AnalysisPane);
+  m_AnalysisDetails = new QLabel("Select a contained procedure to view isolation telemetry.", m_AnalysisPane);
   m_AnalysisDetails->setWordWrap(true);
   m_AnalysisDetails->setStyleSheet("color: #8B949E; border: none; margin-top: 8px;");
   m_AnalysisDetails->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -162,7 +162,7 @@ void IsolationView::onLaunchClicked() {
     m_ActiveSandboxesTable->setItem(row, 1, new QTableWidgetItem(path));
     m_ActiveSandboxesTable->setItem(row, 2, new QTableWidgetItem("Running"));
 
-    auto* termBtn = new QPushButton("Terminate", this);
+    auto* termBtn = new QPushButton("Sever", this);
     termBtn->setStyleSheet("background-color: #DA3633; color: white; border-radius: 4px;");
     connect(termBtn, &QPushButton::clicked, this, [this, row]() {
       onTerminateClicked(row);
@@ -186,8 +186,8 @@ void IsolationView::onActiveSandboxClicked(int row, int column) {
         "- CPU Cap: %4%<br>"
         "- FS Write Allowed: %5<br>"
         "- Net Access Allowed: %6<br><br>"
-        "<b>Security Analysis:</b><br>"
-        "This process is running under a Windows Job Object. "
+        "<b>Containment Surveillance:</b><br>"
+        "This procedure is running under a Lumon Job Object. "
       ).arg(QString::fromStdString(p.name))
        .arg(QString::fromStdString(p.executablePath))
        .arg(p.policy.maxMemoryBytes > 0 ? QString::number(p.policy.maxMemoryBytes / (1024*1024)) : "Unlimited")
