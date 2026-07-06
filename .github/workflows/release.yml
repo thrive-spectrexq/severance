@@ -6,8 +6,9 @@ on:
       - 'v*' # Trigger on version tags, e.g., v1.0.0, v0.2.0-dev
 
 env:
-  # Enable vcpkg binary caching via GitHub Actions cache
-  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  # vcpkg binary caching: use a local directory cached by actions/cache
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-binary-cache
+  VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-binary-cache,readwrite"
   VCPKG_BASELINE: "46c9f8d8398360278222d335c28bceb776ebb61f"
 
 jobs:
@@ -21,28 +22,33 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Export GitHub Actions cache environment variables
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+    - name: Create vcpkg cache directories
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/vcpkg-binary-cache" | Out-Null
 
     # ── sccache (C/C++ compilation cache) ──────────────────────────
     - name: Setup sccache
-      uses: mozilla-actions/sccache-action@v0.0.7
+      uses: mozilla-actions/sccache-action@v0.0.10
 
     # ── vcpkg (dependency cache) ───────────────────────────────────
-    - name: Cache vcpkg installed packages
+    - name: Cache vcpkg binary cache
       uses: actions/cache@v4
       with:
-        path: |
-          ${{ github.workspace }}/vcpkg/installed
-          ${{ github.workspace }}/vcpkg/packages
-        key: vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-${{ hashFiles('vcpkg.json') }}
+        path: ${{ github.workspace }}/vcpkg-binary-cache
+        key: vcpkg-bins-win-x64-${{ env.VCPKG_BASELINE }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
-          vcpkg-win-x64-${{ env.VCPKG_BASELINE }}-
-          vcpkg-win-x64-
+          vcpkg-bins-win-x64-${{ env.VCPKG_BASELINE }}-
+          vcpkg-bins-win-x64-
+
+    - name: Cache vcpkg downloads
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/vcpkg/downloads
+        key: vcpkg-dl-win-x64-${{ env.VCPKG_BASELINE }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: |
+          vcpkg-dl-win-x64-${{ env.VCPKG_BASELINE }}-
+          vcpkg-dl-win-x64-
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
