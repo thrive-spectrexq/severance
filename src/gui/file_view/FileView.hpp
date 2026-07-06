@@ -13,6 +13,8 @@ namespace severance::core::filesystem {
   struct FileEvent;
 }
 
+class QPropertyAnimation;
+
 namespace severance::gui::file_view {
 
 class FileView : public QWidget {
@@ -43,7 +45,7 @@ private:
   // Lumon scanner elements
   QLabel* m_TitleLabel;
   QWidget* m_ScannerLine;
-  class QPropertyAnimation* m_ScannerAnim;
+  QPropertyAnimation* m_ScannerAnim;
   QLabel* m_ReceptorLabel1;
   QLabel* m_ReceptorLabel2;
   QTimer* m_ReceptorTimer;
