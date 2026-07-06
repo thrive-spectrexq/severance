@@ -40,6 +40,18 @@ void TimelineView::setupUI() {
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
 
+  // Header
+  auto* header = new QLabel("SPATIO-TEMPORAL TRACKING MATRIX", this);
+  header->setStyleSheet(R"(
+    font-family: "Courier New", Courier, monospace;
+    font-size: 24px;
+    font-weight: 900;
+    color: #00FF41;
+    letter-spacing: 4px;
+  )");
+  header->setAlignment(Qt::AlignCenter);
+  layout->addWidget(header);
+
   // Top Bar
   auto* topBar = new QHBoxLayout();
   
@@ -109,6 +121,27 @@ void TimelineView::setupUI() {
   m_Table->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_Table->verticalHeader()->setVisible(false);
   m_Table->setShowGrid(false);
+  
+  m_Table->setStyleSheet(R"(
+    QTableWidget {
+      background-color: #0D1117;
+      color: #00FF41;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      border: 1px solid #00FF41;
+      gridline-color: transparent;
+    }
+    QTableWidget::item:selected {
+      background-color: #003B00;
+      color: #FFFFFF;
+    }
+    QHeaderView::section {
+      background-color: #001A00;
+      color: #00FF41;
+      font-weight: bold;
+      border: 1px solid #00FF41;
+    }
+  )");
 
   m_Table->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_Table, &QTableWidget::customContextMenuRequested, this, &TimelineView::onContextMenuRequested);
