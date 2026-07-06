@@ -17,8 +17,9 @@ Application::Application() : m_Running(true) {
   logging::Logger::Init();
   SEV_CORE_INFO("Application initialized.");
 
-  // Initialize Thread Pool
+  // Initialize Thread Pool and Task Scheduler
   concurrency::ThreadPool::GetInstance().Initialize();
+  concurrency::TaskScheduler::GetInstance().Initialize();
 
   // Initialize Event Store
   store::EventStore::GetInstance().Initialize();
@@ -64,6 +65,7 @@ Application::~Application() {
   correlation::CorrelationEngine::GetInstance().Shutdown();
   filesystem::EtwMonitor::GetInstance().Stop();
   store::EventStore::GetInstance().Shutdown();
+  concurrency::TaskScheduler::GetInstance().Shutdown();
   concurrency::ThreadPool::GetInstance().Shutdown();
 }
 

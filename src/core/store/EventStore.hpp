@@ -4,6 +4,9 @@
 #include <QString>
 #include <memory>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace severance::core::store {
 
@@ -13,6 +16,11 @@ struct StoredEvent {
   int eventType{0};
   QString eventName;
   QString payloadJson; // Basic JSON payload representation for now
+};
+
+struct BufferedEvent {
+  int64_t timestamp;
+  std::shared_ptr<events::Event> event;
 };
 
 class EventStore {
@@ -31,6 +39,12 @@ public:
   // Retrieval
   std::vector<StoredEvent> GetRecentEvents(int limit = 100);
 
+  // Tiered Memory System
+  void StoreEntityFact(const QString& key, const QString& value);
+  QString GetEntityFact(const QString& key);
+  void StoreConversationSummary(const QString& summary);
+  std::vector<QString> GetRecentSummaries(int limit = 5);
+
 private:
   EventStore() = default;
   ~EventStore();
@@ -41,7 +55,17 @@ private:
   bool CreateSchema();
 
   QString m_ConnectionName;
+  QString m_DbPath;
   bool m_Initialized{false};
+
+  // Background flush
+  void FlushThreadLoop(std::stop_token stoken);
+  void FlushEvents(const std::vector<BufferedEvent>& eventsToFlush, const QString& connName);
+
+  std::jthread m_FlushThread;
+  std::mutex m_BufferMutex;
+  std::condition_variable_any m_BufferCV;
+  std::vector<BufferedEvent> m_EventBuffer;
 };
 
 } // namespace severance::core::store

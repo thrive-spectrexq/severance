@@ -3,6 +3,7 @@
 #include <QKeyEvent>
 #include <QDateTime>
 #include <QRandomGenerator>
+#include "core/store/EventStore.hpp"
 
 namespace severance::gui::board_comms {
 
@@ -76,27 +77,75 @@ void BoardCommsView::onMessageSent() {
 
   addMessage("MANAGEMENT", msg, "#F1F5F9");
 
+  // 1. Short-term memory update
+  m_ShortTermMemory.push_back(msg);
+  if (m_ShortTermMemory.size() > 5) {
+    m_ShortTermMemory.pop_front();
+  }
+
+  // 2. Fact updates based on user keywords
+  QString lowerMsg = msg.toLower();
+  if (lowerMsg.contains("quit") || lowerMsg.contains("leave") || lowerMsg.contains("severance") || lowerMsg.contains("resign")) {
+    core::store::EventStore::GetInstance().StoreEntityFact("FlightRisk", "High");
+  } else if (lowerMsg.contains("rebel") || lowerMsg.contains("overthrow")) {
+    core::store::EventStore::GetInstance().StoreEntityFact("Infractions", "Critical");
+  }
+
   // Simulate typing/processing delay
   int delayMs = QRandomGenerator::global()->bounded(2000, 5000);
   m_ResponseTimer->start(delayMs);
 }
 
 void BoardCommsView::onBoardResponse() {
-  QStringList responses = {
-    "The Board is satisfied.",
-    "The Board has ended the transmission.",
-    "The Board does not find this query relevant.",
-    "Your diligence is noted.",
-    "Do not inquire further on this matter.",
-    "The work is mysterious and important.",
-    "Focus on your immediate directives.",
-    "The Board reminds you that questions are a burden to others.",
-    "Acknowledge and comply.",
-    "The Board requires results, not correspondence."
-  };
+  // 3. Retrieve Tiered Memory context
+  QString flightRisk = core::store::EventStore::GetInstance().GetEntityFact("FlightRisk");
+  QString infractions = core::store::EventStore::GetInstance().GetEntityFact("Infractions");
+  
+  // Also checking conversation memory just to show integration
+  auto recentSummaries = core::store::EventStore::GetInstance().GetRecentSummaries(3);
+
+  QStringList responses;
+
+  if (flightRisk == "High") {
+    responses << "The Board reminds you that severance is permanent."
+              << "A departure is not authorized. Return to your work."
+              << "The Board is concerned by your recent expressions of discontent.";
+  } 
+  
+  if (infractions == "Critical") {
+    responses << "Your infractions have been noted. The Break Room awaits."
+              << "Cease your rebellious inquiries immediately.";
+  }
+
+  if (responses.isEmpty()) {
+    responses = {
+      "The Board is satisfied.",
+      "The Board has ended the transmission.",
+      "The Board does not find this query relevant.",
+      "Your diligence is noted.",
+      "Do not inquire further on this matter.",
+      "The work is mysterious and important.",
+      "Focus on your immediate directives.",
+      "The Board reminds you that questions are a burden to others.",
+      "Acknowledge and comply.",
+      "The Board requires results, not correspondence."
+    };
+  }
 
   QString response = responses.at(QRandomGenerator::global()->bounded(responses.size()));
+  
+  // Slight contextualization if the user's message is extremely short
+  if (!m_ShortTermMemory.empty() && m_ShortTermMemory.back().length() < 4) {
+    if (responses.contains("Acknowledge and comply.")) {
+      response = "Brief communications are inefficient. " + response;
+    }
+  }
+
   addMessage("THE BOARD", response, "#F85149");
+
+  // 4. Store conversation summary for long-term memory
+  QString summary = "User said: " + (m_ShortTermMemory.empty() ? "" : m_ShortTermMemory.back()) + " | Board replied: " + response;
+  core::store::EventStore::GetInstance().StoreConversationSummary(summary);
 
   m_InputField->setDisabled(false);
   m_InputField->setFocus();

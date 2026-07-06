@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <stop_token>
 #include <concepts>
+#include <chrono>
 
 namespace severance::core::concurrency {
 
@@ -63,10 +64,59 @@ class TaskScheduler {
 public:
     static TaskScheduler& GetInstance();
     
-    template<typename F, typename... Args>
-    auto ScheduleTask(F&& f, Args&&... args) {
-        return ThreadPool::GetInstance().EnqueueTask(std::forward<F>(f), std::forward<Args>(args)...);
-    }
+    void Initialize();
+    void Shutdown();
+
+    template<std::invocable F>
+    void ScheduleDelayedTask(std::chrono::milliseconds delay, F&& f);
+
+    template<std::invocable F>
+    void ScheduleRecurringTask(std::chrono::milliseconds interval, F&& f);
+
+private:
+    TaskScheduler() = default;
+    ~TaskScheduler();
+
+    TaskScheduler(const TaskScheduler&) = delete;
+    TaskScheduler& operator=(const TaskScheduler&) = delete;
+
+    struct ScheduledTask {
+        std::chrono::steady_clock::time_point executionTime;
+        std::function<void()> task;
+        std::chrono::milliseconds interval{0};
+
+        bool operator>(const ScheduledTask& other) const {
+            return executionTime > other.executionTime;
+        }
+    };
+
+    std::jthread m_SchedulerThread;
+    std::priority_queue<ScheduledTask, std::vector<ScheduledTask>, std::greater<ScheduledTask>> m_Tasks;
+    std::mutex m_QueueMutex;
+    std::condition_variable_any m_Condition;
+    std::stop_source m_StopSource;
+
+    void SchedulerLoop(std::stop_token stoken);
 };
+
+template<std::invocable F>
+void TaskScheduler::ScheduleDelayedTask(std::chrono::milliseconds delay, F&& f) {
+    auto execTime = std::chrono::steady_clock::now() + delay;
+    {
+        std::unique_lock<std::mutex> lock(m_QueueMutex);
+        m_Tasks.push({execTime, std::forward<F>(f), std::chrono::milliseconds(0)});
+    }
+    m_Condition.notify_one();
+}
+
+template<std::invocable F>
+void TaskScheduler::ScheduleRecurringTask(std::chrono::milliseconds interval, F&& f) {
+    auto execTime = std::chrono::steady_clock::now() + interval;
+    {
+        std::unique_lock<std::mutex> lock(m_QueueMutex);
+        m_Tasks.push({execTime, std::forward<F>(f), interval});
+    }
+    m_Condition.notify_one();
+}
 
 } // namespace severance::core::concurrency
