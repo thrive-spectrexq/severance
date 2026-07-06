@@ -10,6 +10,9 @@
 #include <memory>
 #include "core/sandbox/SandboxManager.hpp"
 
+class QPropertyAnimation;
+class QGraphicsColorizeEffect;
+
 namespace severance::gui::isolation_view {
 
 class IsolationView : public QWidget {
@@ -23,9 +26,11 @@ private slots:
   void onLaunchClicked();
   void onTerminateClicked(int row);
   void onActiveSandboxClicked(int row, int column);
+  void onOvertimeContingencyClicked();
 
 private:
   void setupUI();
+  void triggerOvertimeAlarm();
 
   QLineEdit* m_ExecutablePath{nullptr};
   QPushButton* m_BrowseBtn{nullptr};
@@ -41,6 +46,11 @@ private:
   QWidget* m_AnalysisPane{nullptr};
   QLabel*  m_AnalysisTitle{nullptr};
   QLabel*  m_AnalysisDetails{nullptr};
+
+  // Overtime Contingency
+  QPushButton* m_OvertimeBtn{nullptr};
+  QGraphicsColorizeEffect* m_AlarmEffect{nullptr};
+  QPropertyAnimation* m_AlarmAnimation{nullptr};
 };
 
 } // namespace severance::gui::isolation_view

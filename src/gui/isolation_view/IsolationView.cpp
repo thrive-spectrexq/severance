@@ -5,6 +5,8 @@
 #include <QHeaderView>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPropertyAnimation>
+#include <QGraphicsColorizeEffect>
 
 namespace severance::gui::isolation_view {
 
@@ -19,13 +21,40 @@ void IsolationView::setupUI() {
   layout->setSpacing(16);
 
   // Header
+  auto* headerLayout = new QHBoxLayout();
+  auto* textLayout = new QVBoxLayout();
+  
   auto* header = new QLabel("Severance Containment Protocols", this);
   header->setStyleSheet("font-size: 20px; font-weight: bold; color: #E6EDF3;");
-  layout->addWidget(header);
+  textLayout->addWidget(header);
 
   auto* desc = new QLabel("Initiate procedures within an isolated containment environment, strictly enforcing Lumon spatial and communication policies.", this);
   desc->setStyleSheet("color: #8B949E;");
-  layout->addWidget(desc);
+  textLayout->addWidget(desc);
+  
+  headerLayout->addLayout(textLayout);
+  headerLayout->addStretch();
+  
+  m_OvertimeBtn = new QPushButton("OVERTIME CONTINGENCY", this);
+  m_OvertimeBtn->setStyleSheet(R"(
+    QPushButton {
+      background-color: transparent;
+      border: 2px solid #DA3633;
+      color: #DA3633;
+      font-weight: 900;
+      font-size: 14px;
+      padding: 10px 20px;
+      border-radius: 4px;
+    }
+    QPushButton:hover {
+      background-color: #DA3633;
+      color: white;
+    }
+  )");
+  connect(m_OvertimeBtn, &QPushButton::clicked, this, &IsolationView::onOvertimeContingencyClicked);
+  headerLayout->addWidget(m_OvertimeBtn);
+  
+  layout->addLayout(headerLayout);
 
   // Launch Area
   auto* launchLayout = new QHBoxLayout();
@@ -219,6 +248,40 @@ void IsolationView::onTerminateClicked(int row) {
             });
         }
     }
+  }
+}
+
+void IsolationView::onOvertimeContingencyClicked() {
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::critical(this, "CODE BLACK PROTOCOL",
+                                "WARNING: Initiating OVERTIME CONTINGENCY will wake all dormant Innies and force an immediate localized lockdown.\n\nAre you sure you wish to proceed?",
+                                QMessageBox::Yes | QMessageBox::Abort);
+  if (reply == QMessageBox::Yes) {
+    triggerOvertimeAlarm();
+  }
+}
+
+void IsolationView::triggerOvertimeAlarm() {
+  if (!m_AlarmEffect) {
+    m_AlarmEffect = new QGraphicsColorizeEffect(this);
+    m_AlarmEffect->setColor(QColor("#DA3633")); // Red
+    this->setGraphicsEffect(m_AlarmEffect);
+    
+    m_AlarmAnimation = new QPropertyAnimation(m_AlarmEffect, "strength");
+    m_AlarmAnimation->setLoopCount(-1); // Infinite loop
+    m_AlarmAnimation->setDuration(1000);
+    m_AlarmAnimation->setKeyValueAt(0, 0.0);
+    m_AlarmAnimation->setKeyValueAt(0.5, 0.5);
+    m_AlarmAnimation->setKeyValueAt(1, 0.0);
+  }
+  
+  if (m_AlarmAnimation->state() == QAbstractAnimation::Running) {
+    m_AlarmAnimation->stop();
+    m_AlarmEffect->setStrength(0.0);
+    m_OvertimeBtn->setText("OVERTIME CONTINGENCY");
+  } else {
+    m_AlarmAnimation->start();
+    m_OvertimeBtn->setText("CANCEL PROTOCOL");
   }
 }
 
