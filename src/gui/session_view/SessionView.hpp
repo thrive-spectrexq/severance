@@ -8,6 +8,8 @@
 
 namespace severance::gui::session_view {
 
+class BiometricGraph;
+
 class SessionView : public QWidget {
   Q_OBJECT
 
@@ -21,6 +23,7 @@ private slots:
   void onExportMarkdown();
   void onExportJson();
   void updateStatus();
+  void updateBiometrics();
 
 private:
   void setupUI();
@@ -35,6 +38,11 @@ private:
 
   QPushButton* m_ExportMdBtn{nullptr};
   QPushButton* m_ExportJsonBtn{nullptr};
+
+  BiometricGraph* m_BrainwaveGraph{nullptr};
+  BiometricGraph* m_StressGraph{nullptr};
+  BiometricGraph* m_ChipRejectionGraph{nullptr};
+  class QTimer* m_BiometricTimer{nullptr};
 };
 
 } // namespace severance::gui::session_view
