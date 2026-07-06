@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QPushButton>
 #include <QSortFilterProxyModel>
+#include <QProgressBar>
 
 namespace severance::gui::process_view {
 
@@ -40,6 +41,13 @@ private:
   QLabel* m_ProcessCountLabel{nullptr};
   QPushButton* m_KillBtn{nullptr};
   QPushButton* m_RefreshBtn{nullptr};
+
+  // Sync Status Indicators
+  QLabel* m_InnieSyncLabel{nullptr};
+  QProgressBar* m_InnieSyncBar{nullptr};
+  QLabel* m_OuttieSyncLabel{nullptr};
+  QProgressBar* m_OuttieSyncBar{nullptr};
+  QTimer* m_SyncAnimTimer{nullptr};
 
   // Model
   ProcessTreeModel* m_Model{nullptr};

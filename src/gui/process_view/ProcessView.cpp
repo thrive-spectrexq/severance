@@ -11,6 +11,9 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QClipboard>
+#include <QGraphicsDropShadowEffect>
+#include <QRandomGenerator>
+#include <algorithm>
 
 namespace severance::gui::process_view {
 
@@ -24,6 +27,20 @@ ProcessView::ProcessView(QWidget *parent) : QWidget(parent) {
   m_RefreshTimer = new QTimer(this);
   connect(m_RefreshTimer, &QTimer::timeout, this, &ProcessView::onRefreshTimer);
   m_RefreshTimer->start(m_RefreshIntervalMs);
+
+  // Start Sync Anim timer
+  m_SyncAnimTimer = new QTimer(this);
+  connect(m_SyncAnimTimer, &QTimer::timeout, this, [this]() {
+    if (m_InnieSyncBar) {
+      int val = m_InnieSyncBar->value() + QRandomGenerator::global()->bounded(-5, 6);
+      m_InnieSyncBar->setValue(std::max(70, std::min(100, val)));
+    }
+    if (m_OuttieSyncBar) {
+      int val = m_OuttieSyncBar->value() + QRandomGenerator::global()->bounded(-2, 3);
+      m_OuttieSyncBar->setValue(std::max(5, std::min(20, val)));
+    }
+  });
+  m_SyncAnimTimer->start(150);
 }
 
 void ProcessView::setupUI() {
@@ -31,17 +48,129 @@ void ProcessView::setupUI() {
   mainLayout->setContentsMargins(16, 12, 16, 0);
   mainLayout->setSpacing(8);
 
+  // Apply global dark teal theme for the widget
+  this->setStyleSheet(R"(
+    QWidget {
+      background-color: #0A0F14;
+      color: #00E5FF;
+      font-family: "Consolas", "Courier New", monospace;
+    }
+    QLabel {
+      color: #00E5FF;
+    }
+    QLineEdit {
+      background-color: #05080A;
+      border: 1px solid #005F73;
+      color: #E0FFFF;
+      padding: 4px 8px;
+    }
+    QLineEdit:focus {
+      border: 1px solid #00E5FF;
+    }
+    QPushButton {
+      background-color: #003B46;
+      border: 1px solid #005F73;
+      color: #00E5FF;
+      font-weight: bold;
+      padding: 4px 12px;
+    }
+    QPushButton:hover {
+      background-color: #005F73;
+      border-color: #00E5FF;
+    }
+    QPushButton:disabled {
+      background-color: #021B21;
+      color: #004A55;
+      border-color: #002228;
+    }
+    QTreeView {
+      background-color: #05080A;
+      alternate-background-color: #080D11;
+      border: 1px solid #003B46;
+      color: #E0FFFF;
+      selection-background-color: #005F73;
+      selection-color: #FFFFFF;
+      outline: none;
+    }
+    QTreeView::item:hover {
+      background-color: #004554;
+    }
+    QTreeView::item:selected {
+      background-color: #008C9E;
+      color: #FFFFFF;
+    }
+    QHeaderView::section {
+      background-color: #001B24;
+      color: #00E5FF;
+      border: none;
+      border-right: 1px solid #003B46;
+      border-bottom: 1px solid #003B46;
+      padding: 4px;
+      font-weight: bold;
+    }
+    QProgressBar {
+      background-color: #021B21;
+      border: 1px solid #003B46;
+      text-align: center;
+      color: transparent;
+    }
+    QProgressBar::chunk {
+      background-color: #00E5FF;
+      width: 5px;
+      margin: 1px;
+    }
+  )");
+
   // Header
   auto headerLayout = new QHBoxLayout();
 
-  auto title = new QLabel("Innate Process Registry", this);
-  title->setStyleSheet("font-size: 18px; font-weight: 600; color: #E6EDF3;");
+  auto title = new QLabel("SEVERED WORKFORCE REGISTRY", this);
+  title->setStyleSheet("font-size: 20px; font-weight: 900; letter-spacing: 2px;");
+  
+  auto titleGlow = new QGraphicsDropShadowEffect(this);
+  titleGlow->setBlurRadius(15);
+  titleGlow->setColor(QColor("#00E5FF"));
+  titleGlow->setOffset(0, 0);
+  title->setGraphicsEffect(titleGlow);
+
   headerLayout->addWidget(title);
 
   headerLayout->addStretch();
+  
+  // Sync Indicators
+  auto syncLayout = new QVBoxLayout();
+  syncLayout->setSpacing(2);
+  
+  auto innieLayout = new QHBoxLayout();
+  m_InnieSyncLabel = new QLabel("INNIE SYNC", this);
+  m_InnieSyncLabel->setStyleSheet("font-size: 10px; font-weight: bold;");
+  m_InnieSyncBar = new QProgressBar(this);
+  m_InnieSyncBar->setFixedSize(100, 10);
+  m_InnieSyncBar->setRange(0, 100);
+  m_InnieSyncBar->setValue(85);
+  innieLayout->addWidget(m_InnieSyncLabel);
+  innieLayout->addWidget(m_InnieSyncBar);
+  
+  auto outtieLayout = new QHBoxLayout();
+  m_OuttieSyncLabel = new QLabel("OUTTIE SYNC", this);
+  m_OuttieSyncLabel->setStyleSheet("font-size: 10px; font-weight: bold; color: #446666;");
+  m_OuttieSyncBar = new QProgressBar(this);
+  m_OuttieSyncBar->setFixedSize(100, 10);
+  m_OuttieSyncBar->setRange(0, 100);
+  m_OuttieSyncBar->setValue(12);
+  m_OuttieSyncBar->setStyleSheet("QProgressBar::chunk { background-color: #005F73; }");
+  outtieLayout->addWidget(m_OuttieSyncLabel);
+  outtieLayout->addWidget(m_OuttieSyncBar);
+  
+  syncLayout->addLayout(innieLayout);
+  syncLayout->addLayout(outtieLayout);
+  
+  headerLayout->addLayout(syncLayout);
+  
+  headerLayout->addSpacing(20);
 
   m_ProcessCountLabel = new QLabel("0 active registries", this);
-  m_ProcessCountLabel->setStyleSheet("font-size: 13px; color: #8B949E;");
+  m_ProcessCountLabel->setStyleSheet("font-size: 13px; font-weight: bold;");
   headerLayout->addWidget(m_ProcessCountLabel);
 
   mainLayout->addLayout(headerLayout);
