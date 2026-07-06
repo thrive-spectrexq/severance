@@ -13,6 +13,7 @@
 #include "gui/ai_panel/AiPanel.hpp"
 #include "gui/security_view/SecurityView.hpp"
 #include "gui/board_comms/BoardCommsView.hpp"
+#include "gui/optics_and_design/OpticsDesignView.hpp"
 #include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"
 #include "core/security/ActiveResponse.hpp"
@@ -47,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     {"OBSERVATION",             QString(QChar(0xE716)), "Ctrl+7"},
     {"VIGILANCE",               QString(QChar(0xE72E)), "Ctrl+8"},
     {"BOARD COMMUNICATIONS",    QString(QChar(0xE8F4)), "Ctrl+9"},
+    {"OPTICS & DESIGN",         QString(QChar(0xE7F4)), "Ctrl+0"},
   };
 
   auto centralWidget = new QWidget(this);
@@ -228,6 +230,7 @@ void MainWindow::setupViews() {
   auto* sessionView = new session_view::SessionView(this);
   auto* securityView = new security_view::SecurityView(this);
   auto* boardCommsView = new board_comms::BoardCommsView(this);
+  m_OpticsDesignView = new optics_and_design::OpticsDesignView(this);
 
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
@@ -238,6 +241,7 @@ void MainWindow::setupViews() {
   m_ViewStack->addWidget(sessionView);     // Index 6
   m_ViewStack->addWidget(securityView);    // Index 7
   m_ViewStack->addWidget(boardCommsView);  // Index 8
+  m_ViewStack->addWidget(m_OpticsDesignView); // Index 9
 }
 
 void MainWindow::setupStatusBar() {

@@ -19,6 +19,7 @@ namespace severance::gui::process_view { class ProcessView; }
 namespace severance::gui::network_view { class NetworkView; }
 namespace severance::gui::file_view { class FileView; }
 namespace severance::gui::ai_panel { class AiPanel; }
+namespace severance::gui::optics_and_design { class OpticsDesignView; }
 
 namespace severance::gui::windows {
 
@@ -60,6 +61,7 @@ private:
   process_view::ProcessView* m_ProcessView{nullptr};
   network_view::NetworkView* m_NetworkView{nullptr};
   file_view::FileView* m_FileView{nullptr};
+  optics_and_design::OpticsDesignView* m_OpticsDesignView{nullptr};
   // Future: TimelineView, IsolationView
 
   // Search
