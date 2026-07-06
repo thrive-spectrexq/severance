@@ -7,6 +7,8 @@
 #include <QtMath>
 #include <QGraphicsDropShadowEffect>
 
+namespace severance::gui::widgets {
+
 // --- NeuralNode ---
 
 NeuralNode::NeuralNode(const QString& id, const QColor& color, QGraphicsItem* parent)
@@ -267,3 +269,5 @@ void NeuralTopologyWidget::wheelEvent(QWheelEvent* event) {
         QGraphicsView::wheelEvent(event);
     }
 }
+
+} // namespace severance::gui::widgets

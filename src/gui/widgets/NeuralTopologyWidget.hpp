@@ -10,6 +10,8 @@
 #include <vector>
 #include <memory>
 
+namespace severance::gui::widgets {
+
 class NeuralNode : public QGraphicsObject {
     Q_OBJECT
     Q_PROPERTY(qreal glowRadius READ glowRadius WRITE setGlowRadius)
@@ -93,3 +95,5 @@ private:
     std::vector<SynapticLink*> m_links;
     QTimer* m_activityTimer;
 };
+
+} // namespace severance::gui::widgets

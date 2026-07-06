@@ -14,6 +14,7 @@
 #include "gui/board_comms/BoardCommsView.hpp"
 #include "gui/optics_and_design/OpticsDesignView.hpp"
 #include "gui/perimeter_grid/PerimeterGridView.hpp"
+#include "gui/security_view/SecurityView.hpp"
 #include "gui/terminal/TerminalOverlay.hpp"
 #include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"

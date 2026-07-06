@@ -6,6 +6,8 @@
 #include <QPropertyAnimation>
 #include <QGraphicsObject>
 
+namespace severance::gui::perimeter_grid {
+
 class ElevatorItem : public QGraphicsObject {
     Q_OBJECT
     Q_PROPERTY(qreal floorProgress READ floorProgress WRITE setFloorProgress)
@@ -77,3 +79,5 @@ private:
     QList<MotionSensorItem*> m_sensors;
     QTimer* m_sensorTimer;
 };
+
+} // namespace severance::gui::perimeter_grid
