@@ -96,7 +96,8 @@ void ProcessDetailPanel::LoadProcess(uint32_t pid) {
   // Populate Files
   m_FilesTable->setUpdatesEnabled(false);
   m_FilesTable->setRowCount(0);
-  for (const auto& f : profile.fileActivity) {
+  for (size_t i = 0; i < profile.fileActivity.size(); ++i) {
+    const auto& f = profile.fileActivity[i];
     int row = m_FilesTable->rowCount();
     m_FilesTable->insertRow(row);
     m_FilesTable->setItem(row, 0, new QTableWidgetItem(QString::number(f.timestamp)));
@@ -108,7 +109,8 @@ void ProcessDetailPanel::LoadProcess(uint32_t pid) {
   // Populate Network
   m_NetworkTable->setUpdatesEnabled(false);
   m_NetworkTable->setRowCount(0);
-  for (const auto& n : profile.networkConnections) {
+  for (size_t i = 0; i < profile.networkConnections.size(); ++i) {
+    const auto& n = profile.networkConnections[i];
     int row = m_NetworkTable->rowCount();
     m_NetworkTable->insertRow(row);
     QString proto = n.protocol == core::network::ConnectionProtocol::TCP ? "TCP" : "UDP";
