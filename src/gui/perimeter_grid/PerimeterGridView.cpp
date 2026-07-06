@@ -7,6 +7,8 @@
 #include <QGraphicsBlurEffect>
 #include <QRandomGenerator>
 
+namespace severance::gui::perimeter_grid {
+
 // ---------------------------------------------------------
 // ElevatorItem
 // ---------------------------------------------------------
@@ -225,3 +227,5 @@ void PerimeterGridView::drawBackground(QPainter* painter, const QRectF& rect) {
 
     painter->drawLines(lines.data(), lines.size());
 }
+
+} // namespace severance::gui::perimeter_grid
