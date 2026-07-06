@@ -11,9 +11,9 @@
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
 #include "gui/ai_panel/AiPanel.hpp"
-#include "gui/security_view/SecurityView.hpp"
 #include "gui/board_comms/BoardCommsView.hpp"
 #include "gui/optics_and_design/OpticsDesignView.hpp"
+#include "gui/perimeter_grid/PerimeterGridView.hpp"
 #include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"
 #include "core/security/ActiveResponse.hpp"
@@ -226,6 +226,7 @@ void MainWindow::setupViews() {
   m_NetworkView = new network_view::NetworkView(this);
   m_FileView = new file_view::FileView(this);
   auto* timelineView = new timeline::TimelineView(this);
+  m_PerimeterGridView = new perimeter_grid::PerimeterGridView(this);
   auto* isolationView = new isolation_view::IsolationView(this);
   auto* sessionView = new session_view::SessionView(this);
   auto* securityView = new security_view::SecurityView(this);
@@ -235,7 +236,7 @@ void MainWindow::setupViews() {
   m_ViewStack->addWidget(m_DashboardView); // Index 0
   m_ViewStack->addWidget(m_ProcessView);   // Index 1
   m_ViewStack->addWidget(timelineView);    // Index 2
-  m_ViewStack->addWidget(m_NetworkView);   // Index 3
+  m_ViewStack->addWidget(m_PerimeterGridView); // Index 3
   m_ViewStack->addWidget(m_FileView);      // Index 4
   m_ViewStack->addWidget(isolationView);   // Index 5
   m_ViewStack->addWidget(sessionView);     // Index 6
@@ -406,14 +407,42 @@ void MainWindow::setupShortcuts() {
 
 void MainWindow::setActiveView(int index) {
   if (index < 0 || index >= static_cast<int>(m_ViewInfos.size())) return;
+  if (m_ActiveViewIndex == index && m_ViewStack->count() > 0) return;
 
   m_ActiveViewIndex = index;
-  m_ViewStack->setCurrentIndex(index);
 
-  // Update sidebar button states
-  for (int i = 0; i < static_cast<int>(m_SidebarButtons.size()); ++i) {
-    m_SidebarButtons[i]->setChecked(i == index);
+  // Set up the transition effect
+  if (!m_ViewStackOpacityEffect) {
+    m_ViewStackOpacityEffect = new QGraphicsOpacityEffect(this);
+    m_ViewStack->setGraphicsEffect(m_ViewStackOpacityEffect);
+    
+    m_ViewFadeAnimation = new QPropertyAnimation(m_ViewStackOpacityEffect, "opacity");
+    m_ViewFadeAnimation->setDuration(250); // Clinical, swift 250ms fade
+    m_ViewFadeAnimation->setEasingCurve(QEasingCurve::InOutSine);
   }
+
+  // Cross-fade out
+  m_ViewFadeAnimation->stop();
+  m_ViewFadeAnimation->setStartValue(1.0);
+  m_ViewFadeAnimation->setEndValue(0.0);
+  
+  // Update UI and cross-fade in when fade out finishes
+  connect(m_ViewFadeAnimation, &QPropertyAnimation::finished, this, [this, index]() {
+    m_ViewFadeAnimation->disconnect(); // Clear this connection
+    
+    m_ViewStack->setCurrentIndex(index);
+    
+    // Update sidebar button states
+    for (int i = 0; i < static_cast<int>(m_SidebarButtons.size()); ++i) {
+      m_SidebarButtons[i]->setChecked(i == index);
+    }
+
+    m_ViewFadeAnimation->setStartValue(0.0);
+    m_ViewFadeAnimation->setEndValue(1.0);
+    m_ViewFadeAnimation->start();
+  });
+  
+  m_ViewFadeAnimation->start();
 }
 
 void MainWindow::onSidebarButtonClicked(int index) {

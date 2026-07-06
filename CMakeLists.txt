@@ -22,6 +22,7 @@ add_executable(severance
     src/core/application/Application.cpp
     src/gui/windows/MainWindow.cpp
     src/gui/dashboard/DashboardView.cpp
+    src/gui/perimeter_grid/PerimeterGridView.cpp
     src/gui/process_view/ProcessView.cpp
     src/gui/process_view/ProcessTreeModel.cpp
     src/gui/process_view/ProcessDetailPanel.cpp
