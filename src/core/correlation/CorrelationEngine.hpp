@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <string>
+#include <array>
 
 namespace severance::core::events {
   class Event;

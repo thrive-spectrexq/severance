@@ -54,6 +54,9 @@ struct Colors {
   static constexpr const char* ChartGreen   = "#2ECC71";
   static constexpr const char* ChartAmber   = "#D4A017";
   static constexpr const char* ChartBlue    = "#2980B9";
+  static constexpr const char* ChartPurple  = "#8E44AD";
+  static constexpr const char* ChartYellow  = "#F1C40F";
+  static constexpr const char* ChartOrange  = "#E67E22";
 };
 
 struct Dimensions {
