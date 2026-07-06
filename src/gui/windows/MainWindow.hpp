@@ -23,6 +23,7 @@ namespace severance::gui::file_view { class FileView; }
 namespace severance::gui::ai_panel { class AiPanel; }
 namespace severance::gui::optics_and_design { class OpticsDesignView; }
 namespace severance::gui::perimeter_grid { class PerimeterGridView; }
+namespace severance::gui::terminal { class TerminalOverlay; }
 
 namespace severance::gui::windows {
 
@@ -101,6 +102,9 @@ private:
   // View transition engine
   QGraphicsOpacityEffect* m_ViewStackOpacityEffect{nullptr};
   QPropertyAnimation* m_ViewFadeAnimation{nullptr};
+
+  // Terminal
+  terminal::TerminalOverlay* m_TerminalOverlay{nullptr};
 };
 
 } // namespace severance::gui::windows

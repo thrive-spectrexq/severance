@@ -14,6 +14,7 @@
 #include "gui/board_comms/BoardCommsView.hpp"
 #include "gui/optics_and_design/OpticsDesignView.hpp"
 #include "gui/perimeter_grid/PerimeterGridView.hpp"
+#include "gui/terminal/TerminalOverlay.hpp"
 #include "gui/widgets/ToastNotification.hpp"
 #include "core/application/Application.hpp"
 #include "core/security/ActiveResponse.hpp"
@@ -120,6 +121,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     settings->setAttribute(Qt::WA_DeleteOnClose);
     settings->exec();
   }});
+
+  // Terminal overlay
+  m_TerminalOverlay = new terminal::TerminalOverlay(this);
 
   // Start on Dashboard
   setActiveView(0);
@@ -388,6 +392,12 @@ void MainWindow::setupShortcuts() {
   // Command Palette: Ctrl+Shift+P
   auto cmdShortcut = new QShortcut(QKeySequence("Ctrl+Shift+P"), this);
   connect(cmdShortcut, &QShortcut::activated, this, &MainWindow::onCommandPaletteTriggered);
+
+  // Terminal Toggle: Tilde (~)
+  auto terminalShortcut = new QShortcut(QKeySequence("~"), this);
+  connect(terminalShortcut, &QShortcut::activated, this, [this]() {
+    m_TerminalOverlay->toggleVisibility();
+  });
 
   // Refresh: F5
   auto refreshShortcut = new QShortcut(QKeySequence("F5"), this);
