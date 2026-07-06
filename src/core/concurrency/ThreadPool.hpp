@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <memory>
 #include <stdexcept>
+#include <stop_token>
+#include <concepts>
 
 namespace severance::core::concurrency {
 
@@ -20,8 +22,9 @@ public:
     void Initialize(size_t numThreads = std::thread::hardware_concurrency());
     void Shutdown();
 
-    template<typename F, typename... Args>
-    auto EnqueueTask(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>>;
+    // Modern C++20 approach using concepts and perfect forwarding
+    template<std::invocable F>
+    auto EnqueueTask(F&& f) -> std::future<std::invoke_result_t<F>>;
 
 private:
     ThreadPool() = default;
@@ -30,28 +33,24 @@ private:
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool& operator=(const ThreadPool&) = delete;
 
-    std::vector<std::thread> m_Workers;
+    std::vector<std::jthread> m_Workers;
     std::queue<std::function<void()>> m_Tasks;
 
     std::mutex m_QueueMutex;
-    std::condition_variable m_Condition;
-    bool m_Stop = false;
+    std::condition_variable_any m_Condition;
+    std::stop_source m_StopSource;
 };
 
-template<typename F, typename... Args>
-auto ThreadPool::EnqueueTask(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-    using return_type = std::invoke_result_t<F, Args...>;
+template<std::invocable F>
+auto ThreadPool::EnqueueTask(F&& f) -> std::future<std::invoke_result_t<F>> {
+    using return_type = std::invoke_result_t<F>;
 
-    auto task = std::make_shared<std::packaged_task<return_type()>>(
-        [func = std::bind(std::forward<F>(f), std::forward<Args>(args)...)]() mutable {
-            return func();
-        }
-    );
-
+    auto task = std::make_shared<std::packaged_task<return_type()>>(std::forward<F>(f));
     std::future<return_type> res = task->get_future();
+    
     {
         std::unique_lock<std::mutex> lock(m_QueueMutex);
-        if (m_Stop) {
+        if (m_StopSource.stop_requested()) {
             throw std::runtime_error("enqueue on stopped ThreadPool");
         }
         m_Tasks.emplace([task]() { (*task)(); });
