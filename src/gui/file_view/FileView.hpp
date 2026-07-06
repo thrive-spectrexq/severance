@@ -29,6 +29,7 @@ private slots:
   void onContextMenuRequested(const QPoint& pos);
   void onSelectionChanged();
   void processPendingEvents();
+  void updateReceptors();
 
 private:
   void setupUI();
@@ -38,6 +39,14 @@ private:
   QTableWidget* m_Table;
   QSplitter* m_Splitter;
   FileDetailPanel* m_DetailPanel;
+
+  // Lumon scanner elements
+  QLabel* m_TitleLabel;
+  QWidget* m_ScannerLine;
+  class QPropertyAnimation* m_ScannerAnim;
+  QLabel* m_ReceptorLabel1;
+  QLabel* m_ReceptorLabel2;
+  QTimer* m_ReceptorTimer;
 
   std::vector<severance::core::filesystem::FileEvent> m_PendingEvents;
   std::mutex m_EventsMutex;

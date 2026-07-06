@@ -7,6 +7,9 @@
 #include <QHeaderView>
 #include <QTimer>
 #include <QTime>
+#include <QLabel>
+#include <QPropertyAnimation>
+#include <QRandomGenerator>
 
 namespace severance::gui::file_view {
 
@@ -26,6 +29,10 @@ FileView::FileView(QWidget* parent) : QWidget(parent) {
           appendEvent(fe->fileEvent);
         }
       });
+
+  m_ReceptorTimer = new QTimer(this);
+  connect(m_ReceptorTimer, &QTimer::timeout, this, &FileView::updateReceptors);
+  m_ReceptorTimer->start(100);
 }
 
 FileView::~FileView() = default;
@@ -34,15 +41,57 @@ void FileView::setupUI() {
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
+  this->setStyleSheet("background-color: #050A0F; color: #00FFD1; font-family: 'Courier New';");
 
-  // Top Bar
-  auto* topBar = new QHBoxLayout();
+  // Top Bar Layout
+  auto* topBar = new QVBoxLayout();
+
+  // Title & Receptors
+  auto* titleLayout = new QHBoxLayout();
+  m_TitleLabel = new QLabel("MACRODATA ARCHIVAL SCANNER", this);
+  m_TitleLabel->setStyleSheet("font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #00FFD1;");
+  
+  m_ReceptorLabel1 = new QLabel("REC_A: 0x0000", this);
+  m_ReceptorLabel2 = new QLabel("REC_B: 0x0000", this);
+  QString recStyle = "font-size: 14px; color: #007A65; background-color: #021814; border: 1px solid #004D40; padding: 4px;";
+  m_ReceptorLabel1->setStyleSheet(recStyle);
+  m_ReceptorLabel2->setStyleSheet(recStyle);
+
+  titleLayout->addWidget(m_TitleLabel);
+  titleLayout->addStretch();
+  titleLayout->addWidget(m_ReceptorLabel1);
+  titleLayout->addWidget(m_ReceptorLabel2);
+
+  // Scanner Line Container
+  auto* scannerContainer = new QWidget(this);
+  scannerContainer->setFixedHeight(4);
+  scannerContainer->setStyleSheet("background-color: #021814; border: none;");
+  m_ScannerLine = new QWidget(scannerContainer);
+  m_ScannerLine->setFixedSize(200, 4);
+  m_ScannerLine->setStyleSheet("background-color: #00FFD1; border-radius: 2px;");
+
+  m_ScannerAnim = new QPropertyAnimation(m_ScannerLine, "pos", this);
+  m_ScannerAnim->setDuration(2500);
+  m_ScannerAnim->setStartValue(QPoint(0, 0));
+  m_ScannerAnim->setEndValue(QPoint(1200, 0)); // Approx width
+  m_ScannerAnim->setEasingCurve(QEasingCurve::InOutSine);
+  m_ScannerAnim->setLoopCount(-1);
+  m_ScannerAnim->start();
+
+  topBar->addLayout(titleLayout);
+  topBar->addWidget(scannerContainer);
+
+  // Search
+  auto* searchLayout = new QHBoxLayout();
   m_SearchBox = new QLineEdit(this);
   m_SearchBox->setPlaceholderText("Filter surveillance by procedure or designation...");
-  m_SearchBox->setMinimumWidth(300);
+  m_SearchBox->setMinimumWidth(400);
+  m_SearchBox->setStyleSheet("background-color: #021814; color: #00FFD1; border: 1px solid #004D40; padding: 6px;");
   connect(m_SearchBox, &QLineEdit::textChanged, this, &FileView::onSearchTextChanged);
-  topBar->addWidget(m_SearchBox);
-  topBar->addStretch();
+  searchLayout->addWidget(m_SearchBox);
+  searchLayout->addStretch();
+  
+  topBar->addLayout(searchLayout);
   layout->addLayout(topBar);
 
   // Splitter
@@ -64,7 +113,16 @@ void FileView::setupUI() {
   m_Table->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_Table->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_Table->verticalHeader()->setVisible(false);
-  m_Table->setShowGrid(false);
+  m_Table->setShowGrid(true);
+  
+  m_Table->setStyleSheet(
+      "QTableWidget { background-color: #050A0F; color: #00FFD1; gridline-color: #004D40; border: 1px solid #004D40; }"
+      "QHeaderView::section { background-color: #021814; color: #00FFD1; padding: 4px; border: 1px solid #004D40; font-weight: bold; text-transform: uppercase; }"
+      "QTableWidget::item:selected { background-color: #004D40; color: #FFFFFF; }"
+      "QScrollBar:vertical { background: #021814; width: 12px; }"
+      "QScrollBar::handle:vertical { background: #004D40; border-radius: 6px; }"
+  );
+
   m_Table->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_Table, &QTableWidget::customContextMenuRequested, this, &FileView::onContextMenuRequested);
   connect(m_Table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileView::onSelectionChanged);
@@ -157,6 +215,13 @@ void FileView::onSelectionChanged() {
 
 void FileView::onContextMenuRequested(const QPoint& pos) {
   // TODO: Implement context menu for FileView
+}
+
+void FileView::updateReceptors() {
+  uint32_t val1 = QRandomGenerator::global()->generate() % 0xFFFF;
+  uint32_t val2 = QRandomGenerator::global()->generate() % 0xFFFF;
+  m_ReceptorLabel1->setText(QString("ENCRYPT_ST_1: 0x%1").arg(val1, 4, 16, QChar('0')).toUpper());
+  m_ReceptorLabel2->setText(QString("ENCRYPT_ST_2: 0x%1").arg(val2, 4, 16, QChar('0')).toUpper());
 }
 
 } // namespace severance::gui::file_view
