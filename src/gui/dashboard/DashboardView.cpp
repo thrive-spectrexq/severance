@@ -2,6 +2,7 @@
 #include "gui/widgets/DonutChartWidget.hpp"
 #include "gui/widgets/HorizontalBarChartWidget.hpp"
 #include "gui/widgets/NumberGridWidget.hpp"
+#include "gui/widgets/NeuralTopologyWidget.hpp"
 #include "gui/theme/Theme.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -107,7 +108,19 @@ void DashboardView::setupUI() {
 
   m_TopProcessesBar = new widgets::HorizontalBarChartWidget(barCard);
   barLayout->addWidget(m_TopProcessesBar, 1);
-  chartsLayout->addWidget(barCard, 2); // Takes more space
+  chartsLayout->addWidget(barCard, 1);
+
+  // Neural Topology Card
+  auto* topologyCard = new QFrame(this);
+  topologyCard->setProperty("cssClass", "card");
+  theme::ApplyDropShadow(topologyCard);
+  
+  auto* topologyLayout = new QVBoxLayout(topologyCard);
+  topologyLayout->setContentsMargins(0, 0, 0, 0); // Flush to edges
+  
+  m_Topology = new widgets::NeuralTopologyWidget(topologyCard);
+  topologyLayout->addWidget(m_Topology, 1);
+  chartsLayout->addWidget(topologyCard, 2); // Takes the most space
 
   mainLayout->addLayout(chartsLayout, 2);
 

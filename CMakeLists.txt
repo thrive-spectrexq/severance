@@ -47,6 +47,7 @@ add_executable(severance
     src/gui/widgets/DonutChartWidget.cpp
     src/gui/widgets/HorizontalBarChartWidget.cpp
     src/gui/widgets/NumberGridWidget.cpp
+    src/gui/widgets/NeuralTopologyWidget.cpp
     src/gui/windows/SettingsWindow.cpp
     src/utils/ThreadPool.cpp
     src/core/concurrency/ThreadPool.cpp

@@ -16,6 +16,7 @@ namespace severance::gui::widgets {
   class DonutChartWidget;
   class HorizontalBarChartWidget;
   class NumberGridWidget;
+  class NeuralTopologyWidget;
 }
 
 namespace severance::gui::dashboard {
@@ -49,6 +50,9 @@ private:
 
   // Bottom Grid
   widgets::NumberGridWidget* m_NumberGrid{nullptr};
+
+  // Neural Topology Graph
+  widgets::NeuralTopologyWidget* m_Topology{nullptr};
 
   // Model
   std::unique_ptr<core::metrics::MetricsProvider> m_MetricsProvider;
