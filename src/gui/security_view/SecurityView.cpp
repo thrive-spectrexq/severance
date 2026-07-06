@@ -1,11 +1,173 @@
 #include "SecurityView.hpp"
+#include "gui/theme/Theme.hpp"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QSplitter>
 #include <QHeaderView>
 #include <QLabel>
 #include <QGroupBox>
+#include <QTabWidget>
+#include <QPainter>
+#include <QPropertyAnimation>
+#include <QGraphicsDropShadowEffect>
+#include <QTimer>
+#include <QPainterPath>
+#include <cstdlib>
 
 namespace severance::gui::security_view {
+
+KiersProtectionWidget::KiersProtectionWidget(QWidget* parent) : QWidget(parent) {
+  setFixedSize(120, 120);
+  auto* anim = new QPropertyAnimation(this, "rotation", this);
+  anim->setDuration(6000);
+  anim->setStartValue(0);
+  anim->setEndValue(360);
+  anim->setLoopCount(-1);
+  anim->start();
+
+  auto* shadow = new QGraphicsDropShadowEffect(this);
+  shadow->setBlurRadius(25);
+  shadow->setColor(QColor(theme::Colors::AccentGlow));
+  shadow->setOffset(0, 0);
+  setGraphicsEffect(shadow);
+}
+
+void KiersProtectionWidget::paintEvent(QPaintEvent* event) {
+  Q_UNUSED(event);
+  QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  int side = qMin(width(), height());
+  painter.translate(width() / 2, height() / 2);
+  painter.rotate(m_rotation);
+
+  // Outer ring
+  QPen outerPen(QColor(theme::Colors::ChartTeal), 2);
+  painter.setPen(outerPen);
+  painter.drawArc(-side/2 + 10, -side/2 + 10, side - 20, side - 20, 0, 360 * 16);
+
+  // Dash ring
+  QPen dashPen(QColor(theme::Colors::TextPrimary), 1.5, Qt::DashLine);
+  painter.setPen(dashPen);
+  painter.drawArc(-side/2 + 18, -side/2 + 18, side - 36, side - 36, -m_rotation * 16, 360 * 16);
+
+  // Kier's Shield / Drop motif
+  painter.setPen(Qt::NoPen);
+  QColor shieldColor = QColor(theme::Colors::ChartGlow);
+  shieldColor.setAlpha(200);
+  painter.setBrush(shieldColor);
+
+  QPainterPath path;
+  path.moveTo(0, -30);
+  path.lineTo(25, -10);
+  path.lineTo(15, 25);
+  path.lineTo(0, 35);
+  path.lineTo(-15, 25);
+  path.lineTo(-25, -10);
+  path.closeSubpath();
+  painter.drawPath(path);
+
+  // Inner detail (lock hole)
+  painter.setBrush(QColor(theme::Colors::BgPrimary));
+  painter.drawEllipse(QPoint(0, -2), 6, 6);
+  painter.drawRect(-3, -2, 6, 14);
+}
+
+SecurityDashboardWidget::SecurityDashboardWidget(QWidget* parent) : QWidget(parent) {
+  setFixedHeight(160);
+  
+  auto* layout = new QHBoxLayout(this);
+  layout->setContentsMargins(24, 16, 24, 16);
+  layout->setSpacing(32);
+
+  // Shield on the left
+  m_shieldWidget = new KiersProtectionWidget(this);
+  layout->addWidget(m_shieldWidget);
+
+  // Text title
+  auto* rightLayout = new QVBoxLayout();
+  layout->addLayout(rightLayout, 1);
+
+  auto* titleLabel = new QLabel("VIGILANCE MATRIX — KIER'S OMNIPRESENT GAZE", this);
+  titleLabel->setStyleSheet(QString("color: %1; font-weight: bold; font-size: 14px; letter-spacing: 3px;").arg(theme::Colors::ChartGlow));
+  rightLayout->addWidget(titleLabel);
+  rightLayout->addStretch();
+  
+  m_animTimer = new QTimer(this);
+  connect(m_animTimer, &QTimer::timeout, this, [this]() {
+      // Fluctuating detector value
+      int currentCode = m_codeDetectorValue;
+      currentCode += (rand() % 15) - 7;
+      if (currentCode < 0) currentCode = 0;
+      if (currentCode > 100) currentCode = 100;
+      setCodeDetectorValue(currentCode);
+
+      // Firewall occasionally drops then recovers
+      int fw = m_firewallValue;
+      if (rand() % 100 < 8) {
+          fw -= (rand() % 20);
+      } else {
+          fw += 3;
+      }
+      if (fw < 0) fw = 0;
+      if (fw > 100) fw = 100;
+      setFirewallValue(fw);
+  });
+  m_animTimer->start(200);
+
+  m_codeDetectorValue = 0;
+  m_firewallValue = 100;
+}
+
+void SecurityDashboardWidget::paintEvent(QPaintEvent* event) {
+  QWidget::paintEvent(event);
+  QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  // Draw a clinical background frame
+  QRect r = rect();
+  painter.fillRect(r, QColor(theme::Colors::BgTertiary));
+
+  QPen borderPen(QColor(theme::Colors::Border), 2);
+  painter.setPen(borderPen);
+  painter.drawRect(r.adjusted(1, 1, -1, -1));
+
+  // Draw horizontal bars for the detectors
+  int startX = m_shieldWidget->width() + 56;
+  int startY = 60;
+  int barWidth = width() - startX - 32;
+  int barHeight = 12;
+
+  painter.setPen(QColor(theme::Colors::TextSecondary));
+  painter.setFont(QFont("Segoe UI", 9, QFont::Bold));
+  painter.drawText(startX, startY - 8, QString("MACRODATA CODE DETECTOR FLUX [%1%]").arg(m_codeDetectorValue));
+
+  painter.fillRect(startX, startY, barWidth, barHeight, QColor(theme::Colors::BgPrimary));
+  QColor codeColor = m_codeDetectorValue > 80 ? QColor(theme::Colors::ChartAmber) : QColor(theme::Colors::ChartTeal);
+  painter.fillRect(startX, startY, barWidth * m_codeDetectorValue / 100.0, barHeight, codeColor);
+
+  painter.setPen(QColor(theme::Colors::BgSecondary));
+  for (int i = 1; i < 20; ++i) {
+      int x = startX + (barWidth * i / 20);
+      painter.drawLine(x, startY, x, startY + barHeight);
+  }
+
+  // Firewall Status
+  startY += 50;
+  painter.setPen(QColor(theme::Colors::TextSecondary));
+  painter.drawText(startX, startY - 8, QString("FIREWALL INTEGRITY [%1%]").arg(m_firewallValue));
+
+  painter.fillRect(startX, startY, barWidth, barHeight, QColor(theme::Colors::BgPrimary));
+  QColor fwColor = m_firewallValue < 40 ? QColor(theme::Colors::Error) : QColor(theme::Colors::Success);
+  painter.fillRect(startX, startY, barWidth * m_firewallValue / 100.0, barHeight, fwColor);
+
+  painter.setPen(QColor(theme::Colors::BgSecondary));
+  for (int i = 1; i < 20; ++i) {
+      int x = startX + (barWidth * i / 20);
+      painter.drawLine(x, startY, x, startY + barHeight);
+  }
+}
+
 
 SecurityView::SecurityView(QWidget* parent) : QWidget(parent) {
   setupUI();
@@ -24,12 +186,16 @@ SecurityView::SecurityView(QWidget* parent) : QWidget(parent) {
 
 SecurityView::~SecurityView() = default;
 
-#include "gui/theme/Theme.hpp"
-#include <QTabWidget>
+
 
 void SecurityView::setupUI() {
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(16, 16, 16, 16);
+  layout->setSpacing(24);
+
+  // Top Dashboard
+  m_Dashboard = new SecurityDashboardWidget(this);
+  layout->addWidget(m_Dashboard);
 
   auto* tabs = new QTabWidget(this);
   tabs->setStyleSheet(QString(
