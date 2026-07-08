@@ -57,6 +57,14 @@ struct Colors {
   static constexpr const char* ChartPurple  = "#8E44AD";
   static constexpr const char* ChartYellow  = "#F1C40F";
   static constexpr const char* ChartOrange  = "#E67E22";
+  static constexpr const char* ChartRed     = "#C0392B";   // Clinical red (chart series)
+
+  // Surface — general card/panel background alias
+  static constexpr const char* Surface      = "#0F1A1F";   // Same family as BgSecondary
+
+  // Convenience aliases used by widgets
+  static constexpr const char* BgLight      = "#1A2332";   // Alias for BgHover (lighter bg)
+  static constexpr const char* TextMain     = "#E8ECEF";   // Alias for TextPrimary
 };
 
 struct Dimensions {
