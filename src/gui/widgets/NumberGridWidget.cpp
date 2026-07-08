@@ -48,7 +48,7 @@ void NumberGridWidget::showEvent(QShowEvent* event) {
 }
 
 void NumberGridWidget::generateGrid() {
-    std::mt19random_engine rng(std::random_device{}());
+    std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(0, 9);
     
     m_Grid.assign(GridRows, std::vector<NumberCell>(GridCols));
@@ -137,7 +137,7 @@ void NumberGridWidget::activateRandomGroup() {
         keys.push_back(pair.first);
     }
     
-    std::mt19random_engine rng(std::random_device{}());
+    std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(0, keys.size() - 1);
     m_ActiveGroupId = keys[dist(rng)];
 }
