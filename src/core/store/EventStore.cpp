@@ -35,7 +35,9 @@ bool EventStore::Initialize(const QString& dbPath) {
   }
 
   m_Initialized = true;
-  m_FlushThread = std::jthread(&EventStore::FlushThreadLoop, this);
+  m_FlushThread = std::jthread([this](std::stop_token stoken) {
+    FlushThreadLoop(stoken);
+  });
   
   SEV_CORE_INFO("Event store initialized successfully at {}", dbPath.toStdString());
   return true;
