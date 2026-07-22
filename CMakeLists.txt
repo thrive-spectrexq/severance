@@ -110,6 +110,7 @@ target_link_libraries(severance_tests PRIVATE
     Catch2::Catch2WithMain
     Qt6::Core
     Qt6::Network
+    Qt6::Sql
 )
 
 # Register individual test suites for clearer CI output
