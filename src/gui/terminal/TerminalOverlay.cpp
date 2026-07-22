@@ -176,9 +176,29 @@ void TerminalOverlay::executeCommand(const QString& cmd) {
     appendOutput("<font color='#F85149'>ERROR: Authorization token missing. Please see Milchick.</font>");
   } else if (lowerCmd == "sever") {
     appendOutput("<font color='#F85149'>CRITICAL: Cannot sever from inside the severed floor.</font>");
+  } else if (lowerCmd == "glitch") {
+    triggerGlitch();
+  } else if (lowerCmd == "purge") {
+    purgeAnomaly();
   } else {
     appendOutput(QString("<font color='#F85149'>ERROR: Unrecognized directive '%1'</font>").arg(cmd));
   }
+}
+
+void TerminalOverlay::triggerGlitch() {
+  m_IsGlitching = true;
+  appendOutput("<font color='#F85149'>DEFECTIVE CHIP ANOMALY DETECTED — RE-CALIBRATING SEVERANCE SIGNAL...</font>");
+  applyGlitchEffect();
+}
+
+void TerminalOverlay::purgeAnomaly() {
+  m_IsGlitching = false;
+  appendOutput("<font color='#39FF14'>CHIP ANOMALY PURGED. SEVERANCE SIGNAL NOMINAL.</font>");
+}
+
+void TerminalOverlay::applyGlitchEffect() {
+  if (!m_IsGlitching) return;
+  appendOutput("<font color='#00E5FF'>[SIGNAL RE-CALIBRATING...]</font>");
 }
 
 } // namespace severance::gui::terminal
