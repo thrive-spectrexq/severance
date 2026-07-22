@@ -59,6 +59,7 @@ add_executable(severance
     src/core/notifications/NotificationManager.cpp
     src/core/notifications/RuleEngine.cpp
     src/core/session/SessionManager.cpp
+    src/core/store/EventStore.cpp
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
@@ -92,6 +93,7 @@ set(TEST_COMMON_SOURCES
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
     src/core/notifications/NotificationManager.cpp
+    src/core/store/EventStore.cpp
 )
 
 # --- Test executable ---
