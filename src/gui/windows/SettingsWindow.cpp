@@ -1,7 +1,6 @@
 #include "SettingsWindow.hpp"
 #include "utils/Config.hpp"
 #include "logging/Logger.hpp"
-#include "core/security/FimManager.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -385,13 +384,6 @@ void SettingsWindow::saveSettings() {
       fimDirsList << m_FimDirectories->item(i)->text();
   }
   cfg.Set("security.fim_directories", fimDirsList.join(";").toStdString());
-  
-  // Apply FIM directly if needed (restarting watchers)
-  auto& fim = core::security::FimManager::GetInstance();
-  fim.StopAll();
-  for (const auto& dir : fimDirsList) {
-      fim.StartWatching(dir.toStdString());
-  }
   
   // Advanced
   cfg.Set("advanced.plugins_enabled", m_EnablePlugins->isChecked() ? "1" : "0");

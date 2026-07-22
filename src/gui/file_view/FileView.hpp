@@ -11,8 +11,6 @@ namespace severance::core::filesystem {
 
 namespace severance::gui::file_view {
 
-class FileDetailPanel;
-
 class FileView : public QWidget {
   Q_OBJECT
 

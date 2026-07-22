@@ -24,20 +24,14 @@ add_executable(severance
     src/gui/dashboard/DashboardView.cpp
     src/gui/perimeter_grid/PerimeterGridView.cpp
     src/gui/process_view/ProcessView.cpp
-    src/gui/process_view/ProcessTreeModel.cpp
-    src/gui/process_view/ProcessDetailPanel.cpp
     src/gui/theme/Theme.cpp
     src/gui/terminal/TerminalOverlay.cpp
     src/gui/search/SearchOverlay.cpp
     src/gui/network_view/NetworkView.cpp
-    src/gui/network_view/NetworkDetailPanel.cpp
     src/gui/security_view/SecurityView.cpp
     src/gui/widgets/ToastNotification.cpp
     src/gui/file_view/FileView.cpp
-    src/gui/file_view/FileDetailPanel.cpp
     src/gui/timeline/TimelineView.cpp
-    src/gui/timeline/TimelineDetailPanel.cpp
-    src/gui/timeline/TimelineHistogram.cpp
     src/gui/isolation_view/IsolationView.cpp
     src/gui/session_view/SessionView.cpp
     src/gui/board_comms/BoardCommsView.cpp

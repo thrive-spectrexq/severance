@@ -7,9 +7,6 @@
 
 namespace severance::gui::process_view {
 
-class ProcessTreeModel;
-class ProcessDetailPanel;
-
 class ProcessView : public QWidget {
   Q_OBJECT
 

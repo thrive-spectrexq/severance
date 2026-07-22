@@ -5,7 +5,6 @@
 #include <QTimer>
 #include <QLineEdit>
 #include <QSplitter>
-#include "NetworkDetailPanel.hpp"
 
 namespace severance::gui::network_view {
 
@@ -32,7 +31,6 @@ private:
   QLineEdit* m_SearchBox{nullptr};
   QTimer* m_RefreshTimer{nullptr};
   QSplitter* m_Splitter{nullptr};
-  NetworkDetailPanel* m_DetailPanel{nullptr};
 };
 
 } // namespace severance::gui::network_view

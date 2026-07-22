@@ -79,8 +79,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setCentralWidget(centralWidget);
 
   connect(&core::game::GameEngine::GetInstance(), &core::game::GameEngine::gameNotification,
-          this, [this](const QString& title, const QString& message, const QString& severity) {
-            showNotification(title, message, severity);
+          this, [this](const QString& title, const QString& message, const QString& /*severity*/) {
+            showSystemNotification(title, message);
           });
 
   connect(&core::game::GameEngine::GetInstance(), &core::game::GameEngine::stateChanged,
