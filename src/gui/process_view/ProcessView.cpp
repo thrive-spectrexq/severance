@@ -5,6 +5,9 @@
 #include <QGridLayout>
 #include <QFrame>
 #include <QProgressBar>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QPushButton>
 
 namespace severance::gui::process_view {
 
@@ -59,11 +62,13 @@ void ProcessView::setupUI() {
         deptLabel->setStyleSheet("color: #A0C0D0; border: none;");
         cardLayout->addWidget(deptLabel);
         
+        QProgressBar* compBar = nullptr;
+        QLabel* compLabel = nullptr;
         if (innie.compliance >= 0) {
             auto* compLayout = new QVBoxLayout();
-            auto* compLabel = new QLabel(QString("Compliance: %1%").arg(innie.compliance));
+            compLabel = new QLabel(QString("Compliance: %1%").arg(innie.compliance));
             compLabel->setStyleSheet("border: none;");
-            auto* compBar = new QProgressBar();
+            compBar = new QProgressBar();
             compBar->setRange(0, 100);
             compBar->setValue(innie.compliance);
             compBar->setTextVisible(false);
@@ -85,6 +90,42 @@ void ProcessView::setupUI() {
         auto* chipLabel = new QLabel("Severance Chip: <font color='#00FF00'>NOMINAL</font>");
         chipLabel->setStyleSheet("border: none;");
         cardLayout->addWidget(chipLabel);
+        
+        if (innie.name == "Mark S." || innie.name == "Helly R." || innie.name == "Irving B." || innie.name == "Dylan G." || innie.name == "Burt G.") {
+            auto* msgBtn = new QPushButton("[ SEND DIRECTIVE / NOTE ]");
+            msgBtn->setStyleSheet("background-color: #1A7A5C; color: white; border: 1px solid #00E5FF; padding: 4px; font-weight: bold;");
+            
+            QString innieName = innie.name;
+            connect(msgBtn, &QPushButton::clicked, this, [this, innieName, compBar, compLabel, defIndexLabel]() {
+                bool ok;
+                QString text = QInputDialog::getText(nullptr, "Send Directive / Note",
+                                                     QString("Send note to %1:").arg(innieName), QLineEdit::Normal,
+                                                     "", &ok);
+                if (ok && !text.isEmpty()) {
+                    QString reply = "Message received.";
+                    if (innieName == "Helly R.") reply = "I'm looking for the exit";
+                    else if (innieName == "Irving B.") reply = "Let us consult the Handbook";
+                    else if (innieName == "Dylan G.") reply = "Did somebody say Waffle Party?";
+                    else if (innieName == "Mark S.") reply = "I'll get back to my files.";
+                    else if (innieName == "Burt G.") reply = "The Optics and Design department is always open.";
+                    
+                    QMessageBox::information(nullptr, "Response", QString("%1 replies:\n\"%2\"").arg(innieName, reply));
+                    
+                    if (compBar && compLabel) {
+                        int currentComp = compBar->value();
+                        currentComp = std::max(0, currentComp - (rand() % 5 + 1));
+                        compBar->setValue(currentComp);
+                        compLabel->setText(QString("Compliance: %1%").arg(currentComp));
+                    }
+                    if (defIndexLabel) {
+                        int currentDef = defIndexLabel->text().split(": ").last().toInt();
+                        currentDef = std::min(100, currentDef + (rand() % 10 + 1));
+                        defIndexLabel->setText(QString("Defiance Index: %1").arg(currentDef));
+                    }
+                }
+            });
+            cardLayout->addWidget(msgBtn);
+        }
         
         gridLayout->addWidget(card, row, col);
         col++;

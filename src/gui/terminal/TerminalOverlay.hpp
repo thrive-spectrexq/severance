@@ -5,6 +5,8 @@
 #include <QLineEdit>
 #include <QPropertyAnimation>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QTimer>
 
 namespace severance::gui::terminal {
 
@@ -23,6 +25,9 @@ protected:
 
 private slots:
   void onReturnPressed();
+  void triggerGlitch();
+  void purgeAnomaly();
+  void applyGlitchEffect();
 
 private:
   void setupUi();
@@ -35,6 +40,11 @@ private:
   QPropertyAnimation* m_SlideAnimation{nullptr};
   bool m_IsVisible{false};
   int m_TargetHeight{400};
+  
+  QPushButton* m_PurgeButton{nullptr};
+  QTimer* m_GlitchTimer{nullptr};
+  QTimer* m_RandomGlitchTrigger{nullptr};
+  bool m_IsGlitching{false};
 };
 
 } // namespace severance::gui::terminal

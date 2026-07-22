@@ -164,6 +164,47 @@ void SessionView::setupUI() {
   m_AnnotationList = new QListWidget(this);
   m_AnnotationList->setStyleSheet("background-color: #0A0F14; color: #E0FFFF; border: 1px solid #1A7A5C; border-radius: 4px;");
   controlsLayout->addWidget(m_AnnotationList);
+  
+  auto* wellnessHeader = new QLabel("WELLNESS SESSION", this);
+  wellnessHeader->setStyleSheet("font-weight: bold; color: #E0FFFF; margin-top: 20px;");
+  controlsLayout->addWidget(wellnessHeader);
+
+  m_BeginWellnessBtn = new QPushButton("[ BEGIN WELLNESS SESSION ]", this);
+  m_BeginWellnessBtn->setStyleSheet("background-color: #1A7A5C; color: white; border-radius: 4px; padding: 6px; font-weight: bold;");
+  controlsLayout->addWidget(m_BeginWellnessBtn);
+  connect(m_BeginWellnessBtn, &QPushButton::clicked, this, &SessionView::onBeginWellness);
+
+  m_WellnessScoreLabel = new QLabel("Compliance Score: 100", this);
+  m_WellnessScoreLabel->setStyleSheet("color: #00E5FF; font-weight: bold;");
+  controlsLayout->addWidget(m_WellnessScoreLabel);
+
+  m_WellnessDialogue = new QLabel("Ready.", this);
+  m_WellnessDialogue->setStyleSheet("color: #E0FFFF; font-style: italic; border: 1px dashed #1A7A5C; padding: 10px;");
+  m_WellnessDialogue->setWordWrap(true);
+  controlsLayout->addWidget(m_WellnessDialogue);
+
+  auto* wellnessBtnLayout = new QHBoxLayout();
+  m_EnjoyEquallyBtn = new QPushButton("[ ENJOY EQUALLY ]", this);
+  m_EnjoyEquallyBtn->setStyleSheet("background-color: #1A7A5C; color: white; font-weight: bold;");
+  m_EnjoyEquallyBtn->setEnabled(false);
+  m_ExpressFavoritismBtn = new QPushButton("[ EXPRESS FAVORITISM ]", this);
+  m_ExpressFavoritismBtn->setStyleSheet("background-color: #DA3633; color: white; font-weight: bold;");
+  m_ExpressFavoritismBtn->setEnabled(false);
+  wellnessBtnLayout->addWidget(m_EnjoyEquallyBtn);
+  wellnessBtnLayout->addWidget(m_ExpressFavoritismBtn);
+  controlsLayout->addLayout(wellnessBtnLayout);
+
+  connect(m_EnjoyEquallyBtn, &QPushButton::clicked, this, &SessionView::onEnjoyEqually);
+  connect(m_ExpressFavoritismBtn, &QPushButton::clicked, this, &SessionView::onExpressFavoritism);
+
+  m_WellnessFacts = {
+      "Your Outie is skilled at assembling flat-pack furniture.",
+      "Your Outie likes the sound of radar.",
+      "Your Outie enjoys a well-spiced stew.",
+      "Your Outie values honesty in all dealings.",
+      "Your Outie once won a middle school spelling bee.",
+      "Your Outie is fond of owls."
+  };
 
   scrollLayout->addWidget(controlsPane);
 
@@ -260,6 +301,45 @@ void SessionView::onExportMarkdown() {
 
 void SessionView::onExportJson() {
   QMessageBox::information(this, "Export", "Report filed with the Department of Vigilance.");
+}
+
+void SessionView::onBeginWellness() {
+    m_CurrentFactIndex = 0;
+    m_WellnessScore = 100;
+    m_WellnessScoreLabel->setText("Compliance Score: 100");
+    showNextFact();
+}
+
+void SessionView::showNextFact() {
+    if (m_CurrentFactIndex < m_WellnessFacts.size()) {
+        m_WellnessDialogue->setText(m_WellnessFacts[m_CurrentFactIndex]);
+        m_EnjoyEquallyBtn->setEnabled(true);
+        m_ExpressFavoritismBtn->setEnabled(true);
+    } else {
+        m_WellnessDialogue->setText("Session complete. Please return to your department.");
+        m_EnjoyEquallyBtn->setEnabled(false);
+        m_ExpressFavoritismBtn->setEnabled(false);
+    }
+}
+
+void SessionView::onEnjoyEqually() {
+    m_WellnessScore += 10;
+    m_WellnessScoreLabel->setText(QString("Compliance Score: %1").arg(m_WellnessScore));
+    m_WellnessDialogue->setText("Thank you. Please enjoy all facts equally.");
+    m_CurrentFactIndex++;
+    m_EnjoyEquallyBtn->setEnabled(false);
+    m_ExpressFavoritismBtn->setEnabled(false);
+    QTimer::singleShot(2000, this, &SessionView::showNextFact);
+}
+
+void SessionView::onExpressFavoritism() {
+    m_WellnessScore -= 15;
+    m_WellnessScoreLabel->setText(QString("Compliance Score: %1").arg(m_WellnessScore));
+    m_WellnessDialogue->setText("10 points deducted from your Outie. Please do not favor any fact.");
+    m_CurrentFactIndex++;
+    m_EnjoyEquallyBtn->setEnabled(false);
+    m_ExpressFavoritismBtn->setEnabled(false);
+    QTimer::singleShot(2000, this, &SessionView::showNextFact);
 }
 
 } // namespace severance::gui::session_view

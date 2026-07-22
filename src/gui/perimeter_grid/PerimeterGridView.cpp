@@ -6,8 +6,52 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsBlurEffect>
 #include <QRandomGenerator>
+#include <QGraphicsSceneMouseEvent>
 
 namespace severance::gui::perimeter_grid {
+
+// ---------------------------------------------------------
+// RoomItem
+// ---------------------------------------------------------
+
+RoomItem::RoomItem(const QString& name, const QRectF& rect, const QColor& color, QGraphicsItem* parent)
+    : QGraphicsObject(parent), m_name(name), m_rect(rect), m_color(color)
+{
+    setAcceptedMouseButtons(Qt::LeftButton);
+    setAcceptHoverEvents(true);
+}
+
+QRectF RoomItem::boundingRect() const {
+    return m_rect;
+}
+
+void RoomItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    
+    painter->setPen(QPen(QColor("#00FF41").darker(200), 1));
+    painter->setBrush(m_color);
+    painter->drawRect(m_rect);
+
+    painter->setPen(m_locked ? Qt::red : QColor("#00FF41"));
+    QFont font("Courier", 12, QFont::Bold);
+    painter->setFont(font);
+    
+    QRectF tr = painter->fontMetrics().boundingRect(m_name);
+    painter->drawText(m_rect.center() - QPointF(tr.width() / 2, -tr.height() / 2), m_name);
+    
+    if (m_locked) {
+        QRectF lr = painter->fontMetrics().boundingRect("LOCKED");
+        painter->drawText(m_rect.center() - QPointF(lr.width() / 2, -tr.height() / 2 - 20), "LOCKED");
+    }
+}
+
+void RoomItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        emit clicked(this);
+    }
+    QGraphicsObject::mousePressEvent(event);
+}
 
 // ---------------------------------------------------------
 // ElevatorItem
@@ -135,6 +179,7 @@ PerimeterGridView::PerimeterGridView(QWidget* parent)
     setFrameShape(QFrame::NoFrame);
 
     setupScene();
+    setupUI();
 
     m_sensorTimer = new QTimer(this);
     connect(m_sensorTimer, &QTimer::timeout, this, &PerimeterGridView::randomizeSensors);
@@ -142,6 +187,71 @@ PerimeterGridView::PerimeterGridView(QWidget* parent)
 }
 
 PerimeterGridView::~PerimeterGridView() = default;
+
+void PerimeterGridView::setupUI() {
+    m_otcButton = new QPushButton("OVERTIME CONTINGENCY (OTC)", this);
+    m_otcButton->setStyleSheet(
+        "QPushButton { background-color: #550000; color: #FF0000; font-family: 'Courier New'; font-weight: bold; font-size: 16px; border: 2px solid #FF0000; padding: 10px; }"
+        "QPushButton:hover { background-color: #880000; }"
+    );
+    connect(m_otcButton, &QPushButton::clicked, this, &PerimeterGridView::toggleOTC);
+
+    m_telemetryPanel = new QFrame(this);
+    m_telemetryPanel->setStyleSheet("QFrame { background-color: rgba(10, 10, 10, 200); border: 1px solid #00FF41; }");
+    m_telemetryPanel->setVisible(false);
+    
+    auto* layout = new QVBoxLayout(m_telemetryPanel);
+    m_telemetryLabel = new QLabel(m_telemetryPanel);
+    m_telemetryLabel->setStyleSheet("QLabel { color: #00FF41; font-family: 'Courier New'; font-size: 14px; border: none; background: transparent; }");
+    layout->addWidget(m_telemetryLabel);
+
+    m_otcTimer = new QTimer(this);
+    connect(m_otcTimer, &QTimer::timeout, this, &PerimeterGridView::onOTCPulse);
+}
+
+void PerimeterGridView::toggleOTC() {
+    m_otcActive = !m_otcActive;
+    
+    if (m_otcActive) {
+        m_otcButton->setStyleSheet(
+            "QPushButton { background-color: #FF0000; color: #FFFFFF; font-family: 'Courier New'; font-weight: bold; font-size: 16px; border: 2px solid #FFFFFF; padding: 10px; }"
+        );
+        m_otcTimer->start(500);
+        for (auto* room : m_rooms) {
+            room->setLocked(true);
+        }
+    } else {
+        m_otcButton->setStyleSheet(
+            "QPushButton { background-color: #550000; color: #FF0000; font-family: 'Courier New'; font-weight: bold; font-size: 16px; border: 2px solid #FF0000; padding: 10px; }"
+            "QPushButton:hover { background-color: #880000; }"
+        );
+        m_otcTimer->stop();
+        m_otcFlash = false;
+        viewport()->update();
+        for (auto* room : m_rooms) {
+            room->setLocked(false);
+        }
+    }
+}
+
+void PerimeterGridView::onOTCPulse() {
+    m_otcFlash = !m_otcFlash;
+    viewport()->update();
+}
+
+void PerimeterGridView::onRoomClicked(RoomItem* room) {
+    m_telemetryPanel->setVisible(true);
+    QString info = QString("ROOM: %1\n\n"
+                           "INNIE COUNT: %2\n"
+                           "CLEARANCE: LEVEL %3\n"
+                           "CAMERA: LIVE FEED — 1080p CRT\n"
+                           "DOOR STATUS: %4")
+                           .arg(room->name())
+                           .arg(QRandomGenerator::global()->bounded(1, 10))
+                           .arg(QRandomGenerator::global()->bounded(2, 5))
+                           .arg(room->isLocked() ? "LOCKED" : "UNLOCKED");
+    m_telemetryLabel->setText(info);
+}
 
 void PerimeterGridView::setupScene() {
     m_scene->setSceneRect(-400, -300, 800, 600);
@@ -151,6 +261,9 @@ void PerimeterGridView::setupScene() {
     createDepartment("Optics & Design", QRectF(50, -250, 300, 200), QColor("#001122"));
     createDepartment("Break Room", QRectF(-350, 50, 300, 200), QColor("#220000"));
     createDepartment("Management", QRectF(50, 50, 300, 200), QColor("#222200"));
+    createDepartment("Testing Floor Elevator", QRectF(-150, -300, 300, 40), QColor("#111111"));
+    createDepartment("Executive Suite", QRectF(-350, -300, 180, 40), QColor("#330033"));
+    createDepartment("Goat Room", QRectF(170, -300, 180, 40), QColor("#333300"));
 
     // Center Elevator
     m_elevator = new ElevatorItem();
@@ -175,20 +288,10 @@ void PerimeterGridView::setupScene() {
 }
 
 void PerimeterGridView::createDepartment(const QString& name, const QRectF& rect, const QColor& color) {
-    auto* rectItem = new QGraphicsRectItem(rect);
-    rectItem->setPen(QPen(QColor("#00FF41").darker(200), 1));
-    rectItem->setBrush(color);
-    m_scene->addItem(rectItem);
-
-    auto* textItem = new QGraphicsTextItem(name);
-    textItem->setDefaultTextColor(QColor("#00FF41"));
-    QFont font("Courier", 12, QFont::Bold);
-    textItem->setFont(font);
-    
-    // Center text
-    QRectF tr = textItem->boundingRect();
-    textItem->setPos(rect.center().x() - tr.width() / 2, rect.center().y() - tr.height() / 2);
-    m_scene->addItem(textItem);
+    auto* room = new RoomItem(name, rect, color);
+    connect(room, &RoomItem::clicked, this, &PerimeterGridView::onRoomClicked);
+    m_scene->addItem(room);
+    m_rooms.append(room);
 }
 
 void PerimeterGridView::randomizeSensors() {
@@ -207,6 +310,9 @@ void PerimeterGridView::randomizeSensors() {
 void PerimeterGridView::resizeEvent(QResizeEvent* event) {
     QGraphicsView::resizeEvent(event);
     fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+
+    m_otcButton->setGeometry(width() / 2 - 150, 20, 300, 40);
+    m_telemetryPanel->setGeometry(width() - 320, 20, 300, 200);
 }
 
 void PerimeterGridView::drawBackground(QPainter* painter, const QRectF& rect) {
@@ -226,6 +332,14 @@ void PerimeterGridView::drawBackground(QPainter* painter, const QRectF& rect) {
         lines.append(QLineF(rect.left(), y, rect.right(), y));
 
     painter->drawLines(lines.data(), lines.size());
+}
+
+void PerimeterGridView::drawForeground(QPainter* painter, const QRectF& rect) {
+    QGraphicsView::drawForeground(painter, rect);
+    
+    if (m_otcActive && m_otcFlash) {
+        painter->fillRect(rect, QColor(255, 0, 0, 80));
+    }
 }
 
 } // namespace severance::gui::perimeter_grid

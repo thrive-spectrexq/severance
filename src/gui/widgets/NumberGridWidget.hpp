@@ -25,6 +25,7 @@ struct NumberCell {
     bool isAnimating = false;
     QPointF animPos{0, 0};
     int targetBin = -1;
+    std::vector<QPointF> trail;
 };
 
 class NumberGridWidget : public QWidget {
@@ -39,6 +40,7 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
     void leaveEvent(QEvent* event) override;
     void showEvent(QShowEvent* event) override;
 
@@ -53,6 +55,10 @@ private:
     void drawLumonLogo(QPainter& painter);
     void resetIdleTimer();
     QPoint mapToGrid(const QPoint& pos) const;
+
+    void showFileCabinet();
+    void drawAuras(QPainter& painter, int minX, int minY, int maxX, int maxY);
+    void drawMDEOverlay(QPainter& painter);
 
     static constexpr int GridCols = 60;
     static constexpr int GridRows = 40;
@@ -74,6 +80,8 @@ private:
     double m_Time{0.0};
     QTimer* m_Timer{nullptr};
     QPoint m_MousePos{-1, -1};
+    QPoint m_LastMousePos{-1, -1};
+    bool m_IsDragging = false;
     
     // Idle mode
     int m_IdleCounter = 0;
@@ -84,6 +92,15 @@ private:
     std::vector<QString> m_MdrFiles{"COLDWATER", "TUMWATER", "CULPEPPER", "DILLON", "SIENA", "PACOIMA"};
     int m_CurrentFileIndex = 0;
     bool m_QuotaCompleted = false;
+    
+    // MDE & Waffle Party
+    bool m_MdeMode = false;
+    int m_CurrentSong = 0;
+    bool m_WaffleAccepted = false;
+    QRectF m_BtnDefiantJazz;
+    QRectF m_BtnKierHymn;
+    QRectF m_BtnLumonLounge;
+    QRectF m_BtnWaffle;
 
     // Progress
     int m_TotalBadGroups = 0;

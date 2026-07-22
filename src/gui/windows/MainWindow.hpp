@@ -48,6 +48,7 @@ private:
 
 public slots:
   void showSystemNotification(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information);
+  void showHandbook();
 
 private:
   // Sidebar

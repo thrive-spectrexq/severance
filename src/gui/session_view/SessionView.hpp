@@ -24,6 +24,11 @@ private slots:
   void onExportJson();
   void updateStatus();
   void updateBiometrics();
+  
+  void onBeginWellness();
+  void onEnjoyEqually();
+  void onExpressFavoritism();
+  void showNextFact();
 
 private:
   void setupUI();
@@ -38,6 +43,15 @@ private:
 
   QPushButton* m_ExportMdBtn{nullptr};
   QPushButton* m_ExportJsonBtn{nullptr};
+
+  QPushButton* m_BeginWellnessBtn{nullptr};
+  QLabel* m_WellnessDialogue{nullptr};
+  QPushButton* m_EnjoyEquallyBtn{nullptr};
+  QPushButton* m_ExpressFavoritismBtn{nullptr};
+  QLabel* m_WellnessScoreLabel{nullptr};
+  QStringList m_WellnessFacts;
+  int m_CurrentFactIndex{0};
+  int m_WellnessScore{100};
 
   BiometricGraph* m_BrainwaveGraph{nullptr};
   BiometricGraph* m_StressGraph{nullptr};

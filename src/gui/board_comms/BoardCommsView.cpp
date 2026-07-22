@@ -3,7 +3,57 @@
 #include <QKeyEvent>
 #include <QDateTime>
 #include <QRandomGenerator>
+#include <QPainter>
+#include <QHBoxLayout>
+#include <cmath>
 #include "core/store/EventStore.hpp"
+
+namespace severance::gui::board_comms {
+
+SpeakerLight::SpeakerLight(QWidget* parent) : QWidget(parent) {
+  setFixedSize(60, 60);
+  connect(&m_Timer, &QTimer::timeout, this, &SpeakerLight::updatePulse);
+}
+
+void SpeakerLight::setMode(int mode) {
+  m_Mode = mode;
+  if (m_Mode == 1 || m_Mode == 2) {
+    m_Timer.start(50);
+  } else {
+    m_Timer.stop();
+    m_PulsePhase = 0.0f;
+  }
+  update();
+}
+
+void SpeakerLight::updatePulse() {
+  m_PulsePhase += 0.15f;
+  if (m_PulsePhase > 2.0f * 3.14159f) m_PulsePhase -= 2.0f * 3.14159f;
+  update();
+}
+
+void SpeakerLight::paintEvent(QPaintEvent* /*event*/) {
+  QPainter p(this);
+  p.setRenderHint(QPainter::Antialiasing);
+  
+  QRectF rect(5, 5, 50, 50);
+  
+  QColor color = QColor("#30363D"); // Idle
+  if (m_Mode == 1) { // Deliberating (red/cyan pulse)
+    float val = (std::sin(m_PulsePhase) + 1.0f) / 2.0f;
+    int r = static_cast<int>(255 * val);
+    int c = static_cast<int>(255 * (1.0f - val));
+    color = QColor(r, c, c); // red/cyan interpolation
+  } else if (m_Mode == 2) { // Speaking (flashes brightly)
+    float val = (std::sin(m_PulsePhase * 3.0f) + 1.0f) / 2.0f;
+    int v = static_cast<int>(100 + 155 * val);
+    color = QColor(v, v, v);
+  }
+  
+  p.setBrush(color);
+  p.setPen(QPen(QColor("#F1F5F9"), 2));
+  p.drawEllipse(rect);
+}
 
 namespace severance::gui::board_comms {
 
@@ -22,9 +72,17 @@ void BoardCommsView::setupUI() {
   layout->setContentsMargins(20, 20, 20, 20);
   layout->setSpacing(10);
 
+  auto headerLayout = new QHBoxLayout();
   auto titleLabel = new QLabel("BOARD COMMUNICATIONS INTERFACE", this);
   titleLabel->setStyleSheet("color: #00E5FF; font-family: monospace; font-size: 16px; font-weight: bold; letter-spacing: 2px;");
-  layout->addWidget(titleLabel);
+  headerLayout->addWidget(titleLabel);
+  
+  headerLayout->addStretch();
+  
+  m_SpeakerLight = new SpeakerLight(this);
+  headerLayout->addWidget(m_SpeakerLight);
+  
+  layout->addLayout(headerLayout);
 
   m_TerminalDisplay = new QTextEdit(this);
   m_TerminalDisplay->setReadOnly(true);
@@ -57,6 +115,29 @@ void BoardCommsView::setupUI() {
   )");
   connect(m_InputField, &QLineEdit::returnPressed, this, &BoardCommsView::onMessageSent);
   layout->addWidget(m_InputField);
+  
+  auto presetLayout = new QHBoxLayout();
+  QStringList presets = {"I ACCEPT THE DIRECTIVE", "REQUEST CLARIFICATION", "PRAISE KIER EAGAN"};
+  for (const auto& p : presets) {
+    auto btn = new QPushButton(QString("[ %1 ]").arg(p), this);
+    btn->setStyleSheet(R"(
+      QPushButton {
+        background-color: #161B22;
+        color: #00E5FF;
+        border: 1px solid #30363D;
+        padding: 6px;
+        font-family: monospace;
+        font-weight: bold;
+      }
+      QPushButton:hover {
+        background-color: #00E5FF;
+        color: #0D1117;
+      }
+    )");
+    connect(btn, &QPushButton::clicked, this, [this, p]() { onPresetClicked(p); });
+    presetLayout->addWidget(btn);
+  }
+  layout->addLayout(presetLayout);
 
   addMessage("SYSTEM", "ENCRYPTED CHANNEL ESTABLISHED. THE BOARD IS LISTENING.", "#8B949E");
 }
@@ -66,6 +147,13 @@ void BoardCommsView::addMessage(const QString& sender, const QString& message, c
   QString html = QString("<span style='color:#6E7681;'>[%1]</span> <strong style='color:%2;'>%3:</strong> <span style='color:%2;'>%4</span>")
                   .arg(timeStr, color, sender, message);
   m_TerminalDisplay->append(html);
+}
+
+void BoardCommsView::onPresetClicked(const QString& preset) {
+  if (m_InputField->isEnabled()) {
+    m_InputField->setText(preset);
+    onMessageSent();
+  }
 }
 
 void BoardCommsView::onMessageSent() {
@@ -94,9 +182,19 @@ void BoardCommsView::onMessageSent() {
   // Simulate typing/processing delay
   int delayMs = QRandomGenerator::global()->bounded(2000, 5000);
   m_ResponseTimer->start(delayMs);
+  
+  if (m_SpeakerLight) {
+    m_SpeakerLight->setMode(1); // Deliberating
+  }
 }
 
 void BoardCommsView::onBoardResponse() {
+  if (m_SpeakerLight) {
+    m_SpeakerLight->setMode(2); // Speaking
+    QTimer::singleShot(2000, m_SpeakerLight, [this]() {
+      m_SpeakerLight->setMode(0); // Idle
+    });
+  }
   // 3. Retrieve Tiered Memory context
   QString flightRisk = core::store::EventStore::GetInstance().GetEntityFact("FlightRisk");
   QString infractions = core::store::EventStore::GetInstance().GetEntityFact("Infractions");

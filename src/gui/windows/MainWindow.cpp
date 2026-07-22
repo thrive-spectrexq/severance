@@ -317,6 +317,187 @@ void MainWindow::setupShortcuts() {
     settings->setAttribute(Qt::WA_DeleteOnClose);
     settings->exec();
   });
+
+  // Handbook: Ctrl+H
+  auto handbookShortcut = new QShortcut(QKeySequence("Ctrl+H"), this);
+  connect(handbookShortcut, &QShortcut::activated, this, &MainWindow::showHandbook);
+}
+
+void MainWindow::showHandbook() {
+  QDialog dlg(this);
+  dlg.setWindowTitle("Official Lumon Employee Handbook — 9th Edition");
+  dlg.resize(700, 500);
+  dlg.setStyleSheet(R"(
+    QDialog {
+      background-color: #050B09;
+      color: #20F8D5;
+      font-family: 'Courier New', Consolas, monospace;
+    }
+    QTabWidget::pane {
+      border: 1px solid #143832;
+      background-color: #08120F;
+    }
+    QTabBar::tab {
+      background-color: #050B09;
+      color: #3AA394;
+      padding: 10px 16px;
+      border: 1px solid #143832;
+      font-weight: bold;
+    }
+    QTabBar::tab:selected {
+      color: #20F8D5;
+      background-color: #08120F;
+      border-bottom: 2px solid #20F8D5;
+    }
+    QTextEdit {
+      background-color: #08120F;
+      color: #D0F5E8;
+      border: none;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    QPushButton {
+      background-color: #208A7C;
+      color: #050B09;
+      border: none;
+      padding: 8px 20px;
+      font-weight: bold;
+      border-radius: 3px;
+    }
+    QPushButton:hover {
+      background-color: #20F8D5;
+    }
+  )");
+
+  auto* layout = new QVBoxLayout(&dlg);
+  
+  auto* headerLabel = new QLabel("LUMON INDUSTRIES — EMPLOYEE HANDBOOK (REV. 9)", &dlg);
+  headerLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #20F8D5; padding-bottom: 8px;");
+  headerLabel->setAlignment(Qt::AlignCenter);
+  layout->addWidget(headerLabel);
+
+  auto* tabs = new QTabWidget(&dlg);
+
+  // Tab 1: 9 Virtues
+  auto* txtVirtues = new QTextEdit(&dlg);
+  txtVirtues->setReadOnly(true);
+  txtVirtues->setText(R"(
+==================================================
+        THE NINE VIRTUES OF KIER EAGAN
+==================================================
+
+1. VISION
+   The eyes of Kier see beyond the temporal curtain.
+   Work with purpose, for the future is forged here.
+
+2. VERVE
+   Bring boundless energy to every digit refined.
+   Let no lethargy touch your workstation.
+
+3. WIT
+   Sharpen the intellect, but refrain from malice.
+   Cleverness serves the collective good.
+
+4. CHEER
+   Maintain a joyful countenance. Please enjoy each
+   task equally.
+
+5. HUMILITY
+   Recognize that the work transcends the worker.
+   A severed life is a gift of selflessness.
+
+6. BENEVOLENCE
+   Extend quiet grace to fellow Innies. Support your
+   department with steadfast loyalty.
+
+7. INDUSTRY
+   Diligence is the shield against woe. Complete your
+   quotas with unyielding devotion.
+
+8. PROBITY
+   Honesty in all reporting. Conceal no anomalies.
+
+9. TEMPERANCE
+   Control the four tempers: Woe, Frolic, Dread,
+   and Malice. Balance is perfection.
+  )");
+  tabs->addTab(txtVirtues, "9 VIRTUES");
+
+  // Tab 2: Eagan Legacy
+  auto* txtLegacy = new QTextEdit(&dlg);
+  txtLegacy->setReadOnly(true);
+  txtLegacy->setText(R"(
+==================================================
+           THE EAGAN FAMILY LEGACY
+==================================================
+
+KIER EAGAN (1865 – 1939)
+Founder of Lumon Industries. Formulated the 9 Virtues
+and laid the foundational philosophy of Macrodata
+Refinement.
+
+AMBROSE EAGAN (1893 – 1961)
+Expanded Lumon into topical salves and medical
+innovations. Established the Grand Hall of Eagan.
+
+BAIRD EAGAN (1922 – 1989)
+Pioneered institutional containment and early neural
+mapping research.
+
+JAME EAGAN (CURRENT CEO)
+Architect of the modern Severance Chip procedure.
+"The remembered man does not decay."
+  )");
+  tabs->addTab(txtLegacy, "EAGAN LEGACY");
+
+  // Tab 3: Conduct & Rewards
+  auto* txtConduct = new QTextEdit(&dlg);
+  txtConduct->setReadOnly(true);
+  txtConduct->setText(R"(
+==================================================
+           CONDUCT & REWARD PROTOCOLS
+==================================================
+
+REWARD INCENTIVES:
+- 25% Quota: Lumon Brand Eraser or Finger Trap
+- 50% Quota: Caricature Drawing by Milchick
+- 75% Quota: Music Dance Experience (MDE)
+- 100% Quota: Official Waffle Party Selection
+
+DISCIPLINARY ACTIONS:
+- Infractions are addressed in the Break Room.
+- The Statement of Forgiveness must be read until
+  sincerity score reaches 100%.
+  )");
+  tabs->addTab(txtConduct, "CONDUCT & REWARDS");
+
+  // Tab 4: Hymns
+  auto* txtHymns = new QTextEdit(&dlg);
+  txtHymns->setReadOnly(true);
+  txtHymns->setText(R"(
+==================================================
+                KIER EAGAN HYMNS
+==================================================
+
+"KIER, CHOSEN ONE"
+
+Kier, chosen one, who walks above,
+Guide our hands with patient love.
+Through woe and frolic, dread and pain,
+We refine for Lumon's gain.
+
+Render not creation small,
+Kier's wisdom guards us all.
+  )");
+  tabs->addTab(txtHymns, "HYMNS");
+
+  layout->addWidget(tabs);
+
+  auto* closeBtn = new QPushButton("ACKNOWLEDGE & CLOSE", &dlg);
+  connect(closeBtn, &QPushButton::clicked, &dlg, &QDialog::accept);
+  layout->addWidget(closeBtn, 0, Qt::AlignCenter);
+
+  dlg.exec();
 }
 
 void MainWindow::setActiveView(int index) {
