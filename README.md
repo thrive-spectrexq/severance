@@ -127,10 +127,6 @@ A terminal interface for receiving directives from The Board. Messages appear. Y
 
 A gallery of procedural artwork created by the Optics & Design department. Abstract vector compositions with titles from Lumon lore: "The Kier Collection", "Macrodata Topography", "Waffle Party", "Defiant Jazz".
 
-### Supplemental Intelligence
-
-A local AI assistant for Lumon inquiries. Ask about protocol, compliance, the Eagan family legacy, or the nature of your work. Answers are provided. Understanding is not guaranteed.
-
 ---
 
 > "Be merry, for you are the chosen ones." — Kier Eagan
@@ -201,20 +197,38 @@ The interface is characterized by:
 
 ---
 
-## Terminal Navigation
+## Terminal Navigation & Operations
 
-| Shortcut | Action |
+### Macrodata Refinement Controls
+
+| Control | Action |
 |---|---|
-| `Ctrl+K` | Global Search |
-| `Ctrl+Shift+P` | Command Palette |
-| `Ctrl+1` - `Ctrl+0` | Switch between department views |
-| `Ctrl+R` | Start/stop Observation Protocol |
-| `Ctrl+,` | Open Configuration |
-| `F5` | Refresh current view |
-| `Escape` | Close overlay / return to previous view |
-| `~` | Toggle terminal overlay |
-| `Arrow Keys` | Navigate the Macrodata Refinement grid |
-| `Scroll Wheel` | Zoom in/out of the grid |
+| **Hover Mouse** | Expand and reveal scary number group density |
+| **Click Mouse** | Refine selected scary number group into assigned bin (WO, FC, DR, MA, SI) |
+| `Tab` | Switch active MDR file (`COLDWATER` ➔ `TUMWATER` ➔ `CULPEPPER` ➔ `DILLON` ➔ `SIENA` ➔ `PACOIMA`) |
+| `Arrow Keys` | Pan terminal camera across the refinement grid |
+| `Scroll Wheel` | Zoom camera in and out |
+| **Idle Mouse (10s)** | Engage Lumon logo CRT screensaver |
+
+### Global Department Shortcuts
+
+| Shortcut | Destination / Action |
+|---|---|
+| `Ctrl+1` | **Macrodata Refinement** console |
+| `Ctrl+2` | **Personnel Registry** (Severed Workforce Profiles) |
+| `Ctrl+3` | **Temporal Ledger** (Shift Log & Incident History) |
+| `Ctrl+4` | **Perimeter Grid** (Severed Floor Map) |
+| `Ctrl+5` | **Document Processing** (Classified Lumon Archive) |
+| `Ctrl+6` | **Severance Protocols** (The Break Room Statement Console) |
+| `Ctrl+7` | **Observation Protocol** |
+| `Ctrl+8` | **Vigilance** (Severance Chip Diagnostics) |
+| `Ctrl+9` | **Board Communications** Interface |
+| `Ctrl+0` | **Optics & Design** Gallery |
+| `Ctrl+K` | Global Directive Search Overlay |
+| `Ctrl+Shift+P` | Lumon Command Directive Palette |
+| `~` / `` ` `` | Toggle Embedded Lumon CLI Terminal Overlay |
+| `Ctrl+,` | Terminal Configuration |
+| `Ctrl+Q` | Disconnect Workstation (Quit) |
 
 ---
 

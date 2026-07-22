@@ -167,6 +167,23 @@ void NumberGridWidget::refineGroup(int groupId) {
     std::string binName = m_BinFullNames[targetBin].toStdString();
     auto event = std::make_shared<core::events::MacrodataRefinedEvent>(binName, groupSize);
     core::store::EventStore::GetInstance().RecordEvent(event);
+
+    m_BinCounts[targetBin]++;
+
+    int totalRefined = 0;
+    for (int count : m_BinCounts) totalRefined += count;
+    int targetTotal = std::max(1, m_TotalBadGroups);
+    if (totalRefined >= targetTotal) {
+        m_QuotaCompleted = true;
+    }
+}
+
+void NumberGridWidget::switchFile(int index) {
+    m_CurrentFileIndex = (index + m_MdrFiles.size()) % m_MdrFiles.size();
+    m_BinCounts.fill(0);
+    m_QuotaCompleted = false;
+    generateGrid();
+    update();
 }
 
 QPoint NumberGridWidget::mapToGrid(const QPoint& pos) const {
@@ -192,6 +209,7 @@ void NumberGridWidget::keyPressEvent(QKeyEvent* event) {
         case Qt::Key_Right: m_CameraPos.rx() += panSpeed; break;
         case Qt::Key_Up:    m_CameraPos.ry() -= panSpeed; break;
         case Qt::Key_Down:  m_CameraPos.ry() += panSpeed; break;
+        case Qt::Key_Tab:   switchFile(m_CurrentFileIndex + 1); break;
         default: QWidget::keyPressEvent(event); return;
     }
     update();
@@ -410,7 +428,9 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
     int targetPerBin = std::max(1, m_TotalBadGroups / 5);
     QColor binColors[5] = { QColor("#00E5FF"), QColor("#00BFA5"), QColor("#1DE9B6"), QColor("#64FFDA"), QColor("#A7FFEB") };
     
+    int totalRefined = 0;
     for (int i = 0; i < 5; ++i) {
+        totalRefined += m_BinCounts[i];
         QRectF r = m_BinRects[i];
         
         // Bin background
@@ -452,6 +472,39 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
                                  Qt::AlignCenter, QString::number(cell.value));
             }
         }
+    }
+
+    // Top Lumon Header Bar
+    int totalTarget = std::max(1, m_TotalBadGroups);
+    int overallProgress = std::min(100, static_cast<int>(std::round(100.0 * totalRefined / totalTarget)));
+
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor("#061018"));
+    painter.drawRect(0, 0, width(), 36);
+    painter.setPen(QColor("#1A5C4A"));
+    painter.drawLine(0, 36, width(), 36);
+
+    painter.setFont(QFont("Courier New", 12, QFont::Bold));
+    painter.setPen(QColor("#00E5FF"));
+    QString headerText = QString("FILE: %1 [0%2/06]   |   QUOTA: %3%   |   PRESS [TAB] TO SWITCH FILE")
+                         .arg(m_MdrFiles[m_CurrentFileIndex])
+                         .arg(m_CurrentFileIndex + 1)
+                         .arg(overallProgress);
+    painter.drawText(QRect(16, 0, width() - 32, 36), Qt::AlignVCenter | Qt::AlignLeft, headerText);
+
+    // Quota Completion Celebration Banner
+    if (m_QuotaCompleted || overallProgress >= 100) {
+        QRectF bannerRect(width() / 2.0 - 320, height() / 2.0 - 60, 640, 120);
+        painter.setPen(QColor("#00E5FF"));
+        painter.setBrush(QColor(10, 20, 30, 230));
+        painter.drawRect(bannerRect);
+
+        painter.setFont(QFont("Courier New", 14, QFont::Bold));
+        painter.drawText(bannerRect.adjusted(0, 15, 0, -45), Qt::AlignCenter, QString("FILE %1 100% REFINED").arg(m_MdrFiles[m_CurrentFileIndex]));
+        
+        painter.setFont(QFont("Courier New", 11, QFont::Bold));
+        painter.setPen(QColor("#39FF14"));
+        painter.drawText(bannerRect.adjusted(0, 50, 0, -10), Qt::AlignCenter, "INCENTIVE UNLOCKED: WAFFLE PARTY & MUSIC DANCE EXPERIENCE\nPLEASE ENJOY EACH NUMBER EQUALLY. PRAISE KIER.");
     }
     
     // CRT scanline overlay

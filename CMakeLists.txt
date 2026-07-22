@@ -40,7 +40,6 @@ add_executable(severance
     src/gui/timeline/TimelineHistogram.cpp
     src/gui/isolation_view/IsolationView.cpp
     src/gui/session_view/SessionView.cpp
-    src/gui/ai_panel/AiPanel.cpp
     src/gui/board_comms/BoardCommsView.cpp
     src/gui/optics_and_design/OpticsDesignView.cpp
     src/gui/graphs/ResourceGraph.cpp
@@ -66,7 +65,6 @@ add_executable(severance
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
     src/core/store/EventStore.cpp
-    src/core/ai/AiEngine.cpp
     src/core/workspace/WorkspaceManager.cpp
     src/core/notifications/NotificationManager.cpp
     src/core/notifications/RuleEngine.cpp

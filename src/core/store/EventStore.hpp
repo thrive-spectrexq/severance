@@ -57,6 +57,11 @@ private:
   QString m_ConnectionName;
   QString m_DbPath;
   bool m_Initialized{false};
+  bool m_UseSqlite{false};
+
+  // In-memory fallback storage
+  std::vector<StoredEvent> m_InMemoryEvents;
+  std::vector<QString> m_InMemorySummaries;
 
   // Background flush
   void FlushThreadLoop(std::stop_token stoken);

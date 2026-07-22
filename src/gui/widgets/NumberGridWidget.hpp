@@ -80,6 +80,11 @@ private:
     bool m_IdleMode = false;
     static constexpr int IdleTimeoutTicks = 300; // e.g. 10 seconds at 30fps (approx 33ms timer)
 
+    // Files & Quotas
+    std::vector<QString> m_MdrFiles{"COLDWATER", "TUMWATER", "CULPEPPER", "DILLON", "SIENA", "PACOIMA"};
+    int m_CurrentFileIndex = 0;
+    bool m_QuotaCompleted = false;
+
     // Progress
     int m_TotalBadGroups = 0;
     std::array<int, 5> m_BinCounts{0, 0, 0, 0, 0};
@@ -91,6 +96,7 @@ private:
     
     // Font
     QFont m_Font;
+    void switchFile(int index);
 };
 
 } // namespace severance::gui::widgets

@@ -10,7 +10,6 @@
 #include "gui/theme/Theme.hpp"
 #include "gui/search/SearchOverlay.hpp"
 #include "gui/command/CommandRegistry.hpp"
-#include "gui/ai_panel/AiPanel.hpp"
 #include "gui/board_comms/BoardCommsView.hpp"
 #include "gui/optics_and_design/OpticsDesignView.hpp"
 #include "gui/perimeter_grid/PerimeterGridView.hpp"
@@ -65,18 +64,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   mainLayout->addWidget(separator);
 
   setupViews();
-  
-  auto* contentSplitter = new QSplitter(Qt::Horizontal, centralWidget);
-  contentSplitter->addWidget(m_ViewStack);
-  
-  m_AiPanel = new ai_panel::AiPanel(contentSplitter);
-  m_AiPanel->hide(); // Hidden by default
-  contentSplitter->addWidget(m_AiPanel);
-  
-  // Set initial sizes to give ViewStack more space if AI Panel is shown
-  contentSplitter->setSizes({800, 300});
-
-  mainLayout->addWidget(contentSplitter, 1); // stretch=1, takes remaining space
+  mainLayout->addWidget(m_ViewStack, 1);
 
   setCentralWidget(centralWidget);
 
@@ -102,9 +90,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   }});
   registry.registerCommand({"cmd.palette", "Command Directive", "Open the Lumon command directive interface", "Ctrl+Shift+P", [this]() {
     onCommandPaletteTriggered();
-  }});
-  registry.registerCommand({"view.toggle_ai", "Supplemental Intelligence", "Show or hide the Supplemental Intelligence module", "Ctrl+I", [this]() {
-    m_AiPanel->setVisible(!m_AiPanel->isVisible());
   }});
   registry.registerCommand({"app.settings", "Terminal Configuration", "Open the Lumon terminal configuration panel", "Ctrl+,", [this]() {
     auto* settings = new SettingsWindow(this);
@@ -199,16 +184,6 @@ void MainWindow::setupSidebar() {
   }
 
   m_SidebarLayout->addStretch();
-
-  // Bottom action: AI Panel
-  auto aiBtn = new QPushButton(QString("  %1    SUPPLEMENTAL INTELLIGENCE").arg(QChar(0xE8F3)), m_Sidebar); // Sparkle icon
-  aiBtn->setCheckable(true);
-  aiBtn->setProperty("cssClass", "sidebarBtn");
-  connect(aiBtn, &QPushButton::clicked, this, [this]() {
-    m_AiPanel->setVisible(!m_AiPanel->isVisible());
-  });
-  m_SidebarLayout->addWidget(aiBtn);
-  m_SidebarLayout->addSpacing(4);
 }
 
 void MainWindow::setupViews() {

@@ -20,7 +20,6 @@ namespace severance::gui::dashboard { class DashboardView; }
 namespace severance::gui::process_view { class ProcessView; }
 namespace severance::gui::network_view { class NetworkView; }
 namespace severance::gui::file_view { class FileView; }
-namespace severance::gui::ai_panel { class AiPanel; }
 namespace severance::gui::optics_and_design { class OpticsDesignView; }
 namespace severance::gui::perimeter_grid { class PerimeterGridView; }
 namespace severance::gui::terminal { class TerminalOverlay; }
@@ -67,13 +66,9 @@ private:
   file_view::FileView* m_FileView{nullptr};
   optics_and_design::OpticsDesignView* m_OpticsDesignView{nullptr};
   perimeter_grid::PerimeterGridView* m_PerimeterGridView{nullptr};
-  // Future: TimelineView, IsolationView
 
   // Search
   search::SearchOverlay* m_SearchOverlay{nullptr};
-
-  // AI Panel
-  ai_panel::AiPanel* m_AiPanel{nullptr};
 
   // Status bar widgets
   QTimer* m_ShiftTimer{nullptr};
