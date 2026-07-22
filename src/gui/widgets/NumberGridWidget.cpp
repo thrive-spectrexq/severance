@@ -582,8 +582,6 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
     }
 }
 
-}
-
 void NumberGridWidget::showFileCabinet() {
     QDialog dlg(this);
     dlg.setWindowTitle("Lumon File Cabinet");
