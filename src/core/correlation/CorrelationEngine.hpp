@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/filesystem/EtwMonitor.hpp"
+#include "core/filesystem/FileEvent.hpp"
 #include "core/network/NetworkManager.hpp"
 #include "core/events/EventTypes.hpp"
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.hpp"
-#include "core/filesystem/EtwMonitor.hpp"
+#include "core/filesystem/FileEvent.hpp"
 
 namespace severance::core::events {
 

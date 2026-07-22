@@ -55,6 +55,7 @@ add_executable(severance
     src/core/metrics/BaselineManager.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
+    src/core/correlation/CorrelationEngine.cpp
     src/core/notifications/NotificationManager.cpp
     src/core/notifications/RuleEngine.cpp
     src/core/session/SessionManager.cpp
@@ -86,6 +87,7 @@ set(TEST_COMMON_SOURCES
     src/core/process/ProcessTree.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
+    src/core/correlation/CorrelationEngine.cpp
     src/core/plugins/PluginManager.cpp
     src/core/plugins/PluginLoader.cpp
     src/core/sandbox/SandboxManager.cpp
