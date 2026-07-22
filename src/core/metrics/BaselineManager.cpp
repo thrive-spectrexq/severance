@@ -107,9 +107,6 @@ void BaselineManager::monitorForAnomalies(const SystemMetricsSnapshot& snapshot)
     n.source = "BaselineManager";
     notifications::NotificationManager::GetInstance().EmitNotification(n);
 
-    // 2. Request AI Explanation
-    ai::AiEngine::GetInstance().explainAnomaly(explanation);
-    
     emit baselineAnomalyDetected(explanation);
     
     // Reset baseline so we don't spam
