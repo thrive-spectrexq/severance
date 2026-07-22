@@ -1,7 +1,6 @@
 #include "RuleEngine.hpp"
 #include "NotificationManager.hpp"
 #include "core/events/FileActivityEvent.hpp"
-#include "core/ai/AiEngine.hpp"
 #include "utils/UUID.hpp"
 #include <iostream>
 

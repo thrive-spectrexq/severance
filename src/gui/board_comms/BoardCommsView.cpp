@@ -55,8 +55,6 @@ void SpeakerLight::paintEvent(QPaintEvent* /*event*/) {
   p.drawEllipse(rect);
 }
 
-namespace severance::gui::board_comms {
-
 BoardCommsView::BoardCommsView(QWidget *parent) : QWidget(parent) {
   setupUI();
 
@@ -134,7 +132,7 @@ void BoardCommsView::setupUI() {
         color: #0D1117;
       }
     )");
-    connect(btn, &QPushButton::clicked, this, [this, p]() { onPresetClicked(p); });
+    connect(btn, &QPushButton::clicked, [this, p]() { onPresetClicked(p); });
     presetLayout->addWidget(btn);
   }
   layout->addLayout(presetLayout);
@@ -191,8 +189,8 @@ void BoardCommsView::onMessageSent() {
 void BoardCommsView::onBoardResponse() {
   if (m_SpeakerLight) {
     m_SpeakerLight->setMode(2); // Speaking
-    QTimer::singleShot(2000, m_SpeakerLight, [this]() {
-      m_SpeakerLight->setMode(0); // Idle
+    QTimer::singleShot(2000, this, [this]() {
+      if (m_SpeakerLight) m_SpeakerLight->setMode(0); // Idle
     });
   }
   // 3. Retrieve Tiered Memory context
