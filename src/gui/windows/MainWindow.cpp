@@ -16,12 +16,8 @@
 #include "gui/perimeter_grid/PerimeterGridView.hpp"
 #include "gui/security_view/SecurityView.hpp"
 #include "gui/terminal/TerminalOverlay.hpp"
-#include "gui/widgets/ToastNotification.hpp"
-#include "core/application/Application.hpp"
-#include "core/security/ActiveResponse.hpp"
-#include "core/notifications/NotificationManager.hpp"
-#include "core/workspace/WorkspaceManager.hpp"
 #include <QApplication>
+#include <QTimer>
 #include <QHBoxLayout>
 #include <QSplitter>
 #include <QShortcut>
@@ -79,13 +75,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   
   // Set initial sizes to give ViewStack more space if AI Panel is shown
   contentSplitter->setSizes({800, 300});
-
-  connect(m_ProcessView, &process_view::ProcessView::analyzeProcessRequested, this, [this](uint32_t pid, const QString& name, const QString& context) {
-    if (!m_AiPanel->isVisible()) {
-      m_AiPanel->show();
-    }
-    m_AiPanel->startAnalysis(pid, name, context);
-  });
 
   mainLayout->addWidget(contentSplitter, 1); // stretch=1, takes remaining space
 
@@ -254,17 +243,30 @@ void MainWindow::setupStatusBar() {
   auto bar = statusBar();
   bar->setFixedHeight(theme::Dimensions::StatusBarHeight);
 
-  m_StatusCpu = new QLabel("CORE LOAD: ---%");
-  m_StatusCpu->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
-  bar->addWidget(m_StatusCpu);
+  // Shift Timer
+  m_ShiftSeconds = 0;
+  m_ShiftLabel = new QLabel("SHIFT: 08:00:00");
+  m_ShiftLabel->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px; font-weight: bold;");
+  bar->addWidget(m_ShiftLabel);
 
-  m_StatusMem = new QLabel("ALLOCATION: ---");
-  m_StatusMem->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
-  bar->addWidget(m_StatusMem);
+  m_ShiftTimer = new QTimer(this);
+  connect(m_ShiftTimer, &QTimer::timeout, this, [this]() {
+    m_ShiftSeconds++;
+    int totalSecs = 8 * 3600 + m_ShiftSeconds;
+    int h = (totalSecs / 3600) % 24;
+    int m = (totalSecs / 60) % 60;
+    int s = totalSecs % 60;
+    m_ShiftLabel->setText(QString("SHIFT: %1:%2:%3")
+      .arg(h, 2, 10, QChar('0'))
+      .arg(m, 2, 10, QChar('0'))
+      .arg(s, 2, 10, QChar('0')));
+  });
+  m_ShiftTimer->start(1000);
 
-  m_StatusProcessCount = new QLabel("Active Personnel: ---");
-  m_StatusProcessCount->setStyleSheet("color: #8B949E; font-size: 12px; padding: 0 8px;");
-  bar->addWidget(m_StatusProcessCount);
+  // Compliance Indicator
+  m_ComplianceLabel = new QLabel("COMPLIANCE: NOMINAL");
+  m_ComplianceLabel->setStyleSheet("color: #238636; font-size: 12px; padding: 0 8px; font-weight: bold;");
+  bar->addWidget(m_ComplianceLabel);
 
   // Recording indicator (right side)
   m_StatusRecording = new QLabel("OBSERVING");
@@ -275,106 +277,32 @@ void MainWindow::setupStatusBar() {
   m_StatusRecording->setVisible(false); // Hidden until recording starts
   bar->addPermanentWidget(m_StatusRecording);
 
-  // Workspace Menu
-  m_WorkspaceBtn = new QPushButton("Department: Default");
-  m_WorkspaceBtn->setStyleSheet(R"(
-    QPushButton {
-      background-color: transparent;
-      border: none;
-      color: #58A6FF;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 0 8px;
-    }
-    QPushButton:hover { background-color: #0D1117; border-radius: 4px; }
-    QPushButton::menu-indicator { image: none; }
-  )");
+  // Kier Quote Label
+  m_KierQuoteLabel = new QLabel();
+  m_KierQuoteLabel->setStyleSheet("color: #58A6FF; font-size: 12px; font-style: italic; padding: 0 8px;");
+  bar->addPermanentWidget(m_KierQuoteLabel);
+
+  auto updateQuote = [this]() {
+    static const QStringList quotes = {
+      "\"The remembered man does not decay.\"",
+      "\"Let not weakness live in your veins.\"",
+      "\"Render not my creation in miniature.\"",
+      "\"Cherish each task as if were your first.\"",
+      "\"Be merry, for you are the chosen ones.\"",
+      "\"The work is mysterious and important.\""
+    };
+    m_KierQuoteLabel->setText(QString("KIER GUIDE: %1").arg(quotes[m_KierQuoteIndex]));
+    m_KierQuoteIndex = (m_KierQuoteIndex + 1) % quotes.size();
+  };
   
-  m_WorkspaceMenu = new QMenu(this);
-  m_WorkspaceMenu->setStyleSheet(R"(
-    QMenu { background-color: #010409; border: 1px solid #21262D; color: #E6EDF3; border-radius: 6px; padding: 4px; }
-    QMenu::item { padding: 6px 20px; border-radius: 4px; }
-    QMenu::item:selected { background-color: #161B22; color: #58A6FF; }
-  )");
-  m_WorkspaceBtn->setMenu(m_WorkspaceMenu);
-  bar->addPermanentWidget(m_WorkspaceBtn);
+  updateQuote();
+  m_KierQuoteTimer = new QTimer(this);
+  connect(m_KierQuoteTimer, &QTimer::timeout, this, updateQuote);
+  m_KierQuoteTimer->start(30000);
 
   auto version = new QLabel("LUMON INDUSTRIES \u2014 The work is mysterious and important");
   version->setStyleSheet("color: #6E7681; font-size: 11px; padding: 0 8px;");
   bar->addPermanentWidget(version);
-
-  // Load existing workspaces
-  core::workspace::WorkspaceManager::GetInstance().LoadProfiles("workspaces");
-  updateWorkspaceMenu();
-}
-
-void MainWindow::updateWorkspaceMenu() {
-  m_WorkspaceMenu->clear();
-  
-  auto profiles = core::workspace::WorkspaceManager::GetInstance().GetAvailableProfiles();
-  auto active = core::workspace::WorkspaceManager::GetInstance().GetActiveProfile();
-  
-  m_WorkspaceBtn->setText("Department: " + QString::fromStdString(active.name));
-
-  for (const auto& p : profiles) {
-    QAction* act = m_WorkspaceMenu->addAction(QString::fromStdString(p.name));
-    act->setCheckable(true);
-    act->setChecked(p.name == active.name);
-    connect(act, &QAction::triggered, this, [this, name = p.name]() {
-      onSwitchWorkspace(QString::fromStdString(name));
-    });
-  }
-
-  m_WorkspaceMenu->addSeparator();
-  QAction* saveAct = m_WorkspaceMenu->addAction("Save Current Department Configuration...");
-  connect(saveAct, &QAction::triggered, this, &MainWindow::onSaveWorkspace);
-}
-
-void MainWindow::onSaveWorkspace() {
-  bool ok;
-  QString text = QInputDialog::getText(this, "Save Department Configuration",
-                                       "Department Name:", QLineEdit::Normal,
-                                       "", &ok);
-  if (ok && !text.isEmpty()) {
-    QJsonObject obj;
-    obj["active_view_index"] = m_ActiveViewIndex;
-    
-    // Convert to JSON string
-    QJsonDocument doc(obj);
-    QString jsonStr = doc.toJson(QJsonDocument::Compact);
-
-    core::workspace::WorkspaceProfile profile;
-    profile.name = text.toStdString();
-    profile.description = "Departmental configuration preserved";
-    profile.layoutJson = jsonStr.toStdString();
-
-    auto& wm = core::workspace::WorkspaceManager::GetInstance();
-    wm.SaveProfile(profile, "workspaces");
-    wm.SetActiveProfile(profile.name);
-    
-    // Reload UI
-    wm.LoadProfiles("workspaces");
-    updateWorkspaceMenu();
-  }
-}
-
-void MainWindow::onSwitchWorkspace(const QString& name) {
-  auto& wm = core::workspace::WorkspaceManager::GetInstance();
-  wm.SetActiveProfile(name.toStdString());
-  
-  auto profile = wm.GetActiveProfile();
-  
-  // Parse JSON and apply state
-  QJsonDocument doc = QJsonDocument::fromJson(QByteArray::fromStdString(profile.layoutJson));
-  if (doc.isObject()) {
-    QJsonObject obj = doc.object();
-    if (obj.contains("active_view_index")) {
-      int viewIdx = obj["active_view_index"].toInt();
-      setActiveView(viewIdx);
-    }
-  }
-  
-  updateWorkspaceMenu();
 }
 
 void MainWindow::setupShortcuts() {
@@ -486,15 +414,6 @@ void MainWindow::setupSystemTray() {
   QAction* restoreAction = new QAction("Return to Terminal", this);
   connect(restoreAction, &QAction::triggered, this, &QWidget::showNormal);
   m_TrayMenu->addAction(restoreAction);
-
-  QAction* settingsAction = new QAction("Terminal Configuration", this);
-  connect(settingsAction, &QAction::triggered, this, [this]() {
-    showNormal();
-    auto* settings = new SettingsWindow(this);
-    settings->setAttribute(Qt::WA_DeleteOnClose);
-    settings->exec();
-  });
-  m_TrayMenu->addAction(settingsAction);
   
   m_TrayMenu->addSeparator();
   
@@ -510,43 +429,6 @@ void MainWindow::setupSystemTray() {
       this->showNormal();
       this->raise();
       this->activateWindow();
-  });
-
-  // Bind core NotificationManager to trigger system tray
-  core::notifications::NotificationManager::GetInstance().RegisterCallback(
-    [this](const core::notifications::Notification& n) {
-      // Map severity to tray icon
-      QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information;
-      if (n.severity == core::notifications::NotificationSeverity::Warning) {
-          icon = QSystemTrayIcon::Warning;
-      } else if (n.severity == core::notifications::NotificationSeverity::Error || 
-                 n.severity == core::notifications::NotificationSeverity::Critical) {
-          icon = QSystemTrayIcon::Critical;
-      }
-      
-      // Check if it's an Active Response critical notification
-      if (n.source == "Active Response") {
-        uint32_t pid = 0;
-        if (n.id.starts_with("active_response_")) {
-          pid = std::stoul(n.id.substr(16));
-        }
-        
-        QMetaObject::invokeMethod(this, [this, title = QString::fromStdString(n.title), msg = QString::fromStdString(n.message), pid]() {
-          auto* toast = new widgets::ToastNotification(title, msg, pid, this);
-          connect(toast, &widgets::ToastNotification::actionChosen, [](uint32_t p, bool kill) {
-            core::security::ActiveResponse::GetInstance().OnUserDecision(p, kill);
-          });
-          toast->showWithAnimation();
-        });
-        return; // Don't show in tray
-      }
-
-      // We must call UI updates on the main thread, so we use QMetaObject::invokeMethod
-      QMetaObject::invokeMethod(this, "showSystemNotification", Qt::QueuedConnection,
-          Q_ARG(QString, QString::fromStdString(n.title)),
-          Q_ARG(QString, QString::fromStdString(n.message)),
-          Q_ARG(QSystemTrayIcon::MessageIcon, icon)
-      );
   });
 }
 

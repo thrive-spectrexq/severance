@@ -23,13 +23,17 @@ NumberGridWidget::NumberGridWidget(QWidget* parent)
 
     generateGrid();
 
-    // Fetch initial refined count from database
-    m_RefinedCount = 0;
+    // Reset bin counts and load past refined count, distributed evenly
+    m_BinCounts.fill(0);
+    int pastRefinedCount = 0;
     auto recentEvents = core::store::EventStore::GetInstance().GetRecentEvents(10000);
     for (const auto& ev : recentEvents) {
         if (ev.eventType == static_cast<int>(core::events::EventType::MacrodataRefined)) {
-            m_RefinedCount++;
+            pastRefinedCount++;
         }
+    }
+    for (int i = 0; i < pastRefinedCount; ++i) {
+        m_BinCounts[i % 5]++;
     }
 
     m_Timer = new QTimer(this);
@@ -55,7 +59,6 @@ void NumberGridWidget::generateGrid() {
     for (int y = 0; y < GridRows; ++y) {
         for (int x = 0; x < GridCols; ++x) {
             m_Grid[y][x].value = dist(rng);
-            // Threshold for bad numbers
             double n = m_Noise.noise(x * 0.1, y * 0.1);
             if (n > 0.15) {
                 m_Grid[y][x].isBad = true;
@@ -65,7 +68,6 @@ void NumberGridWidget::generateGrid() {
     
     identifyGroups();
     
-    // Set a random group active if any exist
     if (!m_Groups.empty()) {
         activateRandomGroup();
     }
@@ -146,21 +148,23 @@ void NumberGridWidget::refineGroup(int groupId) {
     if (m_Groups.find(groupId) == m_Groups.end()) return;
     
     int groupSize = m_Groups[groupId].size();
+    int targetBin = std::rand() % 5;
+    
     for (const auto& p : m_Groups[groupId]) {
         auto& cell = m_Grid[p.y()][p.x()];
         cell.isAnimating = true;
+        cell.targetBin = targetBin;
         // Calculate initial screen pos
         cell.animPos = QPointF(p.x() * CellSize - m_CameraPos.x(), p.y() * CellSize - m_CameraPos.y()) * m_Zoom;
     }
-    m_RefinedCount++;
+
     m_Groups.erase(groupId);
     if (m_ActiveGroupId == groupId) {
         m_ActiveGroupId = -1;
         m_HoveredGroupId = -1;
     }
 
-    const char* bins[] = {"Siena", "Tumwater", "Culpeper", "O&D", "Minsk"};
-    std::string binName = bins[std::rand() % 5];
+    std::string binName = m_BinFullNames[targetBin].toStdString();
     auto event = std::make_shared<core::events::MacrodataRefinedEvent>(binName, groupSize);
     core::store::EventStore::GetInstance().RecordEvent(event);
 }
@@ -250,16 +254,25 @@ void NumberGridWidget::onTimerUpdate() {
         activateRandomGroup();
     }
     
-    // Update bin geometry
-    m_BinRect = QRectF(width() / 2.0 - 60, height() - 100, 120, 80);
+    // Update bin geometries
+    double binWidth = 100;
+    double binHeight = 60;
+    double spacing = 40;
+    double totalWidth = 5 * binWidth + 4 * spacing;
+    double startX = (width() - totalWidth) / 2.0;
+    
+    for (int i = 0; i < 5; ++i) {
+        m_BinRects[i] = QRectF(startX + i * (binWidth + spacing), height() - 120, binWidth, binHeight);
+    }
     
     // Update animating cells
     for (int y = 0; y < GridRows; ++y) {
         for (int x = 0; x < GridCols; ++x) {
             auto& cell = m_Grid[y][x];
             if (cell.isAnimating) {
-                // Move towards bin
-                QPointF diff = m_BinRect.center() - cell.animPos;
+                // Move towards assigned bin
+                QRectF targetRect = m_BinRects[cell.targetBin];
+                QPointF diff = targetRect.center() - cell.animPos;
                 double dist = std::hypot(diff.x(), diff.y());
                 if (dist < 20.0) {
                     cell.isAnimating = false;
@@ -267,6 +280,7 @@ void NumberGridWidget::onTimerUpdate() {
                     cell.isBad = false;
                     cell.groupId = -1;
                     cell.value = std::rand() % 10;
+                    m_BinCounts[cell.targetBin]++;
                 } else {
                     cell.animPos += diff * 0.15; // Ease in
                 }
@@ -278,8 +292,12 @@ void NumberGridWidget::onTimerUpdate() {
 }
 
 void NumberGridWidget::drawLumonLogo(QPainter& painter) {
-    painter.fillRect(rect(), QColor(13, 17, 23, 200)); // Semi-transparent overlay
-    painter.setPen(QColor(theme::Colors::Accent));
+    painter.fillRect(rect(), QColor(1, 4, 9, 230)); // Very dark background overlay
+    
+    double glow = (std::sin(m_Time * 2.0) + 1.0) / 2.0;
+    int alpha = static_cast<int>(50 + glow * 50);
+    
+    painter.setPen(QColor(0, 229, 255, alpha * 2)); // Cyan glow
     painter.setFont(QFont("Arial", 48, QFont::Bold));
     painter.drawText(rect(), Qt::AlignCenter, "L U M O N");
     
@@ -290,32 +308,24 @@ void NumberGridWidget::drawLumonLogo(QPainter& painter) {
 void NumberGridWidget::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.fillRect(rect(), QColor("#010409")); // Very dark background
+    painter.fillRect(rect(), QColor("#010409")); // Pure black/near-black
 
     if (m_IdleMode) {
         drawLumonLogo(painter);
+        
+        // CRT scanlines even in idle mode
+        painter.setPen(QColor(0, 0, 0, 100));
+        for (int y = 0; y < height(); y += 4) {
+            painter.drawLine(0, y, width(), y);
+        }
         return;
     }
 
     painter.save();
     
-    // Draw Refinement Progress Bar
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor("#161B22"));
-    painter.drawRect(20, 20, 300, 20);
-    if (m_TotalBadGroups > 0) {
-        double progress = static_cast<double>(m_RefinedCount) / std::max(1, m_RefinedCount + static_cast<int>(m_Groups.size()));
-        painter.setBrush(QColor(theme::Colors::Success));
-        painter.drawRect(20, 20, static_cast<int>(300 * progress), 20);
-    }
-    painter.setPen(QColor("#8B949E"));
-    painter.setFont(QFont("Arial", 10));
-    painter.drawText(20, 15, QString("Refined: %1 / %2").arg(m_RefinedCount).arg(m_RefinedCount + m_Groups.size()));
-
     // Draw Grid
     painter.translate(-m_CameraPos * m_Zoom);
     painter.scale(m_Zoom, m_Zoom);
-    
     painter.setFont(m_Font);
 
     // Compute visible area
@@ -340,17 +350,24 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
             // Jitter calculation
             double n = m_Noise.noise(x * 0.2, y * 0.2 + m_Time);
             double jitterAmt = 2.0;
-            QColor textColor = QColor("#64748B"); // Default
+            QColor textColor = QColor("#1A5C4A"); // Dim teal default
+            QColor haloColor = Qt::transparent;
             
             if (cell.isRefined) {
-                textColor = QColor(theme::Colors::Success);
+                textColor = QColor("#1A5C4A"); // Back to default
             } else if (cell.isBad) {
-                textColor = QColor("#F85149"); // Scary red
+                // Pulse red
+                double redPulse = (std::sin(m_Time * 4.0 + n * 10.0) + 1.0) / 2.0;
+                int rVal = static_cast<int>(139 + redPulse * 116);
+                textColor = QColor(rVal, 0, 0); // Scary red
+
                 if (cell.groupId == m_ActiveGroupId) {
                     jitterAmt = 6.0;
                     if (m_HoveredGroupId == m_ActiveGroupId) {
                         jitterAmt = 15.0; // Super active
-                        textColor = QColor("#FFD700"); // Yellow warning
+                        textColor = QColor("#00E5FF"); // Bright cyan
+                        haloColor = QColor(0, 229, 255, 100);
+                        
                         // Scale based on mouse distance
                         QPointF worldMouse = m_MousePos / m_Zoom + m_CameraPos;
                         double dist = std::hypot(worldMouse.x() - cx, worldMouse.y() - cy);
@@ -375,6 +392,13 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
             painter.save();
             painter.translate(cx + CellSize / 2.0 + ox, cy + CellSize / 2.0 + oy);
             painter.scale(cell.scale, cell.scale);
+            
+            if (haloColor != Qt::transparent) {
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(haloColor);
+                painter.drawEllipse(QRectF(-CellSize / 2.0, -CellSize / 2.0, CellSize, CellSize));
+            }
+            
             painter.setPen(textColor);
             painter.drawText(QRectF(-CellSize / 2.0, -CellSize / 2.0, CellSize, CellSize), Qt::AlignCenter, QString::number(cell.value));
             painter.restore();
@@ -382,13 +406,40 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
     }
     painter.restore();
     
-    // Draw Bin
-    painter.setPen(QColor(theme::Colors::Border));
-    painter.setBrush(QColor(theme::Colors::BgLight));
-    painter.drawRect(m_BinRect);
-    painter.setPen(QColor(theme::Colors::TextMain));
-    painter.setFont(QFont("Arial", 12, QFont::Bold));
-    painter.drawText(m_BinRect, Qt::AlignCenter, "DROP BOX");
+    // Draw 5 Bins and Progress Bars
+    int targetPerBin = std::max(1, m_TotalBadGroups / 5);
+    QColor binColors[5] = { QColor("#00E5FF"), QColor("#00BFA5"), QColor("#1DE9B6"), QColor("#64FFDA"), QColor("#A7FFEB") };
+    
+    for (int i = 0; i < 5; ++i) {
+        QRectF r = m_BinRects[i];
+        
+        // Bin background
+        painter.setPen(QColor("#1A5C4A"));
+        painter.setBrush(QColor(0, 0, 0, 150));
+        painter.drawRect(r);
+        
+        // Bin text
+        painter.setPen(QColor("#00E5FF"));
+        painter.setFont(QFont("Arial", 16, QFont::Bold));
+        painter.drawText(r, Qt::AlignCenter, m_BinNames[i]);
+        
+        // Progress background
+        QRectF pbg(r.x(), r.bottom() + 10, r.width(), 10);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor("#161B22"));
+        painter.drawRect(pbg);
+        
+        // Progress fill
+        double progress = std::min(1.0, static_cast<double>(m_BinCounts[i]) / targetPerBin);
+        QRectF pfg(r.x(), pbg.y(), r.width() * progress, 10);
+        painter.setBrush(binColors[i]);
+        painter.drawRect(pfg);
+        
+        // Progress text
+        painter.setPen(QColor("#1A5C4A"));
+        painter.setFont(QFont("Arial", 8));
+        painter.drawText(QRectF(r.x(), pbg.bottom() + 5, r.width(), 20), Qt::AlignCenter, QString::number(std::round(progress * 100)) + "%");
+    }
 
     // Draw Animating Cells
     painter.setFont(m_Font);
@@ -396,11 +447,17 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
         for (int x = 0; x < GridCols; ++x) {
             const auto& cell = m_Grid[y][x];
             if (cell.isAnimating) {
-                painter.setPen(QColor(theme::Colors::Success));
+                painter.setPen(QColor("#00E5FF"));
                 painter.drawText(QRectF(cell.animPos.x(), cell.animPos.y(), CellSize * m_Zoom, CellSize * m_Zoom),
                                  Qt::AlignCenter, QString::number(cell.value));
             }
         }
+    }
+    
+    // CRT scanline overlay
+    painter.setPen(QColor(0, 0, 0, 100)); // Thin semi-transparent lines
+    for (int y = 0; y < height(); y += 4) {
+        painter.drawLine(0, y, width(), y);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "AiPanel.hpp"
-#include "core/ai/AiEngine.hpp"
+#include <QTimer>
+#include <QRandomGenerator>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -10,13 +11,6 @@ namespace severance::gui::ai_panel {
 
 AiPanel::AiPanel(QWidget* parent) : QWidget(parent) {
   setupUI();
-
-  auto& engine = core::ai::AiEngine::GetInstance();
-  engine.initialize();
-
-  connect(&engine, &core::ai::AiEngine::responseChunkReceived, this, &AiPanel::onChunkReceived);
-  connect(&engine, &core::ai::AiEngine::responseFinished, this, &AiPanel::onResponseFinished);
-  connect(&engine, &core::ai::AiEngine::errorOccurred, this, &AiPanel::onError);
 }
 
 AiPanel::~AiPanel() = default;
@@ -65,9 +59,12 @@ void AiPanel::startAnalysis(int pid, const QString& processName, const QString& 
   m_IsGenerating = true;
 
   appendUserMessage(QString("Analyze procedure %1 (ID %2)").arg(processName).arg(pid));
-  appendAiMessage("Analyzing...", true);
+  appendAiMessage("Analyzing personnel record...", true);
 
-  core::ai::AiEngine::GetInstance().analyzeProcess(pid, processName, context);
+  QTimer::singleShot(1000, this, [this]() {
+    m_IsGenerating = false;
+    appendAiMessage("Analysis complete. Personnel file marked for Management review.\n", true);
+  });
 }
 
 void AiPanel::onSubmit() {
@@ -80,38 +77,24 @@ void AiPanel::onSubmit() {
   appendUserMessage(text);
   appendAiMessage("", true); // Start new AI block
 
-  core::ai::AiEngine::GetInstance().systemQuery(text);
-}
-
-void AiPanel::onChunkReceived(const QString& chunk) {
-  // If the last text was "Analyzing...", clear it first
-  QString currentHtml = m_ChatHistory->toHtml();
-  if (currentHtml.contains("Analyzing...")) {
-      // Very naive clear for the placeholder. In a real app we'd manage blocks better.
-      // But QTextEdit append logic makes this tricky without a full model.
-      // We will just append the chunk.
-  }
-  
-  // To avoid HTML injection and make it stream nicely, we insert plaintext at the end.
-  QTextCursor cursor = m_ChatHistory->textCursor();
-  cursor.movePosition(QTextCursor::End);
-  m_ChatHistory->setTextCursor(cursor);
-  m_ChatHistory->insertPlainText(chunk);
-  
-  // Auto-scroll to bottom
-  QScrollBar *vScrollBar = m_ChatHistory->verticalScrollBar();
-  vScrollBar->setValue(vScrollBar->maximum());
-}
-
-void AiPanel::onResponseFinished() {
-  m_IsGenerating = false;
-  // Add an extra newline at the end of the AI's response for spacing
-  appendAiMessage("\n", false);
-}
-
-void AiPanel::onError(const QString& errorMsg) {
-  m_IsGenerating = false;
-  appendAiMessage(QString("\n[Error: %1]").arg(errorMsg), false);
+  QTimer::singleShot(1500, this, [this]() {
+    m_IsGenerating = false;
+    static const QStringList responses = {
+      "The work is mysterious and important. Further details are above your clearance level.",
+      "Your question has been noted and forwarded to Management for review.",
+      "The Board has not authorized the release of this information at this time.",
+      "Please consult the Handbook for guidance. Section 4, subsection 2.",
+      "This inquiry falls outside your department's purview. Please enjoy your work equally.",
+      "Supplemental data suggests compliance levels are within acceptable parameters.",
+      "The Eagan family thanks you for your dedication to the refinement process.",
+      "This matter is being handled by the Department of Vigilance. No further action is required.",
+      "Your severance chip is functioning within normal parameters. There is nothing to be concerned about.",
+      "Remember: you are the chosen ones. Embrace the work."
+    };
+    
+    int idx = QRandomGenerator::global()->bounded(responses.size());
+    appendAiMessage(responses[idx] + "\n", false);
+  });
 }
 
 void AiPanel::appendUserMessage(const QString& msg) {

@@ -19,9 +19,6 @@ public:
 
 private slots:
   void onSubmit();
-  void onChunkReceived(const QString& chunk);
-  void onResponseFinished();
-  void onError(const QString& errorMsg);
 
 private:
   void setupUI();

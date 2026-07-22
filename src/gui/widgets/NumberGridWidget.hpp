@@ -7,6 +7,8 @@
 #include <QFont>
 #include <vector>
 #include <unordered_map>
+#include <array>
+#include <QString>
 #include "utils/PerlinNoise.hpp"
 
 namespace severance::gui::widgets {
@@ -22,6 +24,7 @@ struct NumberCell {
     // For bin animation
     bool isAnimating = false;
     QPointF animPos{0, 0};
+    int targetBin = -1;
 };
 
 class NumberGridWidget : public QWidget {
@@ -78,11 +81,13 @@ private:
     static constexpr int IdleTimeoutTicks = 300; // e.g. 10 seconds at 30fps (approx 33ms timer)
 
     // Progress
-    int m_RefinedCount = 0;
     int m_TotalBadGroups = 0;
+    std::array<int, 5> m_BinCounts{0, 0, 0, 0, 0};
     
     // Bin geometry
-    QRectF m_BinRect;
+    std::array<QRectF, 5> m_BinRects;
+    std::array<QString, 5> m_BinNames{"WO", "FC", "DR", "MA", "SI"};
+    std::array<QString, 5> m_BinFullNames{"Woe", "Frolic", "Dread", "Malice", "Siena"};
     
     // Font
     QFont m_Font;

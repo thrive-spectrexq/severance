@@ -3,15 +3,8 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#include <QTableWidget>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QSpinBox>
-#include <memory>
-#include "core/sandbox/SandboxManager.hpp"
 
-class QPropertyAnimation;
-class QGraphicsColorizeEffect;
+class QTimer;
 
 namespace severance::gui::isolation_view {
 
@@ -23,34 +16,20 @@ public:
   ~IsolationView() override = default;
 
 private slots:
-  void onLaunchClicked();
-  void onTerminateClicked(int row);
-  void onActiveSandboxClicked(int row, int column);
-  void onOvertimeContingencyClicked();
+  void onReadStatement();
+  void onPulse();
 
 private:
   void setupUI();
-  void triggerOvertimeAlarm();
 
-  QLineEdit* m_ExecutablePath{nullptr};
-  QPushButton* m_BrowseBtn{nullptr};
-  QPushButton* m_LaunchBtn{nullptr};
-  QComboBox* m_ProfileCombo{nullptr};
-  QSpinBox* m_MemSpin{nullptr};
-  QSpinBox* m_CpuSpin{nullptr};
-  QTableWidget* m_ActiveSandboxesTable{nullptr};
-
-  std::unique_ptr<core::sandbox::SandboxManager> m_SandboxManager;
-
-  // Security Analysis Pane
-  QWidget* m_AnalysisPane{nullptr};
-  QLabel*  m_AnalysisTitle{nullptr};
-  QLabel*  m_AnalysisDetails{nullptr};
-
-  // Overtime Contingency
-  QPushButton* m_OvertimeBtn{nullptr};
-  QGraphicsColorizeEffect* m_AlarmEffect{nullptr};
-  QPropertyAnimation* m_AlarmAnimation{nullptr};
+  QLabel* m_StatementLabel{nullptr};
+  QLabel* m_CounterLabel{nullptr};
+  QPushButton* m_ReadBtn{nullptr};
+  
+  int m_Reads{0};
+  QTimer* m_PulseTimer{nullptr};
+  bool m_GlowUp{true};
+  int m_GlowIntensity{100};
 };
 
 } // namespace severance::gui::isolation_view

@@ -76,16 +76,14 @@ private:
   ai_panel::AiPanel* m_AiPanel{nullptr};
 
   // Status bar widgets
-  QLabel* m_StatusCpu{nullptr};
-  QLabel* m_StatusMem{nullptr};
-  QLabel* m_StatusProcessCount{nullptr};
+  QTimer* m_ShiftTimer{nullptr};
+  QLabel* m_ShiftLabel{nullptr};
+  QLabel* m_ComplianceLabel{nullptr};
+  QLabel* m_KierQuoteLabel{nullptr};
+  QTimer* m_KierQuoteTimer{nullptr};
+  int m_ShiftSeconds{0};
+  int m_KierQuoteIndex{0};
   QLabel* m_StatusRecording{nullptr};
-  QPushButton* m_WorkspaceBtn{nullptr};
-  QMenu* m_WorkspaceMenu{nullptr};
-
-  void updateWorkspaceMenu();
-  void onSaveWorkspace();
-  void onSwitchWorkspace(const QString& name);
 
   // System Tray
   QSystemTrayIcon* m_TrayIcon{nullptr};

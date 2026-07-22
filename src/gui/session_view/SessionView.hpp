@@ -43,6 +43,8 @@ private:
   BiometricGraph* m_StressGraph{nullptr};
   BiometricGraph* m_ChipRejectionGraph{nullptr};
   class QTimer* m_BiometricTimer{nullptr};
+  
+  bool m_isRecording{false};
 };
 
 } // namespace severance::gui::session_view

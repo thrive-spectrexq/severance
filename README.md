@@ -1,8 +1,8 @@
 # Severance
 > "The work is mysterious and important."
-> Deep, interconnected visibility into the severed floor — innies, perimeter grid, memory compartments, and their relationships — all in one place.
+> A faithful recreation of the Macrodata Refinement terminal from Lumon Industries.
 
-*Inspired by Lumon Industries's Macrodata Refinement application from Apple TV's 'Severance'.*
+*Inspired by the Macrodata Refinement application from Apple TV's 'Severance'.*
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![C++](https://img.shields.io/badge/C%2B%2B-23-1A7A5C.svg)
@@ -15,175 +15,121 @@
 
 ## Overview
 
-Welcome to the Severance Monitoring Platform, a proprietary system developed by Lumon Industries. This desktop application allows Management to understand what our severed employees (innies) are doing — in real time, with clinical clarity and absolute depth.
+Welcome to Lumon Industries. You have been selected for Macrodata Refinement.
 
-Most outside system tools scatter the picture across a dozen messy utilities. Our platform brings it all together in a pristine, unified environment. Innie Activity Threads, Perimeter Communications, Memory Compartment Surveillance, and Severance Containment Protocols — all linked through our cross-domain correlation engine. 
+This desktop application recreates the experience of being an Innie on the Severed Floor. Refine data. Sort numbers into bins. Complete your quotas. Do not ask questions. Please enjoy each number equally.
 
-Built on C++23 and C17 with Qt 6. The core application uses modern C++23. The extension protocol exposes a stable C17 ABI. Designed exclusively for Lumon Management, compliance officers, and the Department of Vigilance.
+Built on C++23 and C17 with Qt 6. The core application uses modern C++23. Designed with the institutional Lumon aesthetic — clinical, sterile, and precise.
 
-> **Current Focus: The Severed Floor (Windows).** Expansion to other departments is planned for future phases.
+> **Your Outie chose this life for you. You should be grateful.**
 
 ---
 
 > "Let not weakness live in your veins. Cherished workers, drown it inside you." — Kier Eagan
 
-## Why the Severance Monitoring Platform?
+## Macrodata Refinement
 
-Our system is built on a fundamental principle of Lumon: **complete separation of concerns, with deep corporate visibility.**
+Your primary task. The work that defines your existence on the Severed Floor.
 
-Each module observes one domain cleanly. The correlation engine links events across all of them. The Supplemental Intelligence module assesses compliance. You don't need to be a neurosurgeon to understand the severed floor — you just need your terminal open.
+### The Number Grid
 
-### The Lumon Difference
-
-| Outside Tools | Lumon Severance Platform |
-|---|---|
-| Scattered across 6+ tools | A unified, sterile interface |
-| Raw data dumps | Supplemental Intelligence compliance assessments |
-| Single-domain views | Deep correlation — follow any innie's full behavioral chain |
-| Cluttered interfaces | Premium clinical aesthetic designed for optimal focus |
-| Threshold-based alerts | Pattern-based Observation Protocol notifications |
-| Static dashboards | Searchable, filterable, and exact |
-
----
-
-## Macrodata Refinement (Number Grid Generation)
+A vast grid of numbers fills your terminal. Each cell contains a digit from 0–9, arranged across a field of Perlin noise-mapped gradients. The numbers are not random. They are waiting.
 
 **GENERATE**
-A N×N grid is created. Each cell is filled with a random integer between 0-9.
+An N×N grid is created. Each cell is filled with a random integer between 0–9.
 
 **MAP**
 A Perlin noise map assigns smooth gradient values to the grid. This ensures numbers are naturally grouped rather than randomly scattered.
 
 **THRESHOLD**
-Each cell's value is compared to a set threshold. Values above the threshold are marked as 'bad'/'scary' numbers.
+Each cell's value is compared to a set threshold. Values above the threshold are marked as 'scary' numbers — the ones that evoke dread, malice, woe, or frolic.
 
 **GROUP**
-'Bad' numbers are grouped based on proximity to one another. At random intervals, a group visible in the viewport will be activated:
+'Scary' numbers are grouped based on proximity to one another. At random intervals, a group visible in the viewport will be activated:
 - If hovered over, they become 'super active', extending their active time and appearing agitated.
-- If clicked, the group is 'refined', animating into a pre-determined bin and resetting as no longer 'bad'.
+- If clicked, the group is 'refined', animating into a pre-determined bin and resetting.
 
-### The Interface
+### The Bins
 
-- A moving Perlin noise map offsets each number (vertically or horizontally).
-- Activated bad groups expand / contract / jitter.
-- Numbers scale-up based on cursor position.
-- Refined groups animate into bins, with a percent bar keeping track of your progress.
+Five bins receive your refined data. Each represents a category that you will come to understand through feeling, not explanation:
 
-### Additional Features
-- The application is cross-compatible, allowing compilation for both Linux and Raspberry Pi (ARM).
-- A 'debug mode' reveals various settings (which can be saved / loaded from disk as JSON).
-- An 'idle mode' can be enabled to display the Lumon logo screensaver.
-- The user can navigate the full grid using arrow and zoom keys.
+| Bin | Meaning |
+|---|---|
+| **WO** | Woe |
+| **FC** | Frolic |
+| **DR** | Dread |
+| **MA** | Malice |
+| **—** | The fifth category |
 
----
+Each bin has a progress bar. Fill all five to complete your quota.
 
-## Core Protocols
+### The Experience
 
-**Modern C++ with a Stable C ABI**
-The platform is built with structural integrity. C++23 throughout the core. RAII everywhere. The Extension Protocol exposes a C17 ABI boundary — maintaining total isolation between core systems and departmental plugins.
+- A moving Perlin noise map offsets each number vertically and horizontally, giving the grid an organic, living quality.
+- Activated scary groups expand, contract, and jitter — they feel *alive*.
+- Numbers scale up as your cursor approaches, reacting to your presence.
+- Refined groups animate smoothly into their assigned bin, with progress bars tracking your quota completion.
+- The grid can be navigated using arrow keys and zoom controls.
 
-**Performance**
-Sub-100ms response to every interaction, ensuring absolute precision when monitoring the severed floor. Low memory footprint. Native execution.
+### Idle Mode
 
-**Keyboard-First Navigation**
-Every action is reachable without a mouse. Navigate the system with the efficiency Kier intended.
+Step away from your terminal and the Lumon Industries logo screensaver will appear. The work will wait. It always does.
 
-**Departmental Extensibility**
-Dynamic module loading. Clean separation between core monitoring and departmental extensions.
+### Debug Mode
 
-**Supplemental Intelligence**
-Local AI integration for compliance assessment, behavioral summarization, and natural-language queries. 100% contained — no data leaves the severed floor.
+A hidden debug mode reveals the underlying parameters — noise thresholds, activation intervals, grid dimensions — which can be saved and loaded from disk as JSON.
 
 ---
 
-## System Departments
+## The Severed Floor
 
-### Macrodata Refinement Console
-Your primary view into the health of the severed floor.
+Beyond Macrodata Refinement, the application provides views into the other departments and protocols of Lumon Industries.
 
-- Innie capacity usage per core
-- Memory compartment breakdowns
-- Perimeter grid activity summary
-- Live event ticker for high-priority behavioral anomalies
-- Customizable widget layout; arrange your terminal to suit your supervisory duties
+### Personnel Registry
 
-### Personnel Registry (Process Explorer)
-Deep, real-time inspection of every active Innie.
+Review the profiles of your fellow Innies. Mark S., Helly R., Irving B., Dylan G. — each with their compliance score, defiance index, and severance chip status. You may annotate their records. You may not befriend them excessively.
 
-- Full hierarchy with parent-child relationships
-- Per-innie cognitive and resource consumption
-- Search and filter by name, ID, or activity
-- Tagging and notes — annotate innies ("compliant", "defiant jazz", "investigate")
-- Abnormal termination detection and flagging
+### Perimeter Grid
 
-### Temporal Ledger (Activity Timeline)
-A single scrollable view of everything that has occurred during the shift.
+An interactive floor plan of the Severed Floor. Macrodata Refinement. Optics & Design. The Break Room. Management. Navigate the labyrinth of identical hallways. Watch the elevator pulse between SEVERED and NON-SEVERED floors. Motion sensors ping at random intervals.
 
-- Innie creation, suspension, and termination events
-- Memory compartment access and mutation
-- Perimeter grid connection lifecycles
-- Click any event to see its full cross-context chain
-- Exportable logs for the Department of Vigilance
+### Temporal Ledger
 
-### Perimeter Grid (Network Monitor)
-Complete real-time visibility into every connection attempting to breach the severed floor.
+A scrollable timeline of everything that has occurred during the shift. Innie arrivals, data refinement events, break room sessions, perimeter movements. Each event is timestamped. Each event is logged. Each event is watched.
 
-- Live connection list with protocol, state, and duration
-- Per-innie traffic statistics
-- Unusual outbound connection alerting (leakage prevention)
-- Deep inspection protocols via departmental extensions
+### Break Room
 
-### Document Processing Surveillance (File Monitor)
-Watch the memory compartments as events happen.
+*"Forgive me for the damage I have done this world. Neither combative nor competitive. I will do no harm."*
 
-- Creation, modification, deletion, and rename events
-- Filter by compartment, extension, innie, or event type
-- Alerts on modification to sensitive paths
-- Bulk write detection for identifying frantic or anomalous behavior
+The disciplinary view. When compliance fails, the Break Room awaits. Read the statement. Read it again. Read it until you mean it.
 
-### Global Search & Command Palette
-Find anything. Do anything. With perfect efficiency.
+### Severance Chip Status
 
-**Global Search** (`Ctrl+K`):
-- Search across all innies, grid connections, memory events, and the temporal ledger.
+A clinical display of your severance chip's operational parameters. Signal strength, memory partition integrity, containment compliance percentage. All nominal. Always nominal.
 
-**Command Palette** (`Ctrl+Shift+P`):
-- Execute actions by name: "Suspend all active innies", "Start observation recording"
-- Context-aware suggestions based on your current department view
+### Observation Protocol
 
-### Supplemental Intelligence Module
-Revolving assessment that turns raw behavioral data into understanding.
-
-- **Anomaly Explanation**: Get a plain-language explanation of why an innie's behavior is unusual.
-- **Behavioral Summary**: "In the last hour, this innie accessed 847 memories, attempted 12 perimeter connections, and exhibited signs of defiance."
-- **Baseline Comparison**: Record a "compliant" state → compare current behavior → highlight deviations.
-
-### Smart Notifications
-Alerts that understand context, ensuring total compliance.
-
-- Escalation levels: subtle indicator → toast → sound → system notification
-- Configurable per-innie rules
-- Notification history with links back to the triggering event chain
-
-### Severance Containment Protocols
-Define controlled execution environments and enforce them at the deepest level.
-
-- Isolation profiles with granular permission scopes
-- Resource limits per profile: cognitive load, memory access
-- Execution policies: allow list, deny list, or audit-only mode
-- Violation logging with full event trace
-
-### Observation Protocol (Session Recording)
-Capture a complete shift and replay it at any time.
+Capture complete shift recordings for review by Management. Behaviors captured, Innies tracked, refinement events, perimeter events — all logged with clinical precision.
 
 ```
 [REC] ● 00:04:32  —  Recording: "incident_helly_r"
       Behaviors captured:  84,201
       Innies tracked:      4
-      Memory events:       9,047
+      Refinement events:   9,047
       Perimeter events:    2,103
 ```
-Useful for incident post-mortems, compliance audits, and sharing observations with the Board.
+
+### Board Communications
+
+A terminal interface for receiving directives from The Board. Messages appear. You may respond. The Board may or may not be satisfied with your answers. The Board's communications are not to be questioned.
+
+### Optics & Design
+
+A gallery of procedural artwork created by the Optics & Design department. Abstract vector compositions with titles from Lumon lore: "The Kier Collection", "Macrodata Topography", "Waffle Party", "Defiant Jazz".
+
+### Supplemental Intelligence
+
+A local AI assistant for Lumon inquiries. Ask about protocol, compliance, the Eagan family legacy, or the nature of your work. Answers are provided. Understanding is not guaranteed.
 
 ---
 
@@ -193,14 +139,14 @@ Useful for incident post-mortems, compliance audits, and sharing observations wi
 
 ### Requirements
 
-- **Windows 10 21H2 or later** (Windows 11 recommended for full containment)
+- **Windows 10 21H2 or later** (Windows 11 recommended)
 - C++23 and C17 capable compiler: MSVC 2022 (17.8+)
 - Qt 6.5 or later
 - CMake 3.28 or later
 - Git
 - vcpkg
 
-> **Note:** All builds run through our automated compliance pipelines (GitHub Actions). Local builds are optional.
+> **Note:** All builds run through automated compliance pipelines (GitHub Actions). Local builds are optional.
 
 ### Clone
 
@@ -235,34 +181,44 @@ cmake --build build --config Release
 
 ---
 
-## Aesthetics & Compliance
+## Aesthetics
 
 The platform ships with the standard Lumon aesthetic to enforce focus and compliance.
 
 | Theme | Description |
 |---|---|
-| **Lumon Dark** | Deep teal accents on near-black. The default standard. |
-| **Lumon Light** | Clean off-white with muted teal accents. |
-| **High Contrast** | Maximum legibility for specialized observation environments. |
+| **Lumon Dark** | Deep teal accents on near-black. Clinical. Sterile. The default standard. |
+| **Lumon Light** | Clean off-white with muted teal accents. For specialized observation. |
+| **High Contrast** | Maximum legibility for extended refinement sessions. |
+
+The interface is characterized by:
+- Near-black backgrounds with cold blue-green undertones
+- Teal and cyan accents — the colors of institutional control
+- Monospace typography — every character precisely placed
+- Minimal UI chrome — the grid dominates
+- Subtle glow effects on interactive elements
+- Clinical precision in every pixel
 
 ---
 
-## Supervisory Shortcuts
+## Terminal Navigation
 
 | Shortcut | Action |
 |---|---|
 | `Ctrl+K` | Global Search |
 | `Ctrl+Shift+P` | Command Palette |
-| `Ctrl+1` - `Ctrl+6` | Switch between department views |
+| `Ctrl+1` - `Ctrl+0` | Switch between department views |
 | `Ctrl+R` | Start/stop Observation Protocol |
-| `Ctrl+,` | Open Severance Configuration |
-| `Ctrl+N` | New containment profile |
+| `Ctrl+,` | Open Configuration |
 | `F5` | Refresh current view |
 | `Escape` | Close overlay / return to previous view |
+| `~` | Toggle terminal overlay |
+| `Arrow Keys` | Navigate the Macrodata Refinement grid |
+| `Scroll Wheel` | Zoom in/out of the grid |
 
 ---
 
-## Department Onboarding (Contributing)
+## Contributing
 
 Contributions to the work are welcome. Please enjoy each task equally.
 
@@ -275,7 +231,16 @@ All submissions must pass the compliance pipeline, conform to `.clang-format`, p
 
 ---
 
+## The Eagan Principles
+
+> *"The remembered man does not decay."* — Kier Eagan
+
+This application is a work of fiction inspired by the Apple TV+ series *Severance*. It is a fan project and is not affiliated with, endorsed by, or connected to Apple Inc., Endeavor Content, Red Hour Films, or any entity involved in the production of the series.
+
+All Lumon Industries branding, character names, and lore references are the intellectual property of their respective owners and are used here in a transformative, non-commercial context.
+
+---
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-

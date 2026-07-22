@@ -1,18 +1,14 @@
 #pragma once
 
 #include <QWidget>
-#include <QTreeView>
-#include <QLineEdit>
-#include <QLabel>
-#include <QTimer>
-#include <QPushButton>
-#include <QSortFilterProxyModel>
-#include <QProgressBar>
+#include <QString>
+#include <QModelIndex>
+#include <QPoint>
 
 namespace severance::gui::process_view {
 
-class ProcessTreeModel; // forward declaration
-class ProcessDetailPanel; // forward declaration
+class ProcessTreeModel;
+class ProcessDetailPanel;
 
 class ProcessView : public QWidget {
   Q_OBJECT
@@ -32,33 +28,6 @@ private slots:
 
 private:
   void setupUI();
-  void setupToolbar();
-  void refreshProcessList();
-
-  // UI elements
-  QLineEdit* m_SearchBar{nullptr};
-  QTreeView* m_TreeView{nullptr};
-  QLabel* m_ProcessCountLabel{nullptr};
-  QPushButton* m_KillBtn{nullptr};
-  QPushButton* m_RefreshBtn{nullptr};
-
-  // Sync Status Indicators
-  QLabel* m_InnieSyncLabel{nullptr};
-  QProgressBar* m_InnieSyncBar{nullptr};
-  QLabel* m_OuttieSyncLabel{nullptr};
-  QProgressBar* m_OuttieSyncBar{nullptr};
-  QTimer* m_SyncAnimTimer{nullptr};
-
-  // Model
-  ProcessTreeModel* m_Model{nullptr};
-  QSortFilterProxyModel* m_ProxyModel{nullptr};
-
-  // Detail Panel
-  ProcessDetailPanel* m_DetailPanel{nullptr};
-
-  // Refresh timer
-  QTimer* m_RefreshTimer{nullptr};
-  int m_RefreshIntervalMs{1500};
 };
 
 } // namespace severance::gui::process_view

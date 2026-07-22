@@ -1,288 +1,80 @@
 #include "IsolationView.hpp"
-#include "core/sandbox/SandboxManager.hpp"
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QPropertyAnimation>
-#include <QGraphicsColorizeEffect>
+#include <QTimer>
+#include <QString>
 
 namespace severance::gui::isolation_view {
 
 IsolationView::IsolationView(QWidget *parent) : QWidget(parent) {
-  m_SandboxManager = std::make_unique<core::sandbox::SandboxManager>();
   setupUI();
 }
 
 void IsolationView::setupUI() {
+  this->setStyleSheet("background-color: #F0F0F0;");
   auto* layout = new QVBoxLayout(this);
-  layout->setContentsMargins(16, 16, 16, 16);
-  layout->setSpacing(16);
+  layout->setContentsMargins(50, 50, 50, 50);
+  layout->setAlignment(Qt::AlignCenter);
 
-  // Header
-  auto* headerLayout = new QHBoxLayout();
-  auto* textLayout = new QVBoxLayout();
+  m_StatementLabel = new QLabel(
+    "\"Forgive me for the damage I have done this world.\n"
+    "Neither combative nor competitive,\n"
+    "I will not be the reason the world decays.\n"
+    "My life will have been of no consequence.\n"
+    "I will do no harm.\"", this);
   
-  auto* header = new QLabel("Severance Containment Protocols", this);
-  header->setStyleSheet("font-size: 20px; font-weight: bold; color: #E6EDF3;");
-  textLayout->addWidget(header);
-
-  auto* desc = new QLabel("Initiate procedures within an isolated containment environment, strictly enforcing Lumon spatial and communication policies.", this);
-  desc->setStyleSheet("color: #8B949E;");
-  textLayout->addWidget(desc);
+  m_StatementLabel->setAlignment(Qt::AlignCenter);
+  m_StatementLabel->setStyleSheet("font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: #1A1A1A;");
+  layout->addWidget(m_StatementLabel);
   
-  headerLayout->addLayout(textLayout);
-  headerLayout->addStretch();
-  
-  m_OvertimeBtn = new QPushButton("OVERTIME CONTINGENCY", this);
-  m_OvertimeBtn->setStyleSheet(R"(
-    QPushButton {
-      background-color: transparent;
-      border: 2px solid #DA3633;
-      color: #DA3633;
-      font-weight: 900;
-      font-size: 14px;
-      padding: 10px 20px;
-      border-radius: 4px;
-    }
-    QPushButton:hover {
-      background-color: #DA3633;
-      color: white;
-    }
-  )");
-  connect(m_OvertimeBtn, &QPushButton::clicked, this, &IsolationView::onOvertimeContingencyClicked);
-  headerLayout->addWidget(m_OvertimeBtn);
-  
-  layout->addLayout(headerLayout);
+  layout->addSpacing(40);
 
-  // Launch Area
-  auto* launchLayout = new QHBoxLayout();
-  m_ExecutablePath = new QLineEdit(this);
-  m_ExecutablePath->setPlaceholderText("Designation of executable procedure...");
-  launchLayout->addWidget(m_ExecutablePath);
+  m_CounterLabel = new QLabel("READINGS COMPLETED: 0 / 1,000", this);
+  m_CounterLabel->setAlignment(Qt::AlignCenter);
+  m_CounterLabel->setStyleSheet("font-family: 'Courier New', Courier, monospace; font-size: 18px; color: #1A1A1A;");
+  layout->addWidget(m_CounterLabel);
 
-  m_BrowseBtn = new QPushButton("Browse...", this);
-  connect(m_BrowseBtn, &QPushButton::clicked, this, [this]() {
-    QString path = QFileDialog::getOpenFileName(this, "Select Executable", "", "Executables (*.exe);;All Files (*)");
-    if (!path.isEmpty()) {
-      m_ExecutablePath->setText(path);
-    }
-  });
-  launchLayout->addWidget(m_BrowseBtn);
+  auto* infoLabel = new QLabel("The statement must be read with sincerity.", this);
+  infoLabel->setAlignment(Qt::AlignCenter);
+  infoLabel->setStyleSheet("font-family: 'Courier New', Courier, monospace; font-size: 14px; color: #555555;");
+  layout->addWidget(infoLabel);
 
-  m_LaunchBtn = new QPushButton("Initiate Severance", this);
-  m_LaunchBtn->setStyleSheet("background-color: #238636; color: white; font-weight: bold; padding: 6px 12px; border-radius: 4px;");
-  connect(m_LaunchBtn, &QPushButton::clicked, this, &IsolationView::onLaunchClicked);
-  launchLayout->addWidget(m_LaunchBtn);
+  layout->addSpacing(20);
 
-  layout->addLayout(launchLayout);
+  m_ReadBtn = new QPushButton("READ STATEMENT", this);
+  m_ReadBtn->setFixedSize(200, 40);
+  m_ReadBtn->setStyleSheet("background-color: #1A1A1A; color: #F0F0F0; font-family: 'Courier New', Courier, monospace; font-weight: bold; border-radius: 4px;");
+  layout->addWidget(m_ReadBtn, 0, Qt::AlignHCenter);
 
-  // Configuration Area
-  auto* configLayout = new QHBoxLayout();
-  
-  auto* profileLabel = new QLabel("Profile:", this);
-  profileLabel->setStyleSheet("color: #E6EDF3;");
-  m_ProfileCombo = new QComboBox(this);
-  m_ProfileCombo->addItems({"Clean Slate", "Goldfish", "Standard"});
-  
-  auto* memLabel = new QLabel("Memory (MB):", this);
-  memLabel->setStyleSheet("color: #E6EDF3;");
-  m_MemSpin = new QSpinBox(this);
-  m_MemSpin->setRange(0, 16384);
-  m_MemSpin->setValue(256);
-  
-  auto* cpuLabel = new QLabel("CPU (%):", this);
-  cpuLabel->setStyleSheet("color: #E6EDF3;");
-  m_CpuSpin = new QSpinBox(this);
-  m_CpuSpin->setRange(1, 100);
-  m_CpuSpin->setValue(50);
-  
-  configLayout->addWidget(profileLabel);
-  configLayout->addWidget(m_ProfileCombo);
-  configLayout->addSpacing(16);
-  configLayout->addWidget(memLabel);
-  configLayout->addWidget(m_MemSpin);
-  configLayout->addSpacing(16);
-  configLayout->addWidget(cpuLabel);
-  configLayout->addWidget(m_CpuSpin);
-  configLayout->addStretch();
-  
-  layout->addLayout(configLayout);
+  connect(m_ReadBtn, &QPushButton::clicked, this, &IsolationView::onReadStatement);
 
-  connect(m_ProfileCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
-    if (index == 0) { // Strict
-      m_MemSpin->setValue(128); m_CpuSpin->setValue(20);
-    } else if (index == 1) { // Restricted
-      m_MemSpin->setValue(512); m_CpuSpin->setValue(50);
-    } else { // Unrestricted
-      m_MemSpin->setValue(0); m_CpuSpin->setValue(100);
-    }
-  });
-
-  // Active Sandboxes & Analysis
-  layout->addSpacing(16);
-  auto* subheader = new QLabel("Active Containment & Surveillance", this);
-  subheader->setStyleSheet("font-size: 16px; font-weight: bold; color: #E6EDF3;");
-  layout->addWidget(subheader);
-
-  auto* splitLayout = new QHBoxLayout();
-
-  m_ActiveSandboxesTable = new QTableWidget(this);
-  m_ActiveSandboxesTable->setColumnCount(4);
-  m_ActiveSandboxesTable->setHorizontalHeaderLabels({"PROTOCOL", "PROCEDURE", "STATUS", "DIRECTIVE"});
-  m_ActiveSandboxesTable->horizontalHeader()->setStretchLastSection(true);
-  m_ActiveSandboxesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  m_ActiveSandboxesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  splitLayout->addWidget(m_ActiveSandboxesTable, 2);
-
-  connect(m_ActiveSandboxesTable, &QTableWidget::cellClicked, this, &IsolationView::onActiveSandboxClicked);
-
-  m_AnalysisPane = new QWidget(this);
-  m_AnalysisPane->setStyleSheet("background-color: #0D1117; border: 1px solid #30363D; border-radius: 6px;");
-  auto* analysisLayout = new QVBoxLayout(m_AnalysisPane);
-  
-  m_AnalysisTitle = new QLabel("Containment Analysis", m_AnalysisPane);
-  m_AnalysisTitle->setStyleSheet("font-size: 14px; font-weight: bold; color: #58A6FF; border: none;");
-  m_AnalysisDetails = new QLabel("Select a contained procedure to view isolation telemetry.", m_AnalysisPane);
-  m_AnalysisDetails->setWordWrap(true);
-  m_AnalysisDetails->setStyleSheet("color: #8B949E; border: none; margin-top: 8px;");
-  m_AnalysisDetails->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-  
-  analysisLayout->addWidget(m_AnalysisTitle);
-  analysisLayout->addWidget(m_AnalysisDetails);
-  analysisLayout->addStretch();
-  
-  splitLayout->addWidget(m_AnalysisPane, 1);
-  layout->addLayout(splitLayout, 1);
+  m_PulseTimer = new QTimer(this);
+  connect(m_PulseTimer, &QTimer::timeout, this, &IsolationView::onPulse);
+  m_PulseTimer->start(50);
 }
 
-void IsolationView::onLaunchClicked() {
-  QString path = m_ExecutablePath->text();
-  if (path.isEmpty()) {
-    QMessageBox::warning(this, "Error", "Please select an executable to launch.");
-    return;
-  }
-
-  core::sandbox::SandboxProfile profile;
-  profile.name = m_ProfileCombo->currentText().toStdString() + " Sandbox " + std::to_string(m_ActiveSandboxesTable->rowCount() + 1);
-  profile.executablePath = path.toStdString();
-  
-  // Use UI configured limits
-  profile.policy.maxMemoryBytes = static_cast<uint64_t>(m_MemSpin->value()) * 1024 * 1024; // MB to Bytes
-  profile.policy.maxCpuPercent = static_cast<double>(m_CpuSpin->value());
-  
-  // Strict/Restricted flags
-  if (m_ProfileCombo->currentIndex() == 0) { // Strict
-    profile.policy.allowNetworkAccess = false;
-    profile.policy.allowFileSystemWrite = false;
-  } else if (m_ProfileCombo->currentIndex() == 1) { // Restricted
-    profile.policy.allowNetworkAccess = true;
-    profile.policy.allowFileSystemWrite = false;
-  } else { // Unrestricted
-    profile.policy.allowNetworkAccess = true;
-    profile.policy.allowFileSystemWrite = true;
-  }
-
-  if (m_SandboxManager->LaunchProfile(profile)) {
-    int row = m_ActiveSandboxesTable->rowCount();
-    m_ActiveSandboxesTable->insertRow(row);
-    m_ActiveSandboxesTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(profile.name)));
-    m_ActiveSandboxesTable->setItem(row, 1, new QTableWidgetItem(path));
-    m_ActiveSandboxesTable->setItem(row, 2, new QTableWidgetItem("Running"));
-
-    auto* termBtn = new QPushButton("Sever", this);
-    termBtn->setStyleSheet("background-color: #DA3633; color: white; border-radius: 4px;");
-    connect(termBtn, &QPushButton::clicked, this, [this, row]() {
-      onTerminateClicked(row);
-    });
-    m_ActiveSandboxesTable->setCellWidget(row, 3, termBtn);
-  }
+void IsolationView::onReadStatement() {
+  m_Reads++;
+  m_CounterLabel->setText(QString("READINGS COMPLETED: %1 / 1,000").arg(m_Reads));
 }
 
-void IsolationView::onActiveSandboxClicked(int row, int column) {
-  (void)column;
-  if (row >= 0 && row < m_ActiveSandboxesTable->rowCount()) {
-    auto profiles = m_SandboxManager->GetActiveProfiles();
-    if (row < profiles.size()) {
-      const auto& p = profiles[row];
-      
-      QString details = QString(
-        "<b>Profile:</b> %1<br><br>"
-        "<b>Target Executable:</b><br>%2<br><br>"
-        "<b>Enforced Limits:</b><br>"
-        "- Memory Cap: %3 MB<br>"
-        "- CPU Cap: %4%<br>"
-        "- FS Write Allowed: %5<br>"
-        "- Net Access Allowed: %6<br><br>"
-        "<b>Containment Surveillance:</b><br>"
-        "This procedure is running under a Lumon Job Object. "
-      ).arg(QString::fromStdString(p.name))
-       .arg(QString::fromStdString(p.executablePath))
-       .arg(p.policy.maxMemoryBytes > 0 ? QString::number(p.policy.maxMemoryBytes / (1024*1024)) : "Unlimited")
-       .arg(QString::number(p.policy.maxCpuPercent))
-       .arg(p.policy.allowFileSystemWrite ? "Yes" : "No")
-       .arg(p.policy.allowNetworkAccess ? "Yes" : "No");
-
-      if (!p.policy.allowFileSystemWrite) {
-        details += "A Low Integrity Restricted Token is enforced, preventing writes to medium/high integrity locations. ";
-      }
-
-      m_AnalysisDetails->setText(details);
-    }
-  }
-}
-
-void IsolationView::onTerminateClicked(int row) {
-  if (row >= 0 && row < m_ActiveSandboxesTable->rowCount()) {
-    m_SandboxManager->TerminateSandbox(row);
-    m_ActiveSandboxesTable->removeRow(row);
-    
-    // We must re-bind the lambda row indices for remaining rows
-    for (int i = row; i < m_ActiveSandboxesTable->rowCount(); ++i) {
-        auto* btn = qobject_cast<QPushButton*>(m_ActiveSandboxesTable->cellWidget(i, 3));
-        if (btn) {
-            btn->disconnect();
-            connect(btn, &QPushButton::clicked, this, [this, i]() {
-                onTerminateClicked(i);
-            });
-        }
-    }
-  }
-}
-
-void IsolationView::onOvertimeContingencyClicked() {
-  QMessageBox::StandardButton reply;
-  reply = QMessageBox::critical(this, "CODE BLACK PROTOCOL",
-                                "WARNING: Initiating OVERTIME CONTINGENCY will wake all dormant Innies and force an immediate localized lockdown.\n\nAre you sure you wish to proceed?",
-                                QMessageBox::Yes | QMessageBox::Abort);
-  if (reply == QMessageBox::Yes) {
-    triggerOvertimeAlarm();
-  }
-}
-
-void IsolationView::triggerOvertimeAlarm() {
-  if (!m_AlarmEffect) {
-    m_AlarmEffect = new QGraphicsColorizeEffect(this);
-    m_AlarmEffect->setColor(QColor("#DA3633")); // Red
-    this->setGraphicsEffect(m_AlarmEffect);
-    
-    m_AlarmAnimation = new QPropertyAnimation(m_AlarmEffect, "strength");
-    m_AlarmAnimation->setLoopCount(-1); // Infinite loop
-    m_AlarmAnimation->setDuration(1000);
-    m_AlarmAnimation->setKeyValueAt(0, 0.0);
-    m_AlarmAnimation->setKeyValueAt(0.5, 0.5);
-    m_AlarmAnimation->setKeyValueAt(1, 0.0);
-  }
-  
-  if (m_AlarmAnimation->state() == QAbstractAnimation::Running) {
-    m_AlarmAnimation->stop();
-    m_AlarmEffect->setStrength(0.0);
-    m_OvertimeBtn->setText("OVERTIME CONTINGENCY");
+void IsolationView::onPulse() {
+  if (m_GlowUp) {
+    m_GlowIntensity += 2;
+    if (m_GlowIntensity >= 200) m_GlowUp = false;
   } else {
-    m_AlarmAnimation->start();
-    m_OvertimeBtn->setText("CANCEL PROTOCOL");
+    m_GlowIntensity -= 2;
+    if (m_GlowIntensity <= 50) m_GlowUp = true;
   }
+  
+  int r = 26 + (0 - 26) * m_GlowIntensity / 200;
+  int g = 26 + (229 - 26) * m_GlowIntensity / 200;
+  int b = 26 + (255 - 26) * m_GlowIntensity / 200;
+  
+  QString color = QString("#%1%2%3")
+                  .arg(r, 2, 16, QChar('0'))
+                  .arg(g, 2, 16, QChar('0'))
+                  .arg(b, 2, 16, QChar('0'));
+  m_StatementLabel->setStyleSheet(QString("font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: %1;").arg(color));
 }
 
 } // namespace severance::gui::isolation_view
