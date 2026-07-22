@@ -61,21 +61,9 @@ add_executable(severance
     src/core/metrics/BaselineManager.cpp
     src/core/network/NetworkManager.cpp
     src/core/filesystem/FileMonitor.cpp
-    src/core/filesystem/EtwMonitor.cpp
-    src/core/correlation/CorrelationEngine.cpp
-    src/core/plugins/PluginManager.cpp
-    src/core/plugins/PluginLoader.cpp
-    src/core/sandbox/SandboxManager.cpp
-    src/core/store/EventStore.cpp
-    src/core/workspace/WorkspaceManager.cpp
     src/core/notifications/NotificationManager.cpp
     src/core/notifications/RuleEngine.cpp
     src/core/session/SessionManager.cpp
-    src/core/security/FimManager.cpp
-    src/core/security/ActiveResponse.cpp
-    src/core/security/EventLogManager.cpp
-    src/core/security/RootkitScanner.cpp
-    src/platform/windows/sev_platform_win32.c
 )
 
 target_include_directories(severance PRIVATE src src/core src/gui src/utils ${CMAKE_SOURCE_DIR}/include)
@@ -88,7 +76,6 @@ target_link_libraries(severance PRIVATE
     Qt6::Network
     Qt6::OpenGL
     Qt6::OpenGLWidgets
-    psapi
 )
 
 enable_testing()
