@@ -199,36 +199,49 @@ The interface is characterized by:
 
 ## Terminal Navigation & Operations
 
-### Macrodata Refinement Controls
+### 🧮 Macrodata Refinement (MDR) Console
 
 | Control | Action |
 |---|---|
-| **Hover Mouse** | Expand and reveal scary number group density |
-| **Click Mouse** | Refine selected scary number group into assigned bin (WO, FC, DR, MA, SI) |
-| `Tab` | Switch active MDR file (`COLDWATER` ➔ `TUMWATER` ➔ `CULPEPPER` ➔ `DILLON` ➔ `SIENA` ➔ `PACOIMA`) |
-| `Arrow Keys` | Pan terminal camera across the refinement grid |
-| `Scroll Wheel` | Zoom camera in and out |
+| **Click Left-Mouse** | Refine scary number group into assigned bin (**WO**, **FC**, **DR**, **MA**, **SI**) with particle vortex animation |
+| **Hover Mouse** | Expand group and reveal 4 Tempers sentiment profile (**WOE**, **FROLIC**, **DREAD**, **MALICE**) with colored glowing auras |
+| **Drag Mouse (Right / Middle Click)** | Smoothly pan terminal camera across the grid |
+| **Scroll Wheel** | Zoom camera in and out (0.3× to 3.0×) |
+| `Ctrl+F` or **Click Top Header** | Open **Lumon File Cabinet** to select active file (*COLDWATER*, *TUMWATER*, *CULPEPPER*, *DILLON*, *SIENA*, *PACOIMA*) |
+| `Tab` | Instantly cycle to next MDR refinement file |
+| **Quota 100% Completion** | Unlocks **Music Dance Experience (MDE)** mode (`[ DEFIANT JAZZ ]`, `[ KIER HYMN ]`, `[ LUMON LOUNGE ]`) and **Waffle Party** incentive selection |
 | **Idle Mouse (10s)** | Engage Lumon logo CRT screensaver |
 
-### Global Department Shortcuts
+---
 
-| Shortcut | Destination / Action |
+### 🏢 Departmental Interactive Operations
+
+| Department / View | Shortcut | Interactive Operations |
+|---|---|---|
+| **Macrodata Refinement** | `Ctrl+1` | Refine scary numbers, manage bins, complete quotas, trigger MDE & Waffle Party |
+| **Personnel Registry** | `Ctrl+2` | Inspect Innie profiles (Mark S., Helly R., Irving B., Dylan G., Burt G., Ms. Casey). Click `[ SEND DIRECTIVE / NOTE ]` to send contraband notes & modify compliance |
+| **Temporal Ledger** | `Ctrl+3` | Review shift log timeline, arrival events, and incident records |
+| **Perimeter Grid** | `Ctrl+4` | Click any room (*MDR*, *O&D*, *Break Room*, *Executive Suite*, *Goat Room*, *Elevator*) for live CRT camera telemetry & door lock status. Toggle `[ OVERTIME CONTINGENCY (OTC) ]` for red emergency alarms |
+| **Document Processing** | `Ctrl+5` | Search classified Lumon document archive (*The Lexington Letter*, *Overtime Contingency Protocol*, etc.) |
+| **Severance Protocols** | `Ctrl+6` | **The Break Room**: Read Statement of Forgiveness. Sincerity Meter evaluates typing cadence. Typing too fast triggers Mr. Milchick reprimand (*"You did not mean it."*) and resets counter. Includes phosphor oscilloscope waveform |
+| **Observation & Wellness** | `Ctrl+7` | View biometric telemetry graphs. Click `[ BEGIN WELLNESS SESSION ]` to hear Outie facts from Ms. Casey; rate with `[ ENJOY EQUALLY ]` (+10 pts) or `[ EXPRESS FAVORITISM ]` (-15 pts) |
+| **Vigilance** | `Ctrl+8` | Monitor Severance Chip Diagnostics (Signal %, Memory Partition, Containment) |
+| **Board Communications** | `Ctrl+9` | Speaker Box with glowing deliberation LED light. Select preset directive responses (`[ I ACCEPT THE DIRECTIVE ]`, `[ REQUEST CLARIFICATION ]`, `[ PRAISE KIER EAGAN ]`) |
+| **Optics & Design** | `Ctrl+0` | Lumon painting gallery (*Kier Overcomes Bad Hat*, *The Four Tempers*, etc.). Click artwork for micro-inspection; click `[ CREATE NEW O&D ARTWORK ]` for procedural vector art |
+
+---
+
+### 🌐 Global Workstation Directives
+
+| Shortcut | Function |
 |---|---|
-| `Ctrl+1` | **Macrodata Refinement** console |
-| `Ctrl+2` | **Personnel Registry** (Severed Workforce Profiles) |
-| `Ctrl+3` | **Temporal Ledger** (Shift Log & Incident History) |
-| `Ctrl+4` | **Perimeter Grid** (Severed Floor Map) |
-| `Ctrl+5` | **Document Processing** (Classified Lumon Archive) |
-| `Ctrl+6` | **Severance Protocols** (The Break Room Statement Console) |
-| `Ctrl+7` | **Observation Protocol** |
-| `Ctrl+8` | **Vigilance** (Severance Chip Diagnostics) |
-| `Ctrl+9` | **Board Communications** Interface |
-| `Ctrl+0` | **Optics & Design** Gallery |
-| `Ctrl+K` | Global Directive Search Overlay |
-| `Ctrl+Shift+P` | Lumon Command Directive Palette |
+| `Ctrl+H` | Open Official **Lumon Employee Handbook 9th Edition** (The 9 Virtues of Kier, Eagan Legacy, Conduct Rules, Hymns) |
+| `Ctrl+K` | Open Global Directive Search Overlay |
+| `Ctrl+Shift+P` | Open Lumon Command Directive Palette |
 | `~` / `` ` `` | Toggle Embedded Lumon CLI Terminal Overlay |
-| `Ctrl+,` | Terminal Configuration |
-| `Ctrl+Q` | Disconnect Workstation (Quit) |
+| `Ctrl+,` | Open Terminal Configuration Panel |
+| `F5` | Recalibrate Data |
+| `Ctrl+Q` | Disconnect Workstation (Quit Terminal) |
 
 ---
 
