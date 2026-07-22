@@ -7,6 +7,7 @@
 #include <QDateTime>
 #include <QVariant>
 #include <QUuid>
+#include <QLoggingCategory>
 
 namespace severance::core::store {
 
@@ -16,6 +17,9 @@ EventStore::~EventStore() {
 
 bool EventStore::Initialize(const QString& dbPath) {
   if (m_Initialized) return true;
+
+  // Suppress Qt SQL driver missing warnings
+  QLoggingCategory::setFilterRules("qt.sql.qsqldatabase.warning=false");
 
   m_DbPath = dbPath;
   
