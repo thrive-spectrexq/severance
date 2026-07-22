@@ -15,6 +15,8 @@
 #include "gui/perimeter_grid/PerimeterGridView.hpp"
 #include "gui/security_view/SecurityView.hpp"
 #include "gui/terminal/TerminalOverlay.hpp"
+#include "gui/widgets/GameHudWidget.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QApplication>
 #include <QTimer>
 #include <QHBoxLayout>
@@ -49,7 +51,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   };
 
   auto centralWidget = new QWidget(this);
-  auto mainLayout = new QHBoxLayout(centralWidget);
+  auto rootLayout = new QVBoxLayout(centralWidget);
+  rootLayout->setContentsMargins(0, 0, 0, 0);
+  rootLayout->setSpacing(0);
+
+  auto gameHud = new widgets::GameHudWidget(this);
+  rootLayout->addWidget(gameHud);
+
+  auto mainLayout = new QHBoxLayout();
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setSpacing(0);
 
@@ -60,13 +69,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   auto separator = new QFrame(this);
   separator->setFrameShape(QFrame::VLine);
   separator->setFixedWidth(1);
-  separator->setStyleSheet("background-color: #30363D;");
+  separator->setStyleSheet("background-color: #143832;");
   mainLayout->addWidget(separator);
 
   setupViews();
   mainLayout->addWidget(m_ViewStack, 1);
 
+  rootLayout->addLayout(mainLayout, 1);
   setCentralWidget(centralWidget);
+
+  connect(&core::game::GameEngine::GetInstance(), &core::game::GameEngine::gameNotification,
+          this, [this](const QString& title, const QString& message, const QString& severity) {
+            showNotification(title, message, severity);
+          });
+
+  connect(&core::game::GameEngine::GetInstance(), &core::game::GameEngine::stateChanged,
+          this, [this](core::game::GameState state) {
+            if (state == core::game::GameState::BreakRoomPenalty) {
+              setActiveView(5); // Auto-switch to Break Room view
+            }
+          });
 
   setupStatusBar();
   setupShortcuts();

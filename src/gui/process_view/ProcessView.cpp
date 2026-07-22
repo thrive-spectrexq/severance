@@ -1,4 +1,5 @@
 #include "ProcessView.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QScrollArea>
@@ -103,7 +104,10 @@ void ProcessView::setupUI() {
                                                      "", &ok);
                 if (ok && !text.isEmpty()) {
                     QString reply = "Message received.";
-                    if (innieName == "Helly R.") reply = "I'm looking for the exit";
+                    if (innieName == "Helly R.") {
+                        reply = "I'm looking for the exit. I found Keycard #1!";
+                        core::game::GameEngine::GetInstance().CollectKeycard(0, "Personnel Registry (Helly R.)");
+                    }
                     else if (innieName == "Irving B.") reply = "Let us consult the Handbook";
                     else if (innieName == "Dylan G.") reply = "Did somebody say Waffle Party?";
                     else if (innieName == "Mark S.") reply = "I'll get back to my files.";

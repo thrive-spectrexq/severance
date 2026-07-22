@@ -1,4 +1,5 @@
 #include "IsolationView.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QString>
@@ -191,6 +192,7 @@ void IsolationView::onReadStatement() {
       m_InputField->clear();
       m_SincerityScore = 100;
       m_SincerityMeter->setValue(100);
+      core::game::GameEngine::GetInstance().ReportBreakRoomSuccess();
   } else {
       showWarning();
   }

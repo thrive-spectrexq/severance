@@ -1,4 +1,5 @@
 #include "PerimeterGridView.hpp"
+#include "core/game/GameEngine.hpp"
 
 #include <QGraphicsTextItem>
 #include <QGraphicsRectItem>
@@ -213,6 +214,7 @@ void PerimeterGridView::toggleOTC() {
     m_otcActive = !m_otcActive;
     
     if (m_otcActive) {
+        core::game::GameEngine::GetInstance().TriggerOtcSwitch("Perimeter Security Suite");
         m_otcButton->setStyleSheet(
             "QPushButton { background-color: #FF0000; color: #FFFFFF; font-family: 'Courier New'; font-weight: bold; font-size: 16px; border: 2px solid #FFFFFF; padding: 10px; }"
         );

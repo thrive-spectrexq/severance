@@ -1,4 +1,5 @@
 #include "SearchOverlay.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QKeyEvent>
@@ -141,6 +142,11 @@ void SearchOverlay::onSearchTextChanged(const QString& text) {
 void SearchOverlay::performSearch(const QString& query) {
   m_ResultsList->clear();
   m_CurrentResults.clear();
+
+  QString lowerQ = query.toLower();
+  if (lowerQ.contains("otc") || lowerQ.contains("overtime") || lowerQ.contains("lexington")) {
+    core::game::GameEngine::GetInstance().CollectKeycard(1, "Classified Document Archive (" + query + ")");
+  }
 
   if (query.trimmed().isEmpty()) {
     m_ResultsList->hide();

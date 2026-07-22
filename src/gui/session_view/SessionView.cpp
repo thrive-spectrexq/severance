@@ -1,4 +1,5 @@
 #include "SessionView.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -335,7 +336,8 @@ void SessionView::onEnjoyEqually() {
 void SessionView::onExpressFavoritism() {
     m_WellnessScore -= 15;
     m_WellnessScoreLabel->setText(QString("Compliance Score: %1").arg(m_WellnessScore));
-    m_WellnessDialogue->setText("10 points deducted from your Outie. Please do not favor any fact.");
+    m_WellnessDialogue->setText("10 points deducted from your Outie. While Ms. Casey is distracted, you pocketed Keycard #3!");
+    core::game::GameEngine::GetInstance().CollectKeycard(2, "Ms. Casey's Wellness Desk");
     m_CurrentFactIndex++;
     m_EnjoyEquallyBtn->setEnabled(false);
     m_ExpressFavoritismBtn->setEnabled(false);

@@ -1,5 +1,6 @@
 #include "OpticsDesignView.hpp"
 #include "gui/theme/Theme.hpp"
+#include "core/game/GameEngine.hpp"
 #include <QFrame>
 #include <QPainter>
 #include <QLinearGradient>
@@ -262,6 +263,8 @@ void OpticsDesignView::onArtworkClicked(const QPixmap& pixmap, const QString& ti
   m_OverlayImage->setPixmap(pixmap.scaled(600, 600, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   m_Overlay->show();
   m_Overlay->raise();
+
+  core::game::GameEngine::GetInstance().CollectKeycard(3, "Optics & Design Gallery (" + title + ")");
 }
 
 void OpticsDesignView::loadArtworks() {
