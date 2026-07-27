@@ -3,6 +3,7 @@
 #include "core/store/EventStore.hpp"
 #include "core/events/MacrodataRefinedEvent.hpp"
 #include <QPainter>
+#include <QPainterPath>
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QMouseEvent>
