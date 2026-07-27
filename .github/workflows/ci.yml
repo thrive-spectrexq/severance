@@ -99,15 +99,28 @@ jobs:
     - name: Deploy Qt Dependencies (windeployqt)
       shell: pwsh
       run: |
-        $VcpkgRoot = "${{ github.workspace }}\vcpkg"
-        $InstalledDir = "$VcpkgRoot\installed\x64-windows"
+        $SearchDirs = @(
+          "${{ github.workspace }}\build\vcpkg_installed\x64-windows",
+          "${{ github.workspace }}\vcpkg\installed\x64-windows",
+          "$env:VCPKG_ROOT\installed\x64-windows",
+          "${{ github.workspace }}"
+        )
 
-        # Locate windeployqt (case-insensitive search for safety)
-        $WindeployqtExe = Get-ChildItem "$InstalledDir\tools" -Recurse -Filter "windeployqt.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        $WindeployqtExe = $null
+        foreach ($Dir in $SearchDirs) {
+          if (Test-Path $Dir) {
+            $Found = Get-ChildItem -Path $Dir -Recurse -Filter "windeployqt.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($Found) {
+              $WindeployqtExe = $Found
+              break
+            }
+          }
+        }
         
         if ($WindeployqtExe) {
           Write-Host "Found windeployqt at: $($WindeployqtExe.FullName)"
-          $env:PATH = "$($WindeployqtExe.DirectoryName);$InstalledDir\bin;$env:PATH"
+          $BinDir = $WindeployqtExe.DirectoryName
+          $env:PATH = "$BinDir;$env:PATH"
           & $WindeployqtExe.FullName --release --no-compiler-runtime build\Release\severance.exe 2>&1 | ForEach-Object { Write-Host $_ }
           Write-Host "windeployqt completed"
         } else {
@@ -148,7 +161,8 @@ jobs:
         # Fallback: search vcpkg installed tree
         if (-not $QWindowsDll) {
           Write-Host "Searching vcpkg tree for qwindows.dll..."
-          $QWindowsDll = Get-ChildItem "$VcpkgRoot\installed" -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $VcpkgInstalledPath = if (Test-Path "build\vcpkg_installed") { "build\vcpkg_installed" } else { "$VcpkgRoot\installed" }
+          $QWindowsDll = Get-ChildItem $VcpkgInstalledPath -Recurse -Filter "qwindows.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($QWindowsDll) {
             Write-Host "Found qwindows.dll in vcpkg: $($QWindowsDll.FullName)"
           }
