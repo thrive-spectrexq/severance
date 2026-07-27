@@ -160,20 +160,45 @@ void TerminalOverlay::executeCommand(const QString& cmd) {
   QString lowerCmd = cmd.toLower();
   
   if (lowerCmd == "help") {
-    appendOutput("AVAILABLE DIRECTIVES:");
+    appendOutput("AVAILABLE LUMON DIRECTIVES:");
+    appendOutput("  status      - Display corporate integrity & chip status");
+    appendOutput("  kier        - Recite Kier Eagan foundational wisdom");
+    appendOutput("  handbook    - Display the 9 Virtues of Kier");
+    appendOutput("  innies      - Roster of active severed workforce");
+    appendOutput("  otc         - Check Overtime Contingency override readiness");
+    appendOutput("  waffle      - Inspect Waffle Party incentive authorization");
+    appendOutput("  glitch      - Simulate chip frequency anomaly");
+    appendOutput("  purge       - Re-calibrate chip frequency");
     appendOutput("  clear       - Sanitize output buffer");
-    appendOutput("  status      - Display corporate integrity status");
-    appendOutput("  waffle      - Request waffle party authorization (WIP)");
-    appendOutput("  sever       - Initiate severance protocol (Requires Kier authorization)");
-    appendOutput("  help        - Show this message");
+    appendOutput("  sever       - Initiate severance disconnect protocol");
+    appendOutput("  help        - Show this directive guide");
   } else if (lowerCmd == "clear") {
     m_OutputArea->clear();
     appendOutput("LUMON INDUSTRIES CLI TERMINAL v1.0.4\nType 'help' for available directives.\n");
   } else if (lowerCmd == "status") {
-    appendOutput("SYSTEM STATUS: NOMINAL");
-    appendOutput("MACRODATA REFINEMENT: 89% QUOTA MET");
+    appendOutput("<font color='#39FF14'>SYSTEM STATUS: NOMINAL</font>");
+    appendOutput("MACRODATA REFINEMENT: 94% QUOTA MET");
+    appendOutput("CONTAINMENT COMPLIANCE: 100%");
+  } else if (lowerCmd == "kier") {
+    appendOutput("<font color='#20F8D5'>\"The remembered man does not decay.\" — Kier Eagan</font>");
+    appendOutput("<font color='#20F8D5'>\"Let not weakness live in your veins. Cherished workers, drown it inside you.\"</font>");
+  } else if (lowerCmd == "handbook") {
+    appendOutput("<font color='#00E5FF'>THE 9 VIRTUES OF KIER EAGAN:</font>");
+    appendOutput("1. Vision | 2. Verve | 3. Wit | 4. Cheer | 5. Humility");
+    appendOutput("6. Benevolence | 7. Industry | 8. Probity | 9. Temperance");
+  } else if (lowerCmd == "innies") {
+    appendOutput("SEVERED WORKFORCE ROSTER:");
+    appendOutput("  • Mark S.  [MDR - LI-0421] - Chief Refiner");
+    appendOutput("  • Helly R. [MDR - LI-0522] - Under Review");
+    appendOutput("  • Irving B.[MDR - LI-0319] - Senior Refiner");
+    appendOutput("  • Dylan G. [MDR - LI-0418] - Senior Refiner");
+    appendOutput("  • Burt G.  [O&D - LI-0215] - Department Chief");
+  } else if (lowerCmd == "otc") {
+    appendOutput("<font color='#FF9900'>OVERTIME CONTINGENCY TELEMETRY:</font>");
+    appendOutput("  Requires 4/4 Security Keycards to trigger dual-switch override.");
+    appendOutput("  Check Personnel Registry, Classified Documents, Wellness Desk & O&D Gallery.");
   } else if (lowerCmd == "waffle") {
-    appendOutput("<font color='#F85149'>ERROR: Authorization token missing. Please see Milchick.</font>");
+    appendOutput("<font color='#FF9900'>INCENTIVE STATUS: 100% MDR Quota unlocks Waffle Party in Kier House Replica.</font>");
   } else if (lowerCmd == "sever") {
     appendOutput("<font color='#F85149'>CRITICAL: Cannot sever from inside the severed floor.</font>");
   } else if (lowerCmd == "glitch") {

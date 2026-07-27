@@ -159,8 +159,34 @@ void BoardCommsView::onMessageSent() {
   if (msg.isEmpty()) return;
 
   m_InputField->clear();
-  m_InputField->setDisabled(true);
 
+  // Handle local slash commands
+  if (msg.startsWith("/")) {
+    QString cmd = msg.toLower();
+    if (cmd == "/clear") {
+      m_TerminalDisplay->clear();
+      addMessage("SYSTEM", "ENCRYPTED CHANNEL ESTABLISHED. THE BOARD IS LISTENING.", "#8B949E");
+      return;
+    }
+    if (cmd == "/help") {
+      addMessage("SYSTEM COMMAND", "Available directives: /status, /virtues, /otc, /clear, /help", "#00E5FF");
+      return;
+    }
+    if (cmd == "/status") {
+      addMessage("SYSTEM COMMAND", "Board Telemetry: ACTIVE | Deliberation Channel: ENCRYPTED | Signal: 99.8%", "#39FF14");
+      return;
+    }
+    if (cmd == "/virtues") {
+      addMessage("SYSTEM COMMAND", "The 9 Virtues: Vision, Verve, Wit, Cheer, Humility, Benevolence, Industry, Probity, Temperance.", "#00E5FF");
+      return;
+    }
+    if (cmd == "/otc") {
+      addMessage("SYSTEM COMMAND", "OTC Directive Status: 4 Keycards required across floor archives.", "#FF9900");
+      return;
+    }
+  }
+
+  m_InputField->setDisabled(true);
   addMessage("MANAGEMENT", msg, "#F1F5F9");
 
   // 1. Short-term memory update
@@ -178,7 +204,7 @@ void BoardCommsView::onMessageSent() {
   }
 
   // Simulate typing/processing delay
-  int delayMs = QRandomGenerator::global()->bounded(2000, 5000);
+  int delayMs = QRandomGenerator::global()->bounded(1500, 3500);
   m_ResponseTimer->start(delayMs);
   
   if (m_SpeakerLight) {

@@ -5,6 +5,9 @@
 #include <QLabel>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPushButton>
+#include <QDialog>
+#include <QMessageBox>
 #include <cstdlib>
 #include <vector>
 
@@ -17,8 +20,13 @@ KiersProtectionWidget::KiersProtectionWidget(QWidget* parent) : QWidget(parent) 
   m_animTimer->start(50);
 }
 
+void KiersProtectionWidget::triggerBoost() {
+  m_speed = 10;
+  QTimer::singleShot(2500, this, [this]() { m_speed = 2; });
+}
+
 void KiersProtectionWidget::updateAnim() {
-    m_rotation = (m_rotation + 2) % 360;
+    m_rotation = (m_rotation + m_speed) % 360;
     update();
 }
 
@@ -31,7 +39,7 @@ void KiersProtectionWidget::paintEvent(QPaintEvent* event) {
   painter.translate(width() / 2, height() / 2);
   painter.rotate(m_rotation);
 
-  QPen outerPen(QColor("#00E5FF"), 2);
+  QPen outerPen(m_speed > 2 ? QColor("#39FF14") : QColor("#00E5FF"), 2);
   painter.setPen(outerPen);
   painter.drawArc(-side/2 + 10, -side/2 + 10, side - 20, side - 20, 0, 360 * 16);
 
@@ -40,7 +48,7 @@ void KiersProtectionWidget::paintEvent(QPaintEvent* event) {
   painter.drawArc(-side/2 + 18, -side/2 + 18, side - 36, side - 36, -m_rotation * 16, 360 * 16);
 
   painter.setPen(Qt::NoPen);
-  painter.setBrush(QColor("#00E5FF"));
+  painter.setBrush(m_speed > 2 ? QColor("#39FF14") : QColor("#00E5FF"));
   painter.drawEllipse(-10, -10, 20, 20);
 }
 
@@ -48,8 +56,11 @@ SecurityDashboardWidget::SecurityDashboardWidget(QWidget* parent) : QWidget(pare
   setFixedHeight(160);
   auto* layout = new QHBoxLayout(this);
   layout->setContentsMargins(24, 16, 24, 16);
-  layout->addWidget(new KiersProtectionWidget(this));
-  auto* titleLabel = new QLabel("SEVERANCE CHIP DIAGNOSTICS", this);
+  
+  m_ProtectionWidget = new KiersProtectionWidget(this);
+  layout->addWidget(m_ProtectionWidget);
+  
+  auto* titleLabel = new QLabel("SEVERANCE CHIP DIAGNOSTICS & VIGILANCE", this);
   titleLabel->setStyleSheet("color: #00E5FF; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 18px; letter-spacing: 2px;");
   layout->addWidget(titleLabel, 1, Qt::AlignCenter);
 }
@@ -67,9 +78,31 @@ SecurityView::~SecurityView() = default;
 void SecurityView::setupUI() {
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(16, 16, 16, 16);
-  layout->setSpacing(24);
+  layout->setSpacing(20);
 
-  layout->addWidget(new SecurityDashboardWidget(this));
+  m_DashboardWidget = new SecurityDashboardWidget(this);
+  layout->addWidget(m_DashboardWidget);
+
+  auto* controlBar = new QHBoxLayout();
+  m_RecalibrateBtn = new QPushButton("[ RECALIBRATE CHIP SIGNALS ]", this);
+  m_RecalibrateBtn->setStyleSheet(R"(
+    QPushButton {
+      background-color: #161B22;
+      color: #39FF14;
+      border: 1px solid #30363D;
+      padding: 8px 16px;
+      font-family: monospace;
+      font-weight: bold;
+    }
+    QPushButton:hover {
+      background-color: #39FF14;
+      color: #0D1117;
+    }
+  )");
+  connect(m_RecalibrateBtn, &QPushButton::clicked, this, &SecurityView::onRecalibrateClicked);
+  controlBar->addWidget(m_RecalibrateBtn);
+  controlBar->addStretch();
+  layout->addLayout(controlBar);
 
   m_ChipTable = new QTableWidget();
   m_ChipTable->setColumnCount(6);
@@ -77,9 +110,12 @@ void SecurityView::setupUI() {
   m_ChipTable->horizontalHeader()->setStretchLastSection(true);
   m_ChipTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   m_ChipTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_ChipTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_ChipTable->verticalHeader()->setVisible(false);
   m_ChipTable->setShowGrid(false);
   
+  connect(m_ChipTable, &QTableWidget::cellDoubleClicked, this, &SecurityView::onCellDoubleClicked);
+
   m_ChipTable->setStyleSheet(R"(
     QTableWidget {
       background-color: #0A0F14;
@@ -87,6 +123,10 @@ void SecurityView::setupUI() {
       font-family: "Courier New", Courier, monospace;
       font-size: 13px;
       border: 1px solid #1A7A5C;
+    }
+    QTableWidget::item:selected {
+      background-color: #1A7A5C;
+      color: #FFFFFF;
     }
     QHeaderView::section {
       background-color: #0A0F14;
@@ -97,6 +137,60 @@ void SecurityView::setupUI() {
   )");
 
   layout->addWidget(m_ChipTable);
+}
+
+void SecurityView::onRecalibrateClicked() {
+  if (m_DashboardWidget && m_DashboardWidget->protectionWidget()) {
+    m_DashboardWidget->protectionWidget()->triggerBoost();
+  }
+  updateTable();
+  QMessageBox::information(this, "Chip Signal Recalibration", 
+                           "All Severance Chip RF frequencies recalibrated to Lumon standard. Partition containment verified.");
+}
+
+void SecurityView::onCellDoubleClicked(int row, int column) {
+  Q_UNUSED(column);
+  if (row < 0 || row >= m_ChipTable->rowCount()) {
+    return;
+  }
+
+  QString innie = m_ChipTable->item(row, 0)->text();
+  QString chipId = m_ChipTable->item(row, 1)->text();
+  QString signal = m_ChipTable->item(row, 2)->text();
+  QString partition = m_ChipTable->item(row, 3)->text();
+  QString containment = m_ChipTable->item(row, 4)->text();
+  QString status = m_ChipTable->item(row, 5)->text();
+
+  QDialog dlg(this);
+  dlg.setWindowTitle(QString("Chip Diagnostics — %1").arg(innie));
+  dlg.resize(450, 320);
+  dlg.setStyleSheet(R"(
+    QDialog { background-color: #050B09; color: #20F8D5; font-family: 'Courier New', Consolas, monospace; }
+    QLabel { font-size: 13px; margin: 4px 0; }
+    QPushButton { background-color: #208A7C; color: #050B09; border: none; padding: 8px 16px; font-weight: bold; border-radius: 3px; }
+    QPushButton:hover { background-color: #20F8D5; }
+  )");
+
+  auto* layout = new QVBoxLayout(&dlg);
+  
+  auto* title = new QLabel(QString("SEVERANCE CHIP PARAMETERS: %1").arg(innie), &dlg);
+  title->setStyleSheet("font-size: 16px; font-weight: bold; color: #00E5FF; margin-bottom: 10px;");
+  layout->addWidget(title);
+
+  layout->addWidget(new QLabel(QString("Chip Identifier: %1").arg(chipId), &dlg));
+  layout->addWidget(new QLabel(QString("Transceiver Signal: %1").arg(signal), &dlg));
+  layout->addWidget(new QLabel(QString("Spatial Memory Partition: %1").arg(partition), &dlg));
+  layout->addWidget(new QLabel(QString("Containment Compliance: %1").arg(containment), &dlg));
+  layout->addWidget(new QLabel(QString("Diagnostic Status: %1").arg(status), &dlg));
+  layout->addWidget(new QLabel("Firmware Version: Lumon-ChipOS v9.4.2-rel", &dlg));
+
+  layout->addSpacing(15);
+
+  auto* closeBtn = new QPushButton("CLOSE DIAGNOSTICS", &dlg);
+  connect(closeBtn, &QPushButton::clicked, &dlg, &QDialog::accept);
+  layout->addWidget(closeBtn, 0, Qt::AlignCenter);
+
+  dlg.exec();
 }
 
 void SecurityView::updateTable() {

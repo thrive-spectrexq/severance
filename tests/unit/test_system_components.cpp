@@ -98,3 +98,55 @@ TEST_CASE("SandboxManager LaunchProfile with valid executable", "[SandboxManager
     REQUIRE(manager.GetActiveProfiles().empty());
   }
 }
+
+// ===========================================================================
+// GameEngine
+// ===========================================================================
+#include "core/game/GameEngine.hpp"
+
+using namespace severance::core::game;
+
+TEST_CASE("GameEngine campaign lifecycle and keycard tracking", "[GameEngine]") {
+  auto& engine = GameEngine::GetInstance();
+  engine.ResetCampaign();
+
+  REQUIRE(engine.GetState() == GameState::NotStarted);
+  REQUIRE(engine.GetKeycardsCollected() == 0);
+
+  engine.StartCampaign();
+  REQUIRE(engine.GetState() == GameState::ShiftActive);
+
+  engine.CollectKeycard(0, "Test Source 1");
+  REQUIRE(engine.GetKeycardsCollected() == 1);
+  REQUIRE(engine.HasKeycard(0) == true);
+
+  // Duplicate collect on same keycard does not double-count
+  engine.CollectKeycard(0, "Test Source 1 Duplicate");
+  REQUIRE(engine.GetKeycardsCollected() == 1);
+
+  engine.CollectKeycard(1, "Test Source 2");
+  engine.CollectKeycard(2, "Test Source 3");
+  engine.CollectKeycard(3, "Test Source 4");
+  REQUIRE(engine.GetKeycardsCollected() == 4);
+
+  engine.ResetCampaign();
+  REQUIRE(engine.GetState() == GameState::NotStarted);
+}
+
+TEST_CASE("GameEngine suspicion and Break Room recovery", "[GameEngine]") {
+  auto& engine = GameEngine::GetInstance();
+  engine.StartCampaign();
+
+  engine.AddSuspicion(50, "Infraction test");
+  REQUIRE(engine.GetSuspicion() >= 55);
+
+  engine.AddSuspicion(50, "Critical overflow");
+  REQUIRE(engine.GetState() == GameState::BreakRoomPenalty);
+
+  engine.ReportBreakRoomSuccess();
+  REQUIRE(engine.GetState() == GameState::ShiftActive);
+  REQUIRE(engine.GetSuspicion() == 20);
+
+  engine.ResetCampaign();
+}
+

@@ -2,6 +2,9 @@
 
 #include <QWidget>
 #include <QTableWidget>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QHBoxLayout>
 
 namespace severance::core::filesystem {
   struct FileEvent {
@@ -26,11 +29,16 @@ private slots:
   void onSelectionChanged();
   void processPendingEvents();
   void updateReceptors();
+  void onDocumentDoubleClicked(int row, int column);
+  void filterByClassification(const QString& classification);
 
 private:
   void setupUI();
+  void openDocumentViewer(int row);
 
   QTableWidget* m_Table{nullptr};
+  QLineEdit* m_SearchInput{nullptr};
+  QString m_CurrentFilter{"ALL"};
 };
 
 } // namespace severance::gui::file_view

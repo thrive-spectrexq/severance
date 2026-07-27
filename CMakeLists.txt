@@ -94,6 +94,7 @@ set(TEST_COMMON_SOURCES
     src/core/sandbox/SandboxManager.cpp
     src/core/notifications/NotificationManager.cpp
     src/core/store/EventStore.cpp
+    src/core/game/GameEngine.cpp
 )
 
 # --- Test executable ---

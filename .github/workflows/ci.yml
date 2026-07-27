@@ -78,7 +78,7 @@ jobs:
     - name: Verify Plugin DLLs
       shell: pwsh
       run: |
-        $ExpectedPlugins = @("sample_plugin.dll", "sample_c_plugin.dll", "security_plugin.dll")
+        $ExpectedPlugins = @("sample_plugin.dll", "sample_c_plugin.dll", "security_plugin.dll", "optics_and_design.dll")
         $AllFound = $true
         
         foreach ($Plugin in $ExpectedPlugins) {
@@ -210,8 +210,8 @@ jobs:
 
         # ── Copy severance plugin DLLs ──
         Get-ChildItem -Path build -Recurse -Filter "*.dll" | Where-Object {
-          $_.DirectoryName -match "plugins[/\\](sample_|security_)" -or
-          ($_.DirectoryName -match "plugins[/\\]Release" -and $_.Name -match "(sample_|security_)")
+          $_.DirectoryName -match "plugins[/\\](sample_|security_|optics_and_design)" -or
+          ($_.DirectoryName -match "plugins[/\\]Release" -and $_.Name -match "(sample_|security_|optics_and_design)")
         } | ForEach-Object {
           Copy-Item -Path $_.FullName -Destination dist\plugins\ -Force
           Write-Host "Copied plugin: $($_.Name)"
