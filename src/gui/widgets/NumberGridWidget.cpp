@@ -157,6 +157,8 @@ void NumberGridWidget::refineGroup(int groupId) {
     int groupSize = m_Groups[groupId].size();
     int targetBin = std::rand() % 5;
     
+    QColor particleColors[] = { QColor("#00E5FF"), QColor("#39FF14"), QColor("#FF0055"), QColor("#FF9900") };
+
     for (const auto& p : m_Groups[groupId]) {
         auto& cell = m_Grid[p.y()][p.x()];
         cell.isAnimating = true;
@@ -165,6 +167,19 @@ void NumberGridWidget::refineGroup(int groupId) {
         cell.animPos = QPointF(p.x() * CellSize - m_CameraPos.x(), p.y() * CellSize - m_CameraPos.y()) * m_Zoom;
         cell.trail.clear();
         cell.trail.push_back(cell.animPos);
+
+        // Spawn particles
+        for (int i = 0; i < 8; ++i) {
+            RefinementParticle pt;
+            pt.pos = cell.animPos + QPointF(CellSize / 2.0 * m_Zoom, CellSize / 2.0 * m_Zoom);
+            double angle = (std::rand() % 360) * 3.14159 / 180.0;
+            double spd = (std::rand() % 60 + 20) / 10.0;
+            pt.vel = QPointF(std::cos(angle) * spd, std::sin(angle) * spd);
+            pt.color = particleColors[(p.x() + p.y() + i) % 4];
+            pt.size = (std::rand() % 6 + 3);
+            pt.life = 1.0;
+            m_Particles.push_back(pt);
+        }
     }
 
     m_Groups.erase(groupId);
@@ -373,6 +388,18 @@ void NumberGridWidget::onTimerUpdate() {
         }
     }
     
+    // Update Refinement Particles
+    for (auto it = m_Particles.begin(); it != m_Particles.end();) {
+        it->pos += it->vel;
+        it->vel *= 0.95; // Friction
+        it->life -= 0.04;
+        if (it->life <= 0.0) {
+            it = m_Particles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
     update();
 }
 
@@ -551,6 +578,16 @@ void NumberGridWidget::paintEvent(QPaintEvent*) {
         }
     }
 
+    // Render Refinement Particle Swarm
+    for (const auto& pt : m_Particles) {
+        QColor c = pt.color;
+        c.setAlphaF(pt.life);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(c);
+        double sz = pt.size * pt.life;
+        painter.drawEllipse(QRectF(pt.pos.x() - sz / 2.0, pt.pos.y() - sz / 2.0, sz, sz));
+    }
+
     // Top Lumon Header Bar
     int totalTarget = std::max(1, m_TotalBadGroups);
     int overallProgress = std::min(100, static_cast<int>(std::round(100.0 * totalRefined / totalTarget)));
@@ -673,21 +710,44 @@ void NumberGridWidget::drawAuras(QPainter& painter, int minX, int minY, int maxX
 }
 
 void NumberGridWidget::drawMDEOverlay(QPainter& painter) {
-    painter.fillRect(rect(), QColor(0, 0, 0, 200));
+    painter.fillRect(rect(), QColor(0, 0, 0, 210));
     
-    QColor hues[] = { QColor(0, 255, 0, 50), QColor(0, 255, 255, 50), QColor(255, 0, 255, 50) };
-    int hueIdx = static_cast<int>(m_Time * 5.0) % 3;
-    painter.fillRect(rect(), hues[hueIdx]);
-    
+    // Rotating Laser Spotlights
+    QColor spotColors[] = { QColor(0, 255, 65, 80), QColor(0, 229, 255, 80), QColor(255, 0, 85, 80), QColor(255, 153, 0, 80) };
+    for (int i = 0; i < 4; ++i) {
+        double angle = m_Time * 2.0 + i * (3.14159 / 2.0);
+        QPointF topCenter(width() / 2.0, 0);
+        QPointF endPoint(width() / 2.0 + std::cos(angle) * width(), height());
+
+        QPainterPath path;
+        path.moveTo(topCenter);
+        path.lineTo(endPoint - QPointF(80, 0));
+        path.lineTo(endPoint + QPointF(80, 0));
+        path.closeSubpath();
+
+        painter.fillPath(path, spotColors[i]);
+    }
+
+    // Audio Spectrum Equalizer Bars
+    int barCount = 32;
+    double barWidth = width() / static_cast<double>(barCount);
+    for (int i = 0; i < barCount; ++i) {
+        double h = std::abs(std::sin(m_Time * 8.0 + i * 0.4)) * 120.0 + 10.0;
+        QRectF barRect(i * barWidth + 2, height() - h, barWidth - 4, h);
+        painter.fillRect(barRect, spotColors[i % 4]);
+    }
+
+    // Dancing Silhouette
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(0, 0, 0, 150));
-    double danceX = std::sin(m_Time * 3.0) * 50.0;
-    painter.drawEllipse(QPointF(width()/2.0 + danceX, height()/2.0 + 50), 40, 80); 
-    painter.drawEllipse(QPointF(width()/2.0 + danceX, height()/2.0 - 40), 20, 20); 
+    painter.setBrush(QColor(10, 10, 10, 220));
+    double danceX = std::sin(m_Time * 4.0) * 60.0;
+    double danceY = std::abs(std::cos(m_Time * 6.0)) * 20.0;
+    painter.drawEllipse(QPointF(width()/2.0 + danceX, height()/2.0 + 40 - danceY), 45, 85); 
+    painter.drawEllipse(QPointF(width()/2.0 + danceX, height()/2.0 - 55 - danceY), 22, 22); 
     
-    painter.setFont(QFont("Courier New", 18, QFont::Bold));
+    painter.setFont(QFont("Courier New", 20, QFont::Bold));
     painter.setPen(QColor("#39FF14"));
-    painter.drawText(QRect(0, 50, width(), 40), Qt::AlignCenter, "MUSIC DANCE EXPERIENCE INITIATED");
+    painter.drawText(QRect(0, 50, width(), 40), Qt::AlignCenter, "★ MUSIC DANCE EXPERIENCE INITIATED ★");
     
     m_BtnDefiantJazz = QRectF(width()/2 - 250, 150, 150, 40);
     m_BtnKierHymn = QRectF(width()/2 - 75, 150, 150, 40);

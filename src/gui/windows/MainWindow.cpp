@@ -16,6 +16,7 @@
 #include "gui/security_view/SecurityView.hpp"
 #include "gui/terminal/TerminalOverlay.hpp"
 #include "gui/widgets/GameHudWidget.hpp"
+#include "gui/widgets/CrtFilterWidget.hpp"
 #include "core/game/GameEngine.hpp"
 #include <QApplication>
 #include <QTimer>
@@ -122,11 +123,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   // Terminal overlay
   m_TerminalOverlay = new terminal::TerminalOverlay(this);
 
+  // CRT Filter overlay over central widget
+  m_CrtFilter = new widgets::CrtFilterWidget(centralWidget);
+  m_CrtFilter->raise();
+
   // Start on Dashboard
   setActiveView(0);
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+  QMainWindow::resizeEvent(event);
+  if (m_CrtFilter && centralWidget()) {
+    m_CrtFilter->setGeometry(centralWidget()->rect());
+    m_CrtFilter->raise();
+  }
+}
 
 void MainWindow::setupSidebar() {
   m_Sidebar = new QWidget(this);

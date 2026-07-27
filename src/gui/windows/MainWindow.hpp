@@ -99,6 +99,12 @@ private:
 
   // Terminal
   terminal::TerminalOverlay* m_TerminalOverlay{nullptr};
+
+  // CRT Filter Overlay
+  class widgets::CrtFilterWidget* m_CrtFilter{nullptr};
+
+protected:
+  void resizeEvent(QResizeEvent* event) override;
 };
 
 } // namespace severance::gui::windows

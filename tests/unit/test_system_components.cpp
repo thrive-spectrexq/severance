@@ -111,23 +111,23 @@ TEST_CASE("GameEngine campaign lifecycle and keycard tracking", "[GameEngine]") 
   engine.ResetCampaign();
 
   REQUIRE(engine.GetState() == GameState::NotStarted);
-  REQUIRE(engine.GetKeycardsCollected() == 0);
+  REQUIRE(engine.GetKeycardCount() == 0);
 
   engine.StartCampaign();
   REQUIRE(engine.GetState() == GameState::ShiftActive);
 
   engine.CollectKeycard(0, "Test Source 1");
-  REQUIRE(engine.GetKeycardsCollected() == 1);
+  REQUIRE(engine.GetKeycardCount() == 1);
   REQUIRE(engine.HasKeycard(0) == true);
 
   // Duplicate collect on same keycard does not double-count
   engine.CollectKeycard(0, "Test Source 1 Duplicate");
-  REQUIRE(engine.GetKeycardsCollected() == 1);
+  REQUIRE(engine.GetKeycardCount() == 1);
 
   engine.CollectKeycard(1, "Test Source 2");
   engine.CollectKeycard(2, "Test Source 3");
   engine.CollectKeycard(3, "Test Source 4");
-  REQUIRE(engine.GetKeycardsCollected() == 4);
+  REQUIRE(engine.GetKeycardCount() == 4);
 
   engine.ResetCampaign();
   REQUIRE(engine.GetState() == GameState::NotStarted);

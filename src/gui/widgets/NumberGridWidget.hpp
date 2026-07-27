@@ -5,6 +5,7 @@
 #include <QPointF>
 #include <QRectF>
 #include <QFont>
+#include <QColor>
 #include <vector>
 #include <unordered_map>
 #include <array>
@@ -26,6 +27,14 @@ struct NumberCell {
     QPointF animPos{0, 0};
     int targetBin = -1;
     std::vector<QPointF> trail;
+};
+
+struct RefinementParticle {
+    QPointF pos;
+    QPointF vel;
+    QColor color;
+    double size = 4.0;
+    double life = 1.0;
 };
 
 class NumberGridWidget : public QWidget {
@@ -86,7 +95,10 @@ private:
     // Idle mode
     int m_IdleCounter = 0;
     bool m_IdleMode = false;
-    static constexpr int IdleTimeoutTicks = 300; // e.g. 10 seconds at 30fps (approx 33ms timer)
+    static constexpr int IdleTimeoutTicks = 300; // e.g. 10 seconds at 30fps
+
+    // Particles
+    std::vector<RefinementParticle> m_Particles;
 
     // Files & Quotas
     std::vector<QString> m_MdrFiles{"COLDWATER", "TUMWATER", "CULPEPPER", "DILLON", "SIENA", "PACOIMA"};
