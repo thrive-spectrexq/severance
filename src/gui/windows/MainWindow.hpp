@@ -23,6 +23,7 @@ namespace severance::gui::file_view { class FileView; }
 namespace severance::gui::optics_and_design { class OpticsDesignView; }
 namespace severance::gui::perimeter_grid { class PerimeterGridView; }
 namespace severance::gui::terminal { class TerminalOverlay; }
+namespace severance::gui::widgets { class CrtFilterWidget; }
 
 namespace severance::gui::windows {
 
@@ -101,7 +102,7 @@ private:
   terminal::TerminalOverlay* m_TerminalOverlay{nullptr};
 
   // CRT Filter Overlay
-  class widgets::CrtFilterWidget* m_CrtFilter{nullptr};
+  gui::widgets::CrtFilterWidget* m_CrtFilter{nullptr};
 
 protected:
   void resizeEvent(QResizeEvent* event) override;
